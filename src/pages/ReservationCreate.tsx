@@ -13,7 +13,8 @@ import {
   Wrench,
   Star,
   Plus,
-  Trash2
+  Trash2,
+  Loader2
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
@@ -38,11 +39,18 @@ import {
 } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import type { CustomerType, FuelType, PurchaseType } from '@/types/reservation';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export default function ReservationCreate() {
   const navigate = useNavigate();
   const { selectedCompany } = useOutletContext<{ selectedCompany: string }>();
+  const { user } = useAuth();
   const company = companies.find(c => c.id === selectedCompany);
+
+  // Loading state
+  const [isSaving, setIsSaving] = useState(false);
 
   // Form state
   const [selectedBranch, setSelectedBranch] = useState('');
@@ -106,10 +114,95 @@ export default function ReservationCreate() {
   // Calculate net price
   const finalPrice = basePrice - discountAmount;
 
-  const handleSaveDraft = () => {
-    // Save draft logic
-    console.log('Saving draft...');
-    navigate('/reservations');
+  // Generate document number
+  const generateDocumentNumber = () => {
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const branchCode = branches.find(b => b.id === selectedBranch)?.code || 'XX';
+    return `RSV-${selectedCompany}-${branchCode}-${year}${month}${day}-${random}`;
+  };
+
+  const handleSaveDraft = async () => {
+    // Validation
+    if (!selectedBranch) {
+      toast.error('กรุณาเลือกสาขา');
+      return;
+    }
+    if (!bookingFirstName || !bookingLastName) {
+      toast.error('กรุณากรอกชื่อ-นามสกุลผู้จอง');
+      return;
+    }
+    if (!bookingIdNo) {
+      toast.error('กรุณากรอกเลขบัตรประชาชน');
+      return;
+    }
+    if (!bookingPhone) {
+      toast.error('กรุณากรอกเบอร์โทรศัพท์');
+      return;
+    }
+    if (basePrice <= 0) {
+      toast.error('กรุณากรอกราคารถ');
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const documentNumber = generateDocumentNumber();
+      const customerName = `${bookingTitle}${bookingFirstName} ${bookingLastName}`;
+      const modelName = vehicleModels.find(m => m.id === selectedModel)?.name || '';
+      const submodelName = standardSubmodels.find(s => s.id === selectedSubmodel)?.name || '';
+
+      const reservationData = {
+        document_number: documentNumber,
+        company_id: selectedCompany,
+        branch_id: selectedBranch,
+        status: 'draft',
+        customer_type: bookingCustomerType,
+        customer_name: customerName,
+        customer_id_card: bookingIdNo,
+        customer_phone: bookingPhone,
+        customer_email: bookingEmail || null,
+        buyer_name: isBuyerSame ? customerName : null,
+        buyer_id_card: isBuyerSame ? bookingIdNo : null,
+        buyer_phone: isBuyerSame ? bookingPhone : null,
+        vehicle_type: selectedBU || null,
+        model: modelName || null,
+        submodel: submodelName || null,
+        color: selectedColor || null,
+        fuel_type: selectedFuelType || null,
+        list_price: basePrice,
+        discount: discountAmount,
+        net_price: finalPrice,
+        deposit_amount: depositAmount,
+        expected_delivery_date: expectedDeliveryDate || null,
+        freebies: freebies.filter(f => f.name),
+        accessories: accessories.filter(a => a.name),
+        benefits: benefits.filter(b => b.name),
+        created_by: user?.id || null,
+      };
+
+      const { error } = await supabase
+        .from('reservations')
+        .insert(reservationData);
+
+      if (error) {
+        console.error('Error saving reservation:', error);
+        toast.error('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
+        return;
+      }
+
+      toast.success('บันทึกใบจองสำเร็จ');
+      navigate('/reservations');
+    } catch (err) {
+      console.error('Error:', err);
+      toast.error('เกิดข้อผิดพลาดในการบันทึก');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -667,6 +760,7 @@ export default function ReservationCreate() {
               <Button 
                 variant="outline" 
                 onClick={() => navigate('/reservations')}
+                disabled={isSaving}
               >
                 ยกเลิก
               </Button>
@@ -675,16 +769,18 @@ export default function ReservationCreate() {
                   variant="outline" 
                   onClick={handleSaveDraft}
                   className="gap-2"
+                  disabled={isSaving}
                 >
-                  <Save className="w-4 h-4" />
+                  {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   บันทึก
                 </Button>
                 <Button 
                   className="btn-primary-gradient gap-2"
                   onClick={handleSaveDraft}
+                  disabled={isSaving}
                 >
-                  ส่งเอกสาร
-                  <ArrowRight className="w-4 h-4" />
+                  {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'ส่งเอกสาร'}
+                  {!isSaving && <ArrowRight className="w-4 h-4" />}
                 </Button>
               </div>
             </div>

@@ -77,6 +77,39 @@ export type Database = {
         }
         Relationships: []
       }
+      freebies: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string
+          id: string
+          no: number
+          price: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description: string
+          id?: string
+          no?: number
+          price?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          no?: number
+          price?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       models: {
         Row: {
           company_id: string

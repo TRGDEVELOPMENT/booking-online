@@ -1,16 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
-import { Plus, Download, Trash2 } from 'lucide-react';
+import { Plus, Download, Trash2, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { ReservationFilters } from '@/components/reservations/ReservationFilters';
 import { ReservationTable } from '@/components/reservations/ReservationTable';
-import { mockReservations, companies } from '@/data/mockData';
+import { companies } from '@/data/mockData';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import type { DatabaseReservation } from '@/types/database-reservation';
 
 export default function ReservationList() {
   const { selectedCompany } = useOutletContext<{ selectedCompany: string }>();
   const company = companies.find(c => c.id === selectedCompany);
 
+  const [reservations, setReservations] = useState<DatabaseReservation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [filters, setFilters] = useState({
     branch: 'all',
@@ -18,6 +23,45 @@ export default function ReservationList() {
     stage: 'all',
     search: '',
   });
+
+  // Fetch reservations from database
+  useEffect(() => {
+    const fetchReservations = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('reservations')
+          .select('*')
+          .eq('company_id', selectedCompany)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching reservations:', error);
+          toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+          return;
+        }
+
+        // Transform the data to match our type
+        const transformedData: DatabaseReservation[] = (data || []).map(item => ({
+          ...item,
+          freebies: Array.isArray(item.freebies) ? item.freebies as DatabaseReservation['freebies'] : null,
+          accessories: Array.isArray(item.accessories) ? item.accessories as DatabaseReservation['accessories'] : null,
+          benefits: Array.isArray(item.benefits) ? item.benefits as DatabaseReservation['benefits'] : null,
+        }));
+
+        setReservations(transformedData);
+      } catch (err) {
+        console.error('Error:', err);
+        toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (selectedCompany) {
+      fetchReservations();
+    }
+  }, [selectedCompany]);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -32,21 +76,41 @@ export default function ReservationList() {
     });
   };
 
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+    
+    try {
+      const { error } = await supabase
+        .from('reservations')
+        .delete()
+        .in('id', selectedIds);
+
+      if (error) {
+        console.error('Error deleting reservations:', error);
+        toast.error('เกิดข้อผิดพลาดในการลบข้อมูล');
+        return;
+      }
+
+      toast.success(`ลบสำเร็จ ${selectedIds.length} รายการ`);
+      setReservations(prev => prev.filter(r => !selectedIds.includes(r.id)));
+      setSelectedIds([]);
+    } catch (err) {
+      console.error('Error:', err);
+      toast.error('เกิดข้อผิดพลาดในการลบข้อมูล');
+    }
+  };
+
   // Filter reservations
-  const filteredReservations = mockReservations.filter(r => {
-    if (r.companyId !== selectedCompany) return false;
-    if (filters.branch !== 'all' && r.branchId !== filters.branch) return false;
-    if (filters.status !== 'all' && r.documentStatus !== filters.status) return false;
-    if (filters.stage !== 'all' && r.workflowStage !== filters.stage) return false;
+  const filteredReservations = reservations.filter(r => {
+    if (filters.branch !== 'all' && r.branch_id !== filters.branch) return false;
+    if (filters.status !== 'all' && r.status !== filters.status) return false;
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       const matchesSearch = 
-        r.draftNo.toLowerCase().includes(searchLower) ||
-        r.finalNo?.toLowerCase().includes(searchLower) ||
-        r.bookingCustomer.firstName.toLowerCase().includes(searchLower) ||
-        r.bookingCustomer.lastName.toLowerCase().includes(searchLower) ||
-        r.bookingCustomer.phone.includes(searchLower) ||
-        r.vehicleModelName.toLowerCase().includes(searchLower);
+        r.document_number.toLowerCase().includes(searchLower) ||
+        r.customer_name.toLowerCase().includes(searchLower) ||
+        r.customer_phone?.includes(searchLower) ||
+        r.model?.toLowerCase().includes(searchLower);
       if (!matchesSearch) return false;
     }
     return true;
@@ -77,7 +141,12 @@ export default function ReservationList() {
             <div className="flex items-center gap-2">
               {selectedIds.length > 0 && (
                 <>
-                  <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                    onClick={handleDeleteSelected}
+                  >
                     <Trash2 className="w-4 h-4 mr-2" />
                     ลบที่เลือก
                   </Button>
@@ -105,11 +174,18 @@ export default function ReservationList() {
           />
 
           {/* Table */}
-          <ReservationTable
-            reservations={filteredReservations}
-            selectedIds={selectedIds}
-            onSelectChange={setSelectedIds}
-          />
+          {isLoading ? (
+            <div className="bg-card rounded-xl border border-border/50 p-12 text-center">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-muted-foreground">กำลังโหลดข้อมูล...</p>
+            </div>
+          ) : (
+            <ReservationTable
+              reservations={filteredReservations}
+              selectedIds={selectedIds}
+              onSelectChange={setSelectedIds}
+            />
+          )}
         </div>
       </div>
     </>

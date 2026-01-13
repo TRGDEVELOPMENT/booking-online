@@ -498,13 +498,13 @@ export default function ReservationCreate() {
                   className="gap-2"
                 >
                   <Save className="w-4 h-4" />
-                  บันทึกฉบับร่าง
+                  บันทึก
                 </Button>
                 <Button 
                   className="btn-primary-gradient gap-2"
                   onClick={handleSaveDraft}
                 >
-                  บันทึกและไป Step 2
+                  ส่งเอกสาร
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>

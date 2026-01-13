@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      accessories: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string
+          id: string
+          no: number
+          price: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description: string
+          id?: string
+          no?: number
+          price?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          no?: number
+          price?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       colors: {
         Row: {
           company_id: string

@@ -13,6 +13,19 @@ import ReservationPrint from "@/pages/ReservationPrint";
 import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
 
+// Settings Pages
+import SettingsIndex from "@/pages/settings/SettingsIndex";
+import VehicleTypesPage from "@/pages/settings/VehicleTypesPage";
+import ModelsPage from "@/pages/settings/ModelsPage";
+import SubModelsPage from "@/pages/settings/SubModelsPage";
+import ColorsPage from "@/pages/settings/ColorsPage";
+import EngineSizesPage from "@/pages/settings/EngineSizesPage";
+import FuelTypesPage from "@/pages/settings/FuelTypesPage";
+import StandardPricesPage from "@/pages/settings/StandardPricesPage";
+import FreebiesPage from "@/pages/settings/FreebiesPage";
+import AccessoriesPage from "@/pages/settings/AccessoriesPage";
+import BenefitsPage from "@/pages/settings/BenefitsPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -24,11 +37,24 @@ const App = () => (
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route element={<ProtectedRoute />}>
-            <Route element={<MainLayout />}>
+          <Route element={<MainLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/reservations" element={<ReservationList />} />
               <Route path="/reservations/create" element={<ReservationCreate />} />
               <Route path="/reservations/:id/edit" element={<ReservationEdit />} />
+              
+              {/* Settings Routes */}
+              <Route path="/settings" element={<SettingsIndex />} />
+              <Route path="/settings/vehicle-types" element={<VehicleTypesPage />} />
+              <Route path="/settings/models" element={<ModelsPage />} />
+              <Route path="/settings/submodels" element={<SubModelsPage />} />
+              <Route path="/settings/colors" element={<ColorsPage />} />
+              <Route path="/settings/engine-sizes" element={<EngineSizesPage />} />
+              <Route path="/settings/fuel-types" element={<FuelTypesPage />} />
+              <Route path="/settings/standard-prices" element={<StandardPricesPage />} />
+              <Route path="/settings/freebies" element={<FreebiesPage />} />
+              <Route path="/settings/accessories" element={<AccessoriesPage />} />
+              <Route path="/settings/benefits" element={<BenefitsPage />} />
             </Route>
             {/* Print page outside MainLayout for clean printing */}
             <Route path="/reservations/:id/print" element={<ReservationPrint />} />

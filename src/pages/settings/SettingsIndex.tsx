@@ -9,79 +9,110 @@ import {
   Gift, 
   Wrench, 
   Award,
-  ArrowRight
+  ArrowRight,
+  type LucideIcon
 } from 'lucide-react';
 
-const settingsItems = [
+interface SettingsItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  path: string;
+  description: string;
+  color: string;
+  bgColor: string;
+}
+
+const settingsItems: SettingsItem[] = [
   { 
     id: 'vehicle-types', 
     label: 'ชนิดรถยนต์', 
     icon: Car, 
     path: '/settings/vehicle-types',
-    description: 'จัดการประเภทรถยนต์ เช่น รถเก๋ง, SUV, กระบะ'
+    description: 'จัดการประเภทรถยนต์ เช่น รถเก๋ง, SUV, กระบะ',
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-100 group-hover:bg-blue-600'
   },
   { 
     id: 'models', 
     label: 'รุ่น (Model)', 
     icon: Layers, 
     path: '/settings/models',
-    description: 'จัดการรุ่นรถยนต์ เช่น Kicks, Almera, D-Max'
+    description: 'จัดการรุ่นรถยนต์ เช่น Kicks, Almera, D-Max',
+    color: 'text-indigo-600',
+    bgColor: 'bg-indigo-100 group-hover:bg-indigo-600'
   },
   { 
     id: 'submodels', 
     label: 'รุ่นย่อย (Sub Model)', 
     icon: Layers, 
     path: '/settings/submodels',
-    description: 'จัดการรุ่นย่อย เช่น e-POWER V, VL'
+    description: 'จัดการรุ่นย่อย เช่น e-POWER V, VL',
+    color: 'text-violet-600',
+    bgColor: 'bg-violet-100 group-hover:bg-violet-600'
   },
   { 
     id: 'colors', 
     label: 'สี', 
     icon: Palette, 
     path: '/settings/colors',
-    description: 'จัดการสีรถยนต์ พร้อมแสดงตัวอย่างสี'
+    description: 'จัดการสีรถยนต์ พร้อมแสดงตัวอย่างสี',
+    color: 'text-pink-600',
+    bgColor: 'bg-pink-100 group-hover:bg-pink-600'
   },
   { 
     id: 'engine-sizes', 
     label: 'ขนาด/กำลังเครื่องยนต์', 
     icon: Gauge, 
     path: '/settings/engine-sizes',
-    description: 'จัดการขนาดเครื่องยนต์ เช่น 1.5L, 2.0L'
+    description: 'จัดการขนาดเครื่องยนต์ เช่น 1.5L, 2.0L',
+    color: 'text-orange-600',
+    bgColor: 'bg-orange-100 group-hover:bg-orange-600'
   },
   { 
     id: 'fuel-types', 
     label: 'ประเภทเชื้อเพลิง', 
     icon: Fuel, 
     path: '/settings/fuel-types',
-    description: 'จัดการประเภทเชื้อเพลิง เช่น เบนซิน, ดีเซล, EV'
+    description: 'จัดการประเภทเชื้อเพลิง เช่น เบนซิน, ดีเซล, EV',
+    color: 'text-green-600',
+    bgColor: 'bg-green-100 group-hover:bg-green-600'
   },
   { 
     id: 'standard-prices', 
     label: 'ราคามาตรฐานตามรุ่นรถ', 
     icon: DollarSign, 
     path: '/settings/standard-prices',
-    description: 'กำหนดราคามาตรฐานสำหรับแต่ละรุ่น'
+    description: 'กำหนดราคามาตรฐานสำหรับแต่ละรุ่น',
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-100 group-hover:bg-emerald-600'
   },
   { 
     id: 'freebies', 
     label: 'ของแถม', 
     icon: Gift, 
     path: '/settings/freebies',
-    description: 'จัดการของแถมพิเศษ เช่น ฟิล์ม, เคลือบแก้ว'
+    description: 'จัดการของแถมพิเศษ เช่น ฟิล์ม, เคลือบแก้ว',
+    color: 'text-red-600',
+    bgColor: 'bg-red-100 group-hover:bg-red-600'
   },
   { 
     id: 'accessories', 
     label: 'อุปกรณ์ติดตั้งเพิ่มเติม', 
     icon: Wrench, 
     path: '/settings/accessories',
-    description: 'จัดการอุปกรณ์ตกแต่ง เช่น ชุดแต่ง, สปอยเลอร์'
+    description: 'จัดการอุปกรณ์ตกแต่ง เช่น ชุดแต่ง, สปอยเลอร์',
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-100 group-hover:bg-amber-600'
   },
   { 
     id: 'benefits', 
     label: 'สิทธิ์ประโยชน์อื่นๆ', 
     icon: Award, 
     path: '/settings/benefits',
-    description: 'จัดการสิทธิประโยชน์ เช่น ฟรีค่าแรง, ดอกเบี้ย 0%'
+    description: 'จัดการสิทธิประโยชน์ เช่น ฟรีค่าแรง, ดอกเบี้ย 0%',
+    color: 'text-yellow-600',
+    bgColor: 'bg-yellow-100 group-hover:bg-yellow-600'
   },
 ];
 
@@ -103,8 +134,8 @@ export default function SettingsIndex() {
               className="group bg-card rounded-xl border border-border p-5 hover:border-primary/50 hover:shadow-md transition-all"
             >
               <div className="flex items-start gap-4">
-                <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  <Icon className="w-6 h-6" />
+                <div className={`p-3 rounded-lg ${item.bgColor} transition-colors`}>
+                  <Icon className={`w-6 h-6 ${item.color} group-hover:text-white transition-colors`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">

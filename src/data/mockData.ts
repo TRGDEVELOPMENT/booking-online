@@ -9,26 +9,26 @@ import type {
 } from '@/types/reservation';
 
 export const companies: Company[] = [
-  { id: 'bpk', code: 'BPK', name: 'บริษัท บิซ พีเค จำกัด' },
-  { id: 'lac', code: 'LAC', name: 'บริษัท เลกซัส ออโต้ ซิตี้ จำกัด' },
-  { id: 'icck', code: 'ICCK', name: 'บริษัท อีซูซุชัยเจริญกิจมอเตอร์ส จำกัด' },
-  { id: 'vpa', code: 'VPA', name: 'บริษัท วี.พี. ออโต้ เอ็นเตอร์ไพรส์ จำกัด' },
+  { id: 'BPK', code: 'BPK', name: 'บริษัท บิซ พีเค จำกัด' },
+  { id: 'LAC', code: 'LAC', name: 'บริษัท เลกซัส ออโต้ ซิตี้ จำกัด' },
+  { id: 'ICCK', code: 'ICCK', name: 'บริษัท อีซูซุชัยเจริญกิจมอเตอร์ส จำกัด' },
+  { id: 'VPA', code: 'VPA', name: 'บริษัท วี.พี. ออโต้ เอ็นเตอร์ไพรส์ จำกัด' },
 ];
 
 export const branches: Branch[] = [
-  { id: 'br-bpk-01', companyId: 'bpk', code: 'BPK-HQ', name: 'สำนักงานใหญ่ (ปิ่นเกล้า)' },
-  { id: 'br-lac-01', companyId: 'lac', code: 'LAC-RI', name: 'สาขารามอินทรา' },
-  { id: 'br-lac-02', companyId: 'lac', code: 'LAC-SK', name: 'สาขาสุขุมวิท' },
-  { id: 'br-icck-01', companyId: 'icck', code: 'ICCK-NK', name: 'สาขาหนองแขม' },
-  { id: 'br-icck-02', companyId: 'icck', code: 'ICCK-KK', name: 'สาขากิ่งแก้ว' },
-  { id: 'br-vpa-01', companyId: 'vpa', code: 'VPA-NK', name: 'สาขาหนองแขม' },
+  { id: 'br-BPK-01', companyId: 'BPK', code: 'BPK-HQ', name: 'สำนักงานใหญ่ (ปิ่นเกล้า)' },
+  { id: 'br-LAC-01', companyId: 'LAC', code: 'LAC-RI', name: 'สาขารามอินทรา' },
+  { id: 'br-LAC-02', companyId: 'LAC', code: 'LAC-SK', name: 'สาขาสุขุมวิท' },
+  { id: 'br-ICCK-01', companyId: 'ICCK', code: 'ICCK-NK', name: 'สาขาหนองแขม' },
+  { id: 'br-ICCK-02', companyId: 'ICCK', code: 'ICCK-KK', name: 'สาขากิ่งแก้ว' },
+  { id: 'br-VPA-01', companyId: 'VPA', code: 'VPA-NK', name: 'สาขาหนองแขม' },
 ];
 
 export const businessUnits: BusinessUnit[] = [
-  { id: 'bu-bpk-car', branchId: 'br-bpk-01', code: 'CAR', name: 'รถยนต์นั่ง' },
-  { id: 'bu-bpk-suv', branchId: 'br-bpk-01', code: 'SUV', name: 'รถ SUV/PPV' },
-  { id: 'bu-bpk-truck', branchId: 'br-bpk-01', code: 'TRUCK', name: 'รถกระบะ' },
-  { id: 'bu-lac-car', branchId: 'br-lac-01', code: 'CAR', name: 'รถยนต์นั่ง' },
+  { id: 'bu-BPK-car', branchId: 'br-BPK-01', code: 'CAR', name: 'รถยนต์นั่ง' },
+  { id: 'bu-BPK-suv', branchId: 'br-BPK-01', code: 'SUV', name: 'รถ SUV/PPV' },
+  { id: 'bu-BPK-truck', branchId: 'br-BPK-01', code: 'TRUCK', name: 'รถกระบะ' },
+  { id: 'bu-LAC-car', branchId: 'br-LAC-01', code: 'CAR', name: 'รถยนต์นั่ง' },
 ];
 
 // Standard submodels for all companies
@@ -40,34 +40,34 @@ export const standardSubmodels = [
 
 export const vehicleModels: VehicleModel[] = [
   // BPK - Nissan
-  { id: 'bpk-navara', companyId: 'bpk', name: 'นาวาร่า', submodels: [] },
-  { id: 'bpk-xtrial', companyId: 'bpk', name: 'เอ็กเทรล', submodels: [] },
-  { id: 'bpk-serena', companyId: 'bpk', name: 'เซเรน่า', submodels: [] },
-  { id: 'bpk-kicks', companyId: 'bpk', name: 'คิกส์', submodels: [] },
-  { id: 'bpk-almera', companyId: 'bpk', name: 'อัลเมร่า', submodels: [] },
-  { id: 'bpk-terra', companyId: 'bpk', name: 'เทอร์ร่า', submodels: [] },
-  { id: 'bpk-leaf', companyId: 'bpk', name: 'ลีฟ', submodels: [] },
+  { id: 'BPK-navara', companyId: 'BPK', name: 'นาวาร่า', submodels: [] },
+  { id: 'BPK-xtrial', companyId: 'BPK', name: 'เอ็กเทรล', submodels: [] },
+  { id: 'BPK-serena', companyId: 'BPK', name: 'เซเรน่า', submodels: [] },
+  { id: 'BPK-kicks', companyId: 'BPK', name: 'คิกส์', submodels: [] },
+  { id: 'BPK-almera', companyId: 'BPK', name: 'อัลเมร่า', submodels: [] },
+  { id: 'BPK-terra', companyId: 'BPK', name: 'เทอร์ร่า', submodels: [] },
+  { id: 'BPK-leaf', companyId: 'BPK', name: 'ลีฟ', submodels: [] },
   
   // ICCK - Isuzu
-  { id: 'icck-vcross', companyId: 'icck', name: 'V-Cross', submodels: [] },
-  { id: 'icck-spark', companyId: 'icck', name: 'Spark', submodels: [] },
-  { id: 'icck-xseries', companyId: 'icck', name: 'X-Series', submodels: [] },
-  { id: 'icck-pickup4', companyId: 'icck', name: 'Pick Up 4 Doors', submodels: [] },
-  { id: 'icck-pickup2', companyId: 'icck', name: 'Pick Up 2 Doors', submodels: [] },
-  { id: 'icck-mux-ra', companyId: 'icck', name: 'MU-X RA', submodels: [] },
-  { id: 'icck-mux', companyId: 'icck', name: 'MU-X', submodels: [] },
+  { id: 'ICCK-vcross', companyId: 'ICCK', name: 'V-Cross', submodels: [] },
+  { id: 'ICCK-spark', companyId: 'ICCK', name: 'Spark', submodels: [] },
+  { id: 'ICCK-xseries', companyId: 'ICCK', name: 'X-Series', submodels: [] },
+  { id: 'ICCK-pickup4', companyId: 'ICCK', name: 'Pick Up 4 Doors', submodels: [] },
+  { id: 'ICCK-pickup2', companyId: 'ICCK', name: 'Pick Up 2 Doors', submodels: [] },
+  { id: 'ICCK-mux-ra', companyId: 'ICCK', name: 'MU-X RA', submodels: [] },
+  { id: 'ICCK-mux', companyId: 'ICCK', name: 'MU-X', submodels: [] },
   
   // LAC - Lexus
-  { id: 'lac-lbx', companyId: 'lac', name: 'LBX', submodels: [] },
-  { id: 'lac-ux', companyId: 'lac', name: 'UX', submodels: [] },
-  { id: 'lac-nx', companyId: 'lac', name: 'NX', submodels: [] },
-  { id: 'lac-rz', companyId: 'lac', name: 'RZ', submodels: [] },
-  { id: 'lac-lx', companyId: 'lac', name: 'LX', submodels: [] },
-  { id: 'lac-rx', companyId: 'lac', name: 'RX', submodels: [] },
+  { id: 'LAC-lbx', companyId: 'LAC', name: 'LBX', submodels: [] },
+  { id: 'LAC-ux', companyId: 'LAC', name: 'UX', submodels: [] },
+  { id: 'LAC-nx', companyId: 'LAC', name: 'NX', submodels: [] },
+  { id: 'LAC-rz', companyId: 'LAC', name: 'RZ', submodels: [] },
+  { id: 'LAC-lx', companyId: 'LAC', name: 'LX', submodels: [] },
+  { id: 'LAC-rx', companyId: 'LAC', name: 'RX', submodels: [] },
   
   // VPA - Ford
-  { id: 'vpa-everest', companyId: 'vpa', name: 'Everest', submodels: [] },
-  { id: 'vpa-ranger', companyId: 'vpa', name: 'Ranger', submodels: [] },
+  { id: 'VPA-everest', companyId: 'VPA', name: 'Everest', submodels: [] },
+  { id: 'VPA-ranger', companyId: 'VPA', name: 'Ranger', submodels: [] },
 ];
 
 export const currentUser: User = {
@@ -75,8 +75,8 @@ export const currentUser: User = {
   email: 'sales@bpk.co.th',
   name: 'สมชาย ใจดี',
   role: 'sales',
-  companyId: 'bpk',
-  branchId: 'br-bpk-01',
+  companyId: 'BPK',
+  branchId: 'br-BPK-01',
   permissions: [
     { resource: 'reservation', actions: ['view', 'insert', 'edit'] },
     { resource: 'customer', actions: ['view', 'insert', 'edit'] },
@@ -91,15 +91,15 @@ export const generateDocumentNumber = (companyId: string, branchId: string, runn
   
   // Document prefix mapping by company and branch
   const prefixMap: Record<string, Record<string, string>> = {
-    'bpk': { 'default': 'BPKRS' },
-    'vpa': { 'default': 'VPARS' },
-    'lac': {
-      'br-lac-01': 'LRARS',  // สาขารามอินทรา
-      'br-lac-02': 'LSVRS',  // สาขาสุขุมวิท
+    'BPK': { 'default': 'BPKRS' },
+    'VPA': { 'default': 'VPARS' },
+    'LAC': {
+      'br-LAC-01': 'LRARS',  // สาขารามอินทรา
+      'br-LAC-02': 'LSVRS',  // สาขาสุขุมวิท
     },
-    'icck': {
-      'br-icck-01': 'ICKRS',  // สาขาหนองแขม
-      'br-icck-02': 'IKKRS',  // สาขากิ่งแก้ว
+    'ICCK': {
+      'br-ICCK-01': 'ICKRS',  // สาขาหนองแขม
+      'br-ICCK-02': 'IKKRS',  // สาขากิ่งแก้ว
     },
   };
   
@@ -119,9 +119,9 @@ export const generateDocumentNumber = (companyId: string, branchId: string, runn
 export const mockReservations: Reservation[] = [
   {
     id: 'rsv-001',
-    companyId: 'bpk',
-    branchId: 'br-bpk-01',
-    buId: 'bu-bpk-car',
+    companyId: 'BPK',
+    branchId: 'br-BPK-01',
+    buId: 'bu-BPK-car',
     draftNo: 'BPKRS-250100001',
     finalNo: 'BPKRS-250100001',
     documentStatus: 'final',
@@ -176,9 +176,9 @@ export const mockReservations: Reservation[] = [
   },
   {
     id: 'rsv-002',
-    companyId: 'bpk',
-    branchId: 'br-bpk-01',
-    buId: 'bu-bpk-suv',
+    companyId: 'BPK',
+    branchId: 'br-BPK-01',
+    buId: 'bu-BPK-suv',
     draftNo: 'BPKRS-250100002',
     documentStatus: 'draft',
     workflowStage: 'step2',
@@ -219,9 +219,9 @@ export const mockReservations: Reservation[] = [
   },
   {
     id: 'rsv-003',
-    companyId: 'lac',
-    branchId: 'br-lac-01',
-    buId: 'bu-lac-car',
+    companyId: 'LAC',
+    branchId: 'br-LAC-01',
+    buId: 'bu-LAC-car',
     draftNo: 'LRARS-250100001',
     documentStatus: 'draft',
     workflowStage: 'step1',
@@ -261,9 +261,9 @@ export const mockReservations: Reservation[] = [
   },
   {
     id: 'rsv-004',
-    companyId: 'lac',
-    branchId: 'br-lac-02',
-    buId: 'bu-lac-car',
+    companyId: 'LAC',
+    branchId: 'br-LAC-02',
+    buId: 'bu-LAC-car',
     draftNo: 'LSVRS-250100001',
     documentStatus: 'draft',
     workflowStage: 'step1',
@@ -279,7 +279,7 @@ export const mockReservations: Reservation[] = [
       phone: '085-555-6666',
     },
     isBuyerSameAsBooking: true,
-    vehicleModelId: 'lac-nx',
+    vehicleModelId: 'LAC-nx',
     vehicleModelName: 'NX',
     vehicleSubmodelId: 'sub-01',
     vehicleSubmodelName: 'NX 350h Premium',
@@ -305,9 +305,9 @@ export const mockReservations: Reservation[] = [
   },
   {
     id: 'rsv-005',
-    companyId: 'icck',
-    branchId: 'br-icck-01',
-    buId: 'bu-icck-01',
+    companyId: 'ICCK',
+    branchId: 'br-ICCK-01',
+    buId: 'bu-ICCK-01',
     draftNo: 'ICKRS-250100001',
     documentStatus: 'final',
     workflowStage: 'step4',
@@ -347,9 +347,9 @@ export const mockReservations: Reservation[] = [
   },
   {
     id: 'rsv-006',
-    companyId: 'icck',
-    branchId: 'br-icck-02',
-    buId: 'bu-icck-02',
+    companyId: 'ICCK',
+    branchId: 'br-ICCK-02',
+    buId: 'bu-ICCK-02',
     draftNo: 'IKKRS-250100001',
     documentStatus: 'draft',
     workflowStage: 'step2',
@@ -365,7 +365,7 @@ export const mockReservations: Reservation[] = [
       phone: '082-222-3333',
     },
     isBuyerSameAsBooking: true,
-    vehicleModelId: 'icck-mux',
+    vehicleModelId: 'ICCK-mux',
     vehicleModelName: 'MU-X',
     vehicleSubmodelId: 'sub-02',
     vehicleSubmodelName: 'MU-X Ultimate',
@@ -391,9 +391,9 @@ export const mockReservations: Reservation[] = [
   },
   {
     id: 'rsv-007',
-    companyId: 'vpa',
-    branchId: 'br-vpa-01',
-    buId: 'bu-vpa-01',
+    companyId: 'VPA',
+    branchId: 'br-VPA-01',
+    buId: 'bu-VPA-01',
     draftNo: 'VPARS-250100001',
     finalNo: 'VPARS-250100001',
     documentStatus: 'final',
@@ -410,7 +410,7 @@ export const mockReservations: Reservation[] = [
       phone: '084-444-5555',
     },
     isBuyerSameAsBooking: true,
-    vehicleModelId: 'vpa-everest',
+    vehicleModelId: 'VPA-everest',
     vehicleModelName: 'Everest',
     vehicleSubmodelId: 'sub-01',
     vehicleSubmodelName: 'Everest Titanium+',

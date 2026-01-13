@@ -72,10 +72,20 @@ Deno.serve(async (req) => {
     for (const user of testUsers) {
       // Check if user already exists
       const { data: existingUsers } = await supabase.auth.admin.listUsers()
-      const exists = existingUsers?.users?.some(u => u.email === user.email)
+      const existingUser = existingUsers?.users?.find(u => u.email === user.email)
       
-      if (exists) {
-        results.push({ email: user.email, status: 'already exists' })
+      if (existingUser) {
+        // Update password for existing user
+        const { error: updateError } = await supabase.auth.admin.updateUserById(
+          existingUser.id,
+          { password: user.password }
+        )
+        
+        if (updateError) {
+          results.push({ email: user.email, status: 'update error', error: updateError.message })
+        } else {
+          results.push({ email: user.email, status: 'password updated', userId: existingUser.id })
+        }
         continue
       }
 

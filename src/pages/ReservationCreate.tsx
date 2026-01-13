@@ -68,6 +68,7 @@ export default function ReservationCreate() {
   
   // Pricing
   const [purchaseType, setPurchaseType] = useState<PurchaseType>('cash');
+  const [basePrice, setBasePrice] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [depositAmount, setDepositAmount] = useState(0);
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
@@ -102,7 +103,7 @@ export default function ReservationCreate() {
   const companyModels = vehicleModels.filter(m => m.companyId === selectedCompany);
   const selectedSubmodelData = standardSubmodels.find(s => s.id === selectedSubmodel);
 
-  const basePrice = 0; // Will be set from master data later
+  // Calculate net price
   const finalPrice = basePrice - discountAmount;
 
   const handleSaveDraft = () => {
@@ -390,19 +391,29 @@ export default function ReservationCreate() {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>ราคารถ (รวม VAT)</Label>
+                  <Label>ราคารถ (รวม VAT) <span className="text-destructive">*</span></Label>
                   <Input 
-                    value={basePrice > 0 ? `฿${basePrice.toLocaleString()}` : '-'}
-                    readOnly
-                    className="bg-muted/50"
+                    type="text"
+                    inputMode="numeric"
+                    value={basePrice > 0 ? basePrice.toLocaleString() : ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      setBasePrice(value ? Number(value) : 0);
+                    }}
+                    placeholder="กรอกราคารถ"
+                    className="input-focus"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>ส่วนลด</Label>
                   <Input 
-                    type="number"
-                    value={discountAmount}
-                    onChange={(e) => setDiscountAmount(Number(e.target.value))}
+                    type="text"
+                    inputMode="numeric"
+                    value={discountAmount > 0 ? discountAmount.toLocaleString() : ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      setDiscountAmount(value ? Number(value) : 0);
+                    }}
                     placeholder="0"
                     className="input-focus"
                   />
@@ -410,9 +421,10 @@ export default function ReservationCreate() {
                 <div className="space-y-2">
                   <Label>ราคาสุทธิ</Label>
                   <Input 
-                    value={finalPrice ? `฿${finalPrice.toLocaleString()}` : '-'}
+                    value={finalPrice > 0 ? `฿${finalPrice.toLocaleString()}` : '-'}
                     readOnly
-                    className="bg-primary/5 font-semibold text-primary"
+                    disabled
+                    className="bg-primary/10 font-semibold text-primary cursor-not-allowed"
                   />
                 </div>
               </div>

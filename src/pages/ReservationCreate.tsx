@@ -29,8 +29,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   companies, 
   branches, 
-  businessUnits, 
-  vehicleModels 
+  vehicleModels,
+  standardSubmodels 
 } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import type { CustomerType, FuelType, PurchaseType } from '@/types/reservation';
@@ -69,12 +69,10 @@ export default function ReservationCreate() {
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
 
   const companyBranches = branches.filter(b => b.companyId === selectedCompany);
-  const branchBUs = businessUnits.filter(bu => bu.branchId === selectedBranch);
   const companyModels = vehicleModels.filter(m => m.companyId === selectedCompany);
-  const selectedModelData = companyModels.find(m => m.id === selectedModel);
-  const selectedSubmodelData = selectedModelData?.submodels.find(s => s.id === selectedSubmodel);
+  const selectedSubmodelData = standardSubmodels.find(s => s.id === selectedSubmodel);
 
-  const basePrice = selectedSubmodelData?.basePrice || 0;
+  const basePrice = 0; // Will be set from master data later
   const finalPrice = basePrice - discountAmount;
 
   const handleSaveDraft = () => {
@@ -299,9 +297,9 @@ export default function ReservationCreate() {
                       <SelectValue placeholder="เลือกรุ่นย่อย" />
                     </SelectTrigger>
                     <SelectContent>
-                      {selectedModelData?.submodels.map(sub => (
+                      {standardSubmodels.map(sub => (
                         <SelectItem key={sub.id} value={sub.id}>
-                          {sub.name} - ฿{sub.basePrice.toLocaleString()}
+                          {sub.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -317,11 +315,12 @@ export default function ReservationCreate() {
                       <SelectValue placeholder="เลือกสี" />
                     </SelectTrigger>
                     <SelectContent>
-                      {selectedSubmodelData?.colors.map(color => (
-                        <SelectItem key={color.id} value={color.id}>
-                          {color.name}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="white">ขาว</SelectItem>
+                      <SelectItem value="black">ดำ</SelectItem>
+                      <SelectItem value="silver">เงิน</SelectItem>
+                      <SelectItem value="gray">เทา</SelectItem>
+                      <SelectItem value="red">แดง</SelectItem>
+                      <SelectItem value="blue">น้ำเงิน</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -332,11 +331,10 @@ export default function ReservationCreate() {
                       <SelectValue placeholder="เลือกประเภทเชื้อเพลิง" />
                     </SelectTrigger>
                     <SelectContent>
-                      {selectedSubmodelData?.fuelTypes.map(fuel => (
-                        <SelectItem key={fuel} value={fuel}>
-                          {fuel}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="ICE">น้ำมันเบนซิน/ดีเซล</SelectItem>
+                      <SelectItem value="Hybrid">ไฮบริด</SelectItem>
+                      <SelectItem value="PHEV">ปลั๊กอินไฮบริด</SelectItem>
+                      <SelectItem value="EV">ไฟฟ้า (EV)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -354,7 +352,7 @@ export default function ReservationCreate() {
                 <div className="space-y-2">
                   <Label>ราคารถ (รวม VAT)</Label>
                   <Input 
-                    value={basePrice ? `฿${basePrice.toLocaleString()}` : '-'}
+                    value={basePrice > 0 ? `฿${basePrice.toLocaleString()}` : '-'}
                     readOnly
                     className="bg-muted/50"
                   />

@@ -31,73 +31,43 @@ export const businessUnits: BusinessUnit[] = [
   { id: 'bu-lac-car', branchId: 'br-lac-01', code: 'CAR', name: 'รถยนต์นั่ง' },
 ];
 
+// Standard submodels for all companies
+export const standardSubmodels = [
+  { id: 'sub-1', name: 'รุ่นย่อย 1' },
+  { id: 'sub-2', name: 'รุ่นย่อย 2' },
+  { id: 'sub-3', name: 'รุ่นย่อย 3' },
+];
+
 export const vehicleModels: VehicleModel[] = [
-  {
-    id: 'model-01',
-    companyId: 'bpk',
-    name: 'City',
-    submodels: [
-      {
-        id: 'sub-01',
-        modelId: 'model-01',
-        name: 'City S',
-        basePrice: 579000,
-        colors: [
-          { id: 'c1', name: 'ขาวมุก', code: 'WH' },
-          { id: 'c2', name: 'ดำเมทัลลิก', code: 'BK' },
-          { id: 'c3', name: 'เทาไทเทเนียม', code: 'GY' },
-        ],
-        fuelTypes: ['ICE', 'Hybrid'],
-      },
-      {
-        id: 'sub-02',
-        modelId: 'model-01',
-        name: 'City RS',
-        basePrice: 739000,
-        colors: [
-          { id: 'c1', name: 'ขาวมุก', code: 'WH' },
-          { id: 'c4', name: 'แดงอิกไนต์', code: 'RD' },
-        ],
-        fuelTypes: ['ICE', 'Hybrid'],
-      },
-    ],
-  },
-  {
-    id: 'model-02',
-    companyId: 'bpk',
-    name: 'CR-V',
-    submodels: [
-      {
-        id: 'sub-03',
-        modelId: 'model-02',
-        name: 'CR-V 2.0 S',
-        basePrice: 1399000,
-        colors: [
-          { id: 'c1', name: 'ขาวมุก', code: 'WH' },
-          { id: 'c5', name: 'น้ำเงินออบซิเดียน', code: 'BL' },
-        ],
-        fuelTypes: ['ICE', 'Hybrid', 'PHEV'],
-      },
-    ],
-  },
-  {
-    id: 'model-03',
-    companyId: 'bpk',
-    name: 'Accord',
-    submodels: [
-      {
-        id: 'sub-04',
-        modelId: 'model-03',
-        name: 'Accord EL',
-        basePrice: 1529000,
-        colors: [
-          { id: 'c1', name: 'ขาวมุก', code: 'WH' },
-          { id: 'c2', name: 'ดำเมทัลลิก', code: 'BK' },
-        ],
-        fuelTypes: ['Hybrid'],
-      },
-    ],
-  },
+  // BPK - Nissan
+  { id: 'bpk-navara', companyId: 'bpk', name: 'นาวาร่า', submodels: [] },
+  { id: 'bpk-xtrial', companyId: 'bpk', name: 'เอ็กเทรล', submodels: [] },
+  { id: 'bpk-serena', companyId: 'bpk', name: 'เซเรน่า', submodels: [] },
+  { id: 'bpk-kicks', companyId: 'bpk', name: 'คิกส์', submodels: [] },
+  { id: 'bpk-almera', companyId: 'bpk', name: 'อัลเมร่า', submodels: [] },
+  { id: 'bpk-terra', companyId: 'bpk', name: 'เทอร์ร่า', submodels: [] },
+  { id: 'bpk-leaf', companyId: 'bpk', name: 'ลีฟ', submodels: [] },
+  
+  // ICCK - Isuzu
+  { id: 'icck-vcross', companyId: 'icck', name: 'V-Cross', submodels: [] },
+  { id: 'icck-spark', companyId: 'icck', name: 'Spark', submodels: [] },
+  { id: 'icck-xseries', companyId: 'icck', name: 'X-Series', submodels: [] },
+  { id: 'icck-pickup4', companyId: 'icck', name: 'Pick Up 4 Doors', submodels: [] },
+  { id: 'icck-pickup2', companyId: 'icck', name: 'Pick Up 2 Doors', submodels: [] },
+  { id: 'icck-mux-ra', companyId: 'icck', name: 'MU-X RA', submodels: [] },
+  { id: 'icck-mux', companyId: 'icck', name: 'MU-X', submodels: [] },
+  
+  // LAC - Lexus
+  { id: 'lac-lbx', companyId: 'lac', name: 'LBX', submodels: [] },
+  { id: 'lac-ux', companyId: 'lac', name: 'UX', submodels: [] },
+  { id: 'lac-nx', companyId: 'lac', name: 'NX', submodels: [] },
+  { id: 'lac-rz', companyId: 'lac', name: 'RZ', submodels: [] },
+  { id: 'lac-lx', companyId: 'lac', name: 'LX', submodels: [] },
+  { id: 'lac-rx', companyId: 'lac', name: 'RX', submodels: [] },
+  
+  // VPA - Ford
+  { id: 'vpa-everest', companyId: 'vpa', name: 'Everest', submodels: [] },
+  { id: 'vpa-ranger', companyId: 'vpa', name: 'Ranger', submodels: [] },
 ];
 
 export const currentUser: User = {

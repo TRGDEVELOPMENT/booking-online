@@ -96,10 +96,8 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
 
   const selectedCompanyData = companies.find(c => c.id === selectedCompany);
   
-  // Get company name from profile
-  const userCompany = profile?.company_id 
-    ? companies.find(c => c.id === profile.company_id)
-    : null;
+  // Get company name from selectedCompany (login selection)
+  const displayCompany = companies.find(c => c.id === selectedCompany);
 
   // Map role to Thai display name
   const getRoleDisplayName = (role: string) => {
@@ -149,7 +147,7 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
             </div>
             <div>
               <h1 className="text-lg font-bold text-sidebar-foreground">
-                {userCompany?.name || 'ชื่อบริษัท'}
+                {displayCompany?.name || 'ชื่อบริษัท'}
               </h1>
               <p className="text-xs text-sidebar-foreground/60">ระบบบันทึกจอง Online</p>
             </div>

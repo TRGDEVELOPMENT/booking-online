@@ -47,6 +47,36 @@ export type Database = {
         }
         Relationships: []
       }
+      engine_sizes: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string
+          id: string
+          no: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description: string
+          id?: string
+          no?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          no?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       models: {
         Row: {
           company_id: string

@@ -52,6 +52,16 @@ export default function Login() {
       }
 
       if (data.user) {
+        // Update user's profile with selected company
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ company_id: company })
+          .eq('user_id', data.user.id);
+
+        if (updateError) {
+          console.error('Failed to update company:', updateError);
+        }
+
         // Save selected company to localStorage
         localStorage.setItem('selectedCompany', company);
         toast.success('เข้าสู่ระบบสำเร็จ');

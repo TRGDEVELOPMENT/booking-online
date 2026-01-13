@@ -72,7 +72,6 @@ const menuItems = [
     icon: Settings, 
     path: '/settings',
     subItems: [
-      { id: 'settings-home', label: 'ภาพรวม', path: '/settings' },
       { id: 'vehicle-types', label: 'ชนิดรถยนต์', path: '/settings/vehicle-types' },
       { id: 'models', label: 'รุ่น (Model)', path: '/settings/models' },
       { id: 'submodels', label: 'รุ่นย่อย (Sub Model)', path: '/settings/submodels' },

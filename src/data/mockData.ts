@@ -16,13 +16,12 @@ export const companies: Company[] = [
 ];
 
 export const branches: Branch[] = [
-  { id: 'br-bpk-01', companyId: 'bpk', code: 'BPK-HQ', name: 'สำนักงานใหญ่' },
-  { id: 'br-bpk-02', companyId: 'bpk', code: 'BPK-RB', name: 'สาขารามคำแหง' },
-  { id: 'br-bpk-03', companyId: 'bpk', code: 'BPK-BN', name: 'สาขาบางนา' },
-  { id: 'br-lac-01', companyId: 'lac', code: 'LAC-CM', name: 'สาขาเชียงใหม่' },
-  { id: 'br-lac-02', companyId: 'lac', code: 'LAC-LP', name: 'สาขาลำปาง' },
-  { id: 'br-icck-01', companyId: 'icck', code: 'ICCK-KK', name: 'สาขาขอนแก่น' },
-  { id: 'br-vpa-01', companyId: 'vpa', code: 'VPA-PK', name: 'สาขาภูเก็ต' },
+  { id: 'br-bpk-01', companyId: 'bpk', code: 'BPK-HQ', name: 'สำนักงานใหญ่ (ปิ่นเกล้า)' },
+  { id: 'br-lac-01', companyId: 'lac', code: 'LAC-RI', name: 'สาขารามอินทรา' },
+  { id: 'br-lac-02', companyId: 'lac', code: 'LAC-SK', name: 'สาขาสุขุมวิท' },
+  { id: 'br-icck-01', companyId: 'icck', code: 'ICCK-NK', name: 'สาขาหนองแขม' },
+  { id: 'br-icck-02', companyId: 'icck', code: 'ICCK-KK', name: 'สาขากิ่งแก้ว' },
+  { id: 'br-vpa-01', companyId: 'vpa', code: 'VPA-NK', name: 'สาขาหนองแขม' },
 ];
 
 export const businessUnits: BusinessUnit[] = [

@@ -9,21 +9,30 @@ import {
   Gift, 
   Wrench, 
   Award,
-  Settings
+  Settings,
+  type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const settingsMenuItems = [
-  { id: 'vehicle-types', label: 'ชนิดรถยนต์', icon: Car, path: '/settings/vehicle-types' },
-  { id: 'models', label: 'รุ่น (Model)', icon: Layers, path: '/settings/models' },
-  { id: 'submodels', label: 'รุ่นย่อย (Sub Model)', icon: Layers, path: '/settings/submodels' },
-  { id: 'colors', label: 'สี', icon: Palette, path: '/settings/colors' },
-  { id: 'engine-sizes', label: 'ขนาด/กำลังเครื่องยนต์', icon: Gauge, path: '/settings/engine-sizes' },
-  { id: 'fuel-types', label: 'ประเภทเชื้อเพลิง', icon: Fuel, path: '/settings/fuel-types' },
-  { id: 'standard-prices', label: 'ราคามาตรฐานตามรุ่นรถ', icon: DollarSign, path: '/settings/standard-prices' },
-  { id: 'freebies', label: 'ของแถม', icon: Gift, path: '/settings/freebies' },
-  { id: 'accessories', label: 'อุปกรณ์ติดตั้งเพิ่มเติม', icon: Wrench, path: '/settings/accessories' },
-  { id: 'benefits', label: 'สิทธิ์ประโยชน์อื่นๆ', icon: Award, path: '/settings/benefits' },
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  path: string;
+  color: string;
+}
+
+const settingsMenuItems: MenuItem[] = [
+  { id: 'vehicle-types', label: 'ชนิดรถยนต์', icon: Car, path: '/settings/vehicle-types', color: 'text-blue-500' },
+  { id: 'models', label: 'รุ่น (Model)', icon: Layers, path: '/settings/models', color: 'text-indigo-500' },
+  { id: 'submodels', label: 'รุ่นย่อย (Sub Model)', icon: Layers, path: '/settings/submodels', color: 'text-violet-500' },
+  { id: 'colors', label: 'สี', icon: Palette, path: '/settings/colors', color: 'text-pink-500' },
+  { id: 'engine-sizes', label: 'ขนาด/กำลังเครื่องยนต์', icon: Gauge, path: '/settings/engine-sizes', color: 'text-orange-500' },
+  { id: 'fuel-types', label: 'ประเภทเชื้อเพลิง', icon: Fuel, path: '/settings/fuel-types', color: 'text-green-500' },
+  { id: 'standard-prices', label: 'ราคามาตรฐานตามรุ่นรถ', icon: DollarSign, path: '/settings/standard-prices', color: 'text-emerald-500' },
+  { id: 'freebies', label: 'ของแถม', icon: Gift, path: '/settings/freebies', color: 'text-red-500' },
+  { id: 'accessories', label: 'อุปกรณ์ติดตั้งเพิ่มเติม', icon: Wrench, path: '/settings/accessories', color: 'text-amber-500' },
+  { id: 'benefits', label: 'สิทธิ์ประโยชน์อื่นๆ', icon: Award, path: '/settings/benefits', color: 'text-yellow-500' },
 ];
 
 export default function SettingsLayout() {
@@ -55,7 +64,7 @@ export default function SettingsLayout() {
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon className={cn("w-4 h-4", isActive ? "text-primary-foreground" : item.color)} />
                       {item.label}
                     </Link>
                   </li>

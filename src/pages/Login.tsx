@@ -52,6 +52,8 @@ export default function Login() {
       }
 
       if (data.user) {
+        // Save selected company to localStorage
+        localStorage.setItem('selectedCompany', company);
         toast.success('เข้าสู่ระบบสำเร็จ');
         navigate('/');
       }

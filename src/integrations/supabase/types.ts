@@ -44,6 +44,108 @@ export type Database = {
         }
         Relationships: []
       }
+      reservations: {
+        Row: {
+          accessories: Json | null
+          benefits: Json | null
+          branch_id: string | null
+          buyer_address: string | null
+          buyer_id_card: string | null
+          buyer_name: string | null
+          buyer_phone: string | null
+          color: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          customer_address: string | null
+          customer_email: string | null
+          customer_id_card: string | null
+          customer_name: string
+          customer_phone: string | null
+          customer_type: string
+          deposit_amount: number | null
+          discount: number | null
+          document_number: string
+          expected_delivery_date: string | null
+          freebies: Json | null
+          fuel_type: string | null
+          id: string
+          list_price: number | null
+          model: string | null
+          net_price: number | null
+          status: string
+          submodel: string | null
+          updated_at: string
+          vehicle_type: string | null
+        }
+        Insert: {
+          accessories?: Json | null
+          benefits?: Json | null
+          branch_id?: string | null
+          buyer_address?: string | null
+          buyer_id_card?: string | null
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          color?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_id_card?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          customer_type?: string
+          deposit_amount?: number | null
+          discount?: number | null
+          document_number: string
+          expected_delivery_date?: string | null
+          freebies?: Json | null
+          fuel_type?: string | null
+          id?: string
+          list_price?: number | null
+          model?: string | null
+          net_price?: number | null
+          status?: string
+          submodel?: string | null
+          updated_at?: string
+          vehicle_type?: string | null
+        }
+        Update: {
+          accessories?: Json | null
+          benefits?: Json | null
+          branch_id?: string | null
+          buyer_address?: string | null
+          buyer_id_card?: string | null
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          color?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_id_card?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          customer_type?: string
+          deposit_amount?: number | null
+          discount?: number | null
+          document_number?: string
+          expected_delivery_date?: string | null
+          freebies?: Json | null
+          fuel_type?: string | null
+          id?: string
+          list_price?: number | null
+          model?: string | null
+          net_price?: number | null
+          status?: string
+          submodel?: string | null
+          updated_at?: string
+          vehicle_type?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -67,6 +169,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

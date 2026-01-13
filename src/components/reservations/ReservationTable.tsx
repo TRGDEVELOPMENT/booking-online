@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Eye, Edit, Trash2, MoreHorizontal } from 'lucide-react';
+import { Eye, Edit, Trash2, MoreHorizontal, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -182,13 +182,23 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange }: 
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="w-4 h-4 mr-2" />
-                          ดูรายละเอียด
+                        <DropdownMenuItem asChild>
+                          <Link to={`/reservations/${reservation.id}`}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            ดูรายละเอียด
+                          </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="w-4 h-4 mr-2" />
-                          แก้ไข
+                        <DropdownMenuItem asChild>
+                          <Link to={`/reservations/${reservation.id}/edit`}>
+                            <Edit className="w-4 h-4 mr-2" />
+                            แก้ไข
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to={`/reservations/${reservation.id}/print`}>
+                            <Printer className="w-4 h-4 mr-2" />
+                            พิมพ์สัญญา
+                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="text-destructive">

@@ -9,7 +9,11 @@ import {
   Gift, 
   Paperclip,
   Building2,
-  Users
+  Users,
+  Wrench,
+  Star,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
@@ -68,6 +72,32 @@ export default function ReservationCreate() {
   const [depositAmount, setDepositAmount] = useState(0);
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
 
+  // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์
+  const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
+  const [accessories, setAccessories] = useState<Array<{ id: number; name: string; value: number }>>([]);
+  const [benefits, setBenefits] = useState<Array<{ id: number; name: string; value: number }>>([]);
+
+  const addItem = (type: 'freebies' | 'accessories' | 'benefits') => {
+    const newItem = { id: Date.now(), name: '', value: 0 };
+    if (type === 'freebies') setFreebies([...freebies, newItem]);
+    else if (type === 'accessories') setAccessories([...accessories, newItem]);
+    else setBenefits([...benefits, newItem]);
+  };
+
+  const removeItem = (type: 'freebies' | 'accessories' | 'benefits', id: number) => {
+    if (type === 'freebies') setFreebies(freebies.filter(item => item.id !== id));
+    else if (type === 'accessories') setAccessories(accessories.filter(item => item.id !== id));
+    else setBenefits(benefits.filter(item => item.id !== id));
+  };
+
+  const updateItem = (type: 'freebies' | 'accessories' | 'benefits', id: number, field: 'name' | 'value', value: string | number) => {
+    const updateFn = (items: Array<{ id: number; name: string; value: number }>) =>
+      items.map(item => item.id === id ? { ...item, [field]: value } : item);
+    
+    if (type === 'freebies') setFreebies(updateFn(freebies));
+    else if (type === 'accessories') setAccessories(updateFn(accessories));
+    else setBenefits(updateFn(benefits));
+  };
   const companyBranches = branches.filter(b => b.companyId === selectedCompany);
   const companyModels = vehicleModels.filter(m => m.companyId === selectedCompany);
   const selectedSubmodelData = standardSubmodels.find(s => s.id === selectedSubmodel);
@@ -455,16 +485,149 @@ export default function ReservationCreate() {
               </div>
             </div>
 
-            {/* Section 6: Freebies/Items (Collapsed by default) */}
+            {/* Section 6: ของแถม */}
             <div className="form-section">
               <div className="form-section-header flex items-center gap-2">
                 <Gift className="w-5 h-5" />
-                ของแถม / อุปกรณ์ / สิทธิประโยชน์
+                ของแถม
               </div>
-              <div className="p-4 bg-muted/30 rounded-lg border border-dashed border-border text-center">
-                <p className="text-muted-foreground">ยังไม่มีรายการ</p>
-                <Button variant="outline" size="sm" className="mt-2">
-                  + เพิ่มรายการ
+              <div className="space-y-3">
+                {freebies.length > 0 && (
+                  <div className="grid grid-cols-12 gap-2 text-sm font-medium text-muted-foreground px-2">
+                    <div className="col-span-1">ลำดับที่</div>
+                    <div className="col-span-7">รายการ</div>
+                    <div className="col-span-3">มูลค่า</div>
+                    <div className="col-span-1"></div>
+                  </div>
+                )}
+                {freebies.map((item, index) => (
+                  <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
+                    <div className="col-span-1 text-center text-sm text-muted-foreground">{index + 1}</div>
+                    <div className="col-span-7">
+                      <Input 
+                        value={item.name}
+                        onChange={(e) => updateItem('freebies', item.id, 'name', e.target.value)}
+                        placeholder="ชื่อรายการ"
+                        className="input-focus"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Input 
+                        type="number"
+                        value={item.value || ''}
+                        onChange={(e) => updateItem('freebies', item.id, 'value', Number(e.target.value))}
+                        placeholder="0"
+                        className="input-focus"
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Button variant="ghost" size="icon" onClick={() => removeItem('freebies', item.id)} className="text-destructive hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={() => addItem('freebies')} className="gap-1">
+                  <Plus className="w-4 h-4" />
+                  เพิ่มรายการ
+                </Button>
+              </div>
+            </div>
+
+            {/* Section 7: อุปกรณ์ตกแต่ง */}
+            <div className="form-section">
+              <div className="form-section-header flex items-center gap-2">
+                <Wrench className="w-5 h-5" />
+                อุปกรณ์ตกแต่ง
+              </div>
+              <div className="space-y-3">
+                {accessories.length > 0 && (
+                  <div className="grid grid-cols-12 gap-2 text-sm font-medium text-muted-foreground px-2">
+                    <div className="col-span-1">ลำดับที่</div>
+                    <div className="col-span-7">รายการ</div>
+                    <div className="col-span-3">มูลค่า</div>
+                    <div className="col-span-1"></div>
+                  </div>
+                )}
+                {accessories.map((item, index) => (
+                  <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
+                    <div className="col-span-1 text-center text-sm text-muted-foreground">{index + 1}</div>
+                    <div className="col-span-7">
+                      <Input 
+                        value={item.name}
+                        onChange={(e) => updateItem('accessories', item.id, 'name', e.target.value)}
+                        placeholder="ชื่อรายการ"
+                        className="input-focus"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Input 
+                        type="number"
+                        value={item.value || ''}
+                        onChange={(e) => updateItem('accessories', item.id, 'value', Number(e.target.value))}
+                        placeholder="0"
+                        className="input-focus"
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Button variant="ghost" size="icon" onClick={() => removeItem('accessories', item.id)} className="text-destructive hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={() => addItem('accessories')} className="gap-1">
+                  <Plus className="w-4 h-4" />
+                  เพิ่มรายการ
+                </Button>
+              </div>
+            </div>
+
+            {/* Section 8: สิทธิประโยชน์อื่นๆ */}
+            <div className="form-section">
+              <div className="form-section-header flex items-center gap-2">
+                <Star className="w-5 h-5" />
+                สิทธิประโยชน์อื่นๆ
+              </div>
+              <div className="space-y-3">
+                {benefits.length > 0 && (
+                  <div className="grid grid-cols-12 gap-2 text-sm font-medium text-muted-foreground px-2">
+                    <div className="col-span-1">ลำดับที่</div>
+                    <div className="col-span-7">รายการ</div>
+                    <div className="col-span-3">มูลค่า</div>
+                    <div className="col-span-1"></div>
+                  </div>
+                )}
+                {benefits.map((item, index) => (
+                  <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
+                    <div className="col-span-1 text-center text-sm text-muted-foreground">{index + 1}</div>
+                    <div className="col-span-7">
+                      <Input 
+                        value={item.name}
+                        onChange={(e) => updateItem('benefits', item.id, 'name', e.target.value)}
+                        placeholder="ชื่อรายการ"
+                        className="input-focus"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Input 
+                        type="number"
+                        value={item.value || ''}
+                        onChange={(e) => updateItem('benefits', item.id, 'value', Number(e.target.value))}
+                        placeholder="0"
+                        className="input-focus"
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Button variant="ghost" size="icon" onClick={() => removeItem('benefits', item.id)} className="text-destructive hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={() => addItem('benefits')} className="gap-1">
+                  <Plus className="w-4 h-4" />
+                  เพิ่มรายการ
                 </Button>
               </div>
             </div>

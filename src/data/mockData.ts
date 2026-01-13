@@ -9,10 +9,10 @@ import type {
 } from '@/types/reservation';
 
 export const companies: Company[] = [
-  { id: 'bpk', code: 'BPK', name: 'บางกอก พรีเมี่ยม คาร์' },
-  { id: 'lac', code: 'LAC', name: 'ลานนา ออโต้ เซ็นเตอร์' },
-  { id: 'icck', code: 'ICCK', name: 'ไอซีซี ขอนแก่น' },
-  { id: 'vpa', code: 'VPA', name: 'วีพีเอ ออโต้' },
+  { id: 'bpk', code: 'BPK', name: 'บริษัท บิซ พีเค จำกัด' },
+  { id: 'lac', code: 'LAC', name: 'บริษัท เลกซัส ออโต้ ซิตี้ จำกัด' },
+  { id: 'icck', code: 'ICCK', name: 'บริษัท อีซูซุชัยเจริญกิจมอเตอร์ส จำกัด' },
+  { id: 'vpa', code: 'VPA', name: 'บริษัท วี.พี. ออโต้ เอ็นเตอร์ไพรส์ จำกัด' },
 ];
 
 export const branches: Branch[] = [

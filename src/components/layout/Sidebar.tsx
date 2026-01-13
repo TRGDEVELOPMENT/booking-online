@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { companies } from '@/data/mockData';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Select,
   SelectContent,
@@ -75,6 +76,8 @@ const menuItems = [
 
 export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { profile, roles, signOut } = useAuth();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['reservations']);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -92,6 +95,28 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
   };
 
   const selectedCompanyData = companies.find(c => c.id === selectedCompany);
+  
+  // Get company name from profile
+  const userCompany = profile?.company_id 
+    ? companies.find(c => c.id === profile.company_id)
+    : null;
+
+  // Map role to Thai display name
+  const getRoleDisplayName = (role: string) => {
+    const roleMap: Record<string, string> = {
+      'sale': 'ที่ปรึกษาการขาย',
+      'cashier': 'แคชเชียร์',
+      'sale_supervisor': 'หัวหน้าทีมขาย',
+      'sale_manager': 'ผู้จัดการฝ่ายขาย',
+      'it': 'IT',
+    };
+    return roleMap[role] || role;
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
 
   return (
     <>
@@ -123,8 +148,10 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
               <Car className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-sidebar-foreground">ชื่อบริษัท</h1>
-              <p className="text-xs text-sidebar-foreground/60">ระบบใบจองรถยนต์</p>
+              <h1 className="text-lg font-bold text-sidebar-foreground">
+                {userCompany?.name || 'ชื่อบริษัท'}
+              </h1>
+              <p className="text-xs text-sidebar-foreground/60">ระบบบันทึกจอง Online</p>
             </div>
           </div>
         </div>
@@ -224,17 +251,21 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
         <div className="p-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3 p-3 rounded-lg bg-sidebar-accent">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-vivid to-primary flex items-center justify-center text-white font-semibold">
-              ส
+              {profile?.full_name?.charAt(0) || 'U'}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-sidebar-foreground truncate">
-                สมชาย ใจดี
+                {profile?.full_name || 'ผู้ใช้งาน'}
               </p>
               <p className="text-xs text-sidebar-foreground/60">
-                ที่ปรึกษาการขาย
+                {roles[0] ? getRoleDisplayName(roles[0].role) : 'ไม่ระบุตำแหน่ง'}
               </p>
             </div>
-            <button className="p-2 rounded-lg hover:bg-sidebar-border transition-colors text-sidebar-foreground/60 hover:text-sidebar-foreground">
+            <button 
+              onClick={handleLogout}
+              className="p-2 rounded-lg hover:bg-sidebar-border transition-colors text-sidebar-foreground/60 hover:text-sidebar-foreground"
+              title="ออกจากระบบ"
+            >
               <LogOut className="w-4 h-4" />
             </button>
           </div>

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Plus, Pencil, Trash2, Search, Download, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -44,6 +44,8 @@ export default function ColorsPage() {
     hex_color: '#000000',
     status: 'active'
   });
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchColors = async () => {
     try {
@@ -144,6 +146,108 @@ export default function ColorsPage() {
     }
   };
 
+  const handleExport = () => {
+    if (colors.length === 0) {
+      toast.error('ไม่มีข้อมูลสำหรับ Export');
+      return;
+    }
+
+    const headers = ['No', 'Description', 'Hex Color', 'Status'];
+    const csvContent = [
+      headers.join(','),
+      ...colors.map(item => 
+        [item.no, `"${item.description}"`, item.hex_color, item.status].join(',')
+      )
+    ].join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `colors_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    toast.success('Export ข้อมูลสำเร็จ');
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv')) {
+      toast.error('กรุณาเลือกไฟล์ CSV');
+      return;
+    }
+
+    setImporting(true);
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      try {
+        const text = e.target?.result as string;
+        const lines = text.split('\n').filter(line => line.trim());
+        
+        if (lines.length < 2) {
+          toast.error('ไฟล์ไม่มีข้อมูล');
+          setImporting(false);
+          return;
+        }
+
+        // Skip header row
+        const dataRows = lines.slice(1);
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const row of dataRows) {
+          // Parse CSV row (handle quoted values)
+          const matches = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+          if (!matches || matches.length < 4) continue;
+
+          const description = matches[1]?.replace(/^"|"$/g, '').trim();
+          const hexColor = matches[2]?.trim() || '#000000';
+          const status = matches[3]?.trim().toLowerCase() === 'active' ? 'active' : 'inactive';
+
+          if (!description) continue;
+
+          const { error } = await supabase
+            .from('colors')
+            .insert({
+              description,
+              hex_color: hexColor,
+              status,
+              company_id: profile?.company_id || '',
+            });
+
+          if (error) {
+            errorCount++;
+          } else {
+            successCount++;
+          }
+        }
+
+        if (successCount > 0) {
+          toast.success(`Import สำเร็จ ${successCount} รายการ`);
+          fetchColors();
+        }
+        if (errorCount > 0) {
+          toast.error(`Import ไม่สำเร็จ ${errorCount} รายการ`);
+        }
+      } catch (error: any) {
+        toast.error('เกิดข้อผิดพลาดในการ Import: ' + error.message);
+      } finally {
+        setImporting(false);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -159,10 +263,27 @@ export default function ColorsPage() {
           <h1 className="text-2xl font-bold text-foreground">สี</h1>
           <p className="text-muted-foreground">จัดการข้อมูลสีรถยนต์</p>
         </div>
-        <Button onClick={handleAdd}>
-          <Plus className="w-4 h-4 mr-2" />
-          เพิ่มสี
-        </Button>
+        <div className="flex gap-2">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImport}
+            accept=".csv"
+            className="hidden"
+          />
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+          <Button variant="outline" onClick={handleImportClick} disabled={importing}>
+            <Upload className="w-4 h-4 mr-2" />
+            {importing ? 'กำลัง Import...' : 'Import'}
+          </Button>
+          <Button onClick={handleAdd}>
+            <Plus className="w-4 h-4 mr-2" />
+            เพิ่มสี
+          </Button>
+        </div>
       </div>
 
       <div className="bg-card rounded-xl border border-border">

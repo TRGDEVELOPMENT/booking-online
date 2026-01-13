@@ -123,7 +123,7 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
               <Car className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-sidebar-foreground">Dealers</h1>
+              <h1 className="text-lg font-bold text-sidebar-foreground">ชื่อบริษัท</h1>
               <p className="text-xs text-sidebar-foreground/60">ระบบใบจองรถยนต์</p>
             </div>
           </div>

@@ -164,6 +164,33 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicle_types: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string
+          id: string
+          no: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description: string
+          id?: string
+          no?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          no?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -9,88 +9,144 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
+} from "@/components/ui/dialog";
+import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface VehicleType {
   id: string;
-  code: string;
-  name: string;
-  description?: string;
+  no: number;
+  description: string;
+  company_id: string;
 }
 
-// Mock data - will be replaced with Supabase
-const mockVehicleTypes: VehicleType[] = [
-  { id: '1', code: 'SEDAN', name: 'รถเก๋ง', description: 'รถยนต์นั่งส่วนบุคคล 4 ประตู' },
-  { id: '2', code: 'SUV', name: 'รถ SUV', description: 'รถอเนกประสงค์' },
-  { id: '3', code: 'PICKUP', name: 'รถกระบะ', description: 'รถบรรทุกขนาดเล็ก' },
-  { id: '4', code: 'HATCHBACK', name: 'รถแฮทช์แบ็ก', description: 'รถเก๋งท้ายตัด' },
-  { id: '5', code: 'MPV', name: 'รถ MPV', description: 'รถอเนกประสงค์สำหรับครอบครัว' },
-];
-
 export default function VehicleTypesPage() {
-  const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>(mockVehicleTypes);
-  const [searchTerm, setSearchTerm] = useState('');
+  const { user } = useAuth();
+  const [items, setItems] = useState<VehicleType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<VehicleType | null>(null);
-  const [formData, setFormData] = useState({ code: '', name: '', description: '' });
+  const [formData, setFormData] = useState({
+    description: "",
+  });
 
-  const filteredItems = vehicleTypes.filter(
-    item => item.name.includes(searchTerm) || item.code.includes(searchTerm.toUpperCase())
+  // Fetch data from database
+  const fetchVehicleTypes = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('vehicle_types')
+      .select('*')
+      .order('no', { ascending: true });
+    
+    if (error) {
+      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+      console.error('Error fetching vehicle types:', error);
+    } else {
+      setItems(data || []);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchVehicleTypes();
+  }, []);
+
+  const filteredItems = items.filter(
+    (item) =>
+      item.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAdd = () => {
     setEditingItem(null);
-    setFormData({ code: '', name: '', description: '' });
+    setFormData({ description: "" });
     setIsDialogOpen(true);
   };
 
   const handleEdit = (item: VehicleType) => {
     setEditingItem(item);
-    setFormData({ code: item.code, name: item.name, description: item.description || '' });
+    setFormData({ description: item.description });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('คุณต้องการลบรายการนี้หรือไม่?')) {
-      setVehicleTypes(prev => prev.filter(item => item.id !== id));
-      toast.success('ลบข้อมูลเรียบร้อยแล้ว');
+  const handleDelete = async (id: string) => {
+    if (confirm("คุณต้องการลบรายการนี้หรือไม่?")) {
+      const { error } = await supabase
+        .from('vehicle_types')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        toast.error('เกิดข้อผิดพลาดในการลบข้อมูล');
+        console.error('Error deleting vehicle type:', error);
+      } else {
+        toast.success("ลบข้อมูลสำเร็จ");
+        fetchVehicleTypes();
+      }
     }
   };
 
-  const handleSubmit = () => {
-    if (!formData.code || !formData.name) {
-      toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
+  const handleSubmit = async () => {
+    if (!formData.description.trim()) {
+      toast.error("กรุณากรอกรายละเอียด");
       return;
     }
 
     if (editingItem) {
-      setVehicleTypes(prev =>
-        prev.map(item =>
-          item.id === editingItem.id
-            ? { ...item, ...formData }
-            : item
-        )
-      );
-      toast.success('แก้ไขข้อมูลเรียบร้อยแล้ว');
+      // Update existing
+      const { error } = await supabase
+        .from('vehicle_types')
+        .update({ description: formData.description })
+        .eq('id', editingItem.id);
+      
+      if (error) {
+        toast.error('เกิดข้อผิดพลาดในการแก้ไขข้อมูล');
+        console.error('Error updating vehicle type:', error);
+      } else {
+        toast.success("แก้ไขข้อมูลสำเร็จ");
+        fetchVehicleTypes();
+      }
     } else {
-      const newItem: VehicleType = {
-        id: Date.now().toString(),
-        ...formData,
-      };
-      setVehicleTypes(prev => [...prev, newItem]);
-      toast.success('เพิ่มข้อมูลเรียบร้อยแล้ว');
+      // Get user's company_id from profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('company_id')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (!profile?.company_id) {
+        toast.error('ไม่พบข้อมูล Company');
+        return;
+      }
+
+      // Insert new
+      const { error } = await supabase
+        .from('vehicle_types')
+        .insert({ 
+          description: formData.description,
+          company_id: profile.company_id
+        });
+      
+      if (error) {
+        toast.error('เกิดข้อผิดพลาดในการเพิ่มข้อมูล');
+        console.error('Error inserting vehicle type:', error);
+      } else {
+        toast.success("เพิ่มข้อมูลสำเร็จ");
+        fetchVehicleTypes();
+      }
     }
 
     setIsDialogOpen(false);
+    setFormData({ description: "" });
   };
 
   return (
@@ -122,25 +178,29 @@ export default function VehicleTypesPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">รหัส</TableHead>
-              <TableHead>ชื่อชนิดรถยนต์</TableHead>
-              <TableHead>คำอธิบาย</TableHead>
-              <TableHead className="w-[100px] text-center">จัดการ</TableHead>
+              <TableHead className="w-[100px]">No.</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead className="w-[120px] text-center">จัดการ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredItems.length === 0 ? (
+            {loading ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                  กำลังโหลด...
+                </TableCell>
+              </TableRow>
+            ) : filteredItems.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>
             ) : (
               filteredItems.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-mono">{item.code}</TableCell>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell className="text-muted-foreground">{item.description}</TableCell>
+                  <TableCell className="font-medium">{item.no}</TableCell>
+                  <TableCell>{item.description}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-1">
                       <Button
@@ -171,35 +231,19 @@ export default function VehicleTypesPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingItem ? 'แก้ไขชนิดรถยนต์' : 'เพิ่มชนิดรถยนต์'}
+              {editingItem ? "แก้ไขชนิดรถยนต์" : "เพิ่มชนิดรถยนต์"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="code">รหัส</Label>
-              <Input
-                id="code"
-                value={formData.code}
-                onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                placeholder="เช่น SEDAN, SUV"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="name">ชื่อชนิดรถยนต์</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="เช่น รถเก๋ง, รถ SUV"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">คำอธิบาย</Label>
+              <Label htmlFor="description">Description</Label>
               <Input
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="คำอธิบายเพิ่มเติม"
+                onChange={(e) =>
+                  setFormData({ description: e.target.value })
+                }
+                placeholder="กรอกรายละเอียดชนิดรถยนต์"
               />
             </div>
           </div>
@@ -208,7 +252,7 @@ export default function VehicleTypesPage() {
               ยกเลิก
             </Button>
             <Button onClick={handleSubmit}>
-              {editingItem ? 'บันทึก' : 'เพิ่ม'}
+              {editingItem ? "บันทึก" : "เพิ่ม"}
             </Button>
           </DialogFooter>
         </DialogContent>

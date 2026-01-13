@@ -3,7 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   FileText, 
-  FilePlus, 
+  List,
+  FilePlus2, 
   Users, 
   Car, 
   Settings, 
@@ -13,7 +14,16 @@ import {
   ChevronRight,
   LogOut,
   Menu,
-  X
+  X,
+  Layers,
+  Palette,
+  Gauge,
+  Fuel,
+  DollarSign,
+  Gift,
+  Wrench,
+  Award,
+  type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { companies } from '@/data/mockData';
@@ -31,7 +41,22 @@ interface SidebarProps {
   onCompanyChange: (companyId: string) => void;
 }
 
-const menuItems = [
+interface SubItem {
+  id: string;
+  label: string;
+  path: string;
+  icon?: LucideIcon;
+}
+
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  path: string;
+  subItems?: SubItem[];
+}
+
+const menuItems: MenuItem[] = [
   { 
     id: 'dashboard', 
     label: 'แดชบอร์ด', 
@@ -44,8 +69,8 @@ const menuItems = [
     icon: FileText, 
     path: '/reservations',
     subItems: [
-      { id: 'list', label: 'รายการใบจอง', path: '/reservations' },
-      { id: 'create', label: 'สร้างใบจองใหม่', path: '/reservations/create' },
+      { id: 'list', label: 'รายการใบจอง', path: '/reservations', icon: List },
+      { id: 'create', label: 'สร้างใบจองใหม่', path: '/reservations/create', icon: FilePlus2 },
     ]
   },
   { 
@@ -72,16 +97,16 @@ const menuItems = [
     icon: Settings, 
     path: '/settings',
     subItems: [
-      { id: 'vehicle-types', label: 'ชนิดรถยนต์', path: '/settings/vehicle-types' },
-      { id: 'models', label: 'รุ่น (Model)', path: '/settings/models' },
-      { id: 'submodels', label: 'รุ่นย่อย (Sub Model)', path: '/settings/submodels' },
-      { id: 'colors', label: 'สี', path: '/settings/colors' },
-      { id: 'engine-sizes', label: 'ขนาด/กำลังเครื่องยนต์', path: '/settings/engine-sizes' },
-      { id: 'fuel-types', label: 'ประเภทเชื้อเพลิง', path: '/settings/fuel-types' },
-      { id: 'standard-prices', label: 'ราคามาตรฐาน', path: '/settings/standard-prices' },
-      { id: 'freebies', label: 'ของแถม', path: '/settings/freebies' },
-      { id: 'accessories', label: 'อุปกรณ์ตกแต่ง', path: '/settings/accessories' },
-      { id: 'benefits', label: 'สิทธิประโยชน์', path: '/settings/benefits' },
+      { id: 'vehicle-types', label: 'ชนิดรถยนต์', path: '/settings/vehicle-types', icon: Car },
+      { id: 'models', label: 'รุ่น (Model)', path: '/settings/models', icon: Layers },
+      { id: 'submodels', label: 'รุ่นย่อย (Sub Model)', path: '/settings/submodels', icon: Layers },
+      { id: 'colors', label: 'สี', path: '/settings/colors', icon: Palette },
+      { id: 'engine-sizes', label: 'ขนาด/กำลังเครื่องยนต์', path: '/settings/engine-sizes', icon: Gauge },
+      { id: 'fuel-types', label: 'ประเภทเชื้อเพลิง', path: '/settings/fuel-types', icon: Fuel },
+      { id: 'standard-prices', label: 'ราคามาตรฐาน', path: '/settings/standard-prices', icon: DollarSign },
+      { id: 'freebies', label: 'ของแถม', path: '/settings/freebies', icon: Gift },
+      { id: 'accessories', label: 'อุปกรณ์ตกแต่ง', path: '/settings/accessories', icon: Wrench },
+      { id: 'benefits', label: 'สิทธิประโยชน์', path: '/settings/benefits', icon: Award },
     ]
   },
 ];
@@ -202,20 +227,24 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
                       </button>
                       {isExpanded && (
                         <ul className="mt-1 ml-4 pl-4 border-l border-sidebar-border space-y-1">
-                          {item.subItems.map(subItem => (
-                            <li key={subItem.id}>
-                              <Link
-                                to={subItem.path}
-                                onClick={() => setIsMobileOpen(false)}
-                                className={cn(
-                                  "sidebar-item text-sm",
-                                  location.pathname === subItem.path && "sidebar-item-active"
-                                )}
-                              >
-                                {subItem.label}
-                              </Link>
-                            </li>
-                          ))}
+                          {item.subItems.map(subItem => {
+                            const SubIcon = subItem.icon;
+                            return (
+                              <li key={subItem.id}>
+                                <Link
+                                  to={subItem.path}
+                                  onClick={() => setIsMobileOpen(false)}
+                                  className={cn(
+                                    "sidebar-item text-sm",
+                                    location.pathname === subItem.path && "sidebar-item-active"
+                                  )}
+                                >
+                                  {SubIcon && <SubIcon className="w-4 h-4" />}
+                                  {subItem.label}
+                                </Link>
+                              </li>
+                            );
+                          })}
                         </ul>
                       )}
                     </>

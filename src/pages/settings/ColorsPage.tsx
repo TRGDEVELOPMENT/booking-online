@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,81 +18,139 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ColorItem {
   id: string;
-  code: string;
-  name: string;
-  hexColor: string;
+  no: number;
+  description: string;
+  hex_color: string;
+  status: string;
+  company_id: string;
 }
 
-const mockColors: ColorItem[] = [
-  { id: '1', code: 'WHITE', name: 'ขาวมุก', hexColor: '#FFFFFF' },
-  { id: '2', code: 'BLACK', name: 'ดำมุก', hexColor: '#1a1a1a' },
-  { id: '3', code: 'SILVER', name: 'เงิน', hexColor: '#C0C0C0' },
-  { id: '4', code: 'RED', name: 'แดง', hexColor: '#DC2626' },
-  { id: '5', code: 'BLUE', name: 'น้ำเงิน', hexColor: '#2563EB' },
-  { id: '6', code: 'GRAY', name: 'เทา', hexColor: '#6B7280' },
-  { id: '7', code: 'ORANGE', name: 'ส้ม', hexColor: '#EA580C' },
-];
-
 export default function ColorsPage() {
-  const [colors, setColors] = useState<ColorItem[]>(mockColors);
+  const { profile } = useAuth();
+  const [colors, setColors] = useState<ColorItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ColorItem | null>(null);
-  const [formData, setFormData] = useState({ code: '', name: '', hexColor: '#000000' });
+  const [formData, setFormData] = useState({ 
+    description: '', 
+    hex_color: '#000000',
+    status: 'active'
+  });
+
+  const fetchColors = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('colors')
+        .select('*')
+        .order('no', { ascending: true });
+
+      if (error) throw error;
+      setColors(data || []);
+    } catch (error: any) {
+      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchColors();
+  }, []);
 
   const filteredItems = colors.filter(
-    item => item.name.includes(searchTerm) || item.code.toLowerCase().includes(searchTerm.toLowerCase())
+    item => item.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAdd = () => {
     setEditingItem(null);
-    setFormData({ code: '', name: '', hexColor: '#000000' });
+    setFormData({ description: '', hex_color: '#000000', status: 'active' });
     setIsDialogOpen(true);
   };
 
   const handleEdit = (item: ColorItem) => {
     setEditingItem(item);
-    setFormData({ code: item.code, name: item.name, hexColor: item.hexColor });
+    setFormData({ 
+      description: item.description, 
+      hex_color: item.hex_color,
+      status: item.status
+    });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('คุณต้องการลบรายการนี้หรือไม่?')) {
-      setColors(prev => prev.filter(item => item.id !== id));
-      toast.success('ลบข้อมูลเรียบร้อยแล้ว');
+      try {
+        const { error } = await supabase
+          .from('colors')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        
+        toast.success('ลบข้อมูลเรียบร้อยแล้ว');
+        fetchColors();
+      } catch (error: any) {
+        toast.error('เกิดข้อผิดพลาด: ' + error.message);
+      }
     }
   };
 
-  const handleSubmit = () => {
-    if (!formData.code || !formData.name) {
+  const handleSubmit = async () => {
+    if (!formData.description) {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
 
-    if (editingItem) {
-      setColors(prev =>
-        prev.map(item =>
-          item.id === editingItem.id
-            ? { ...item, ...formData }
-            : item
-        )
-      );
-      toast.success('แก้ไขข้อมูลเรียบร้อยแล้ว');
-    } else {
-      const newItem: ColorItem = {
-        id: Date.now().toString(),
-        ...formData,
-      };
-      setColors(prev => [...prev, newItem]);
-      toast.success('เพิ่มข้อมูลเรียบร้อยแล้ว');
-    }
+    try {
+      if (editingItem) {
+        const { error } = await supabase
+          .from('colors')
+          .update({
+            description: formData.description,
+            hex_color: formData.hex_color,
+            status: formData.status,
+          })
+          .eq('id', editingItem.id);
 
-    setIsDialogOpen(false);
+        if (error) throw error;
+        toast.success('แก้ไขข้อมูลเรียบร้อยแล้ว');
+      } else {
+        const { error } = await supabase
+          .from('colors')
+          .insert({
+            description: formData.description,
+            hex_color: formData.hex_color,
+            status: formData.status,
+            company_id: profile?.company_id || '',
+          });
+
+        if (error) throw error;
+        toast.success('เพิ่มข้อมูลเรียบร้อยแล้ว');
+      }
+
+      setIsDialogOpen(false);
+      fetchColors();
+    } catch (error: any) {
+      toast.error('เกิดข้อผิดพลาด: ' + error.message);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">กำลังโหลด...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -123,34 +181,44 @@ export default function ColorsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">รหัส</TableHead>
-              <TableHead>ชื่อสี</TableHead>
+              <TableHead className="w-[80px]">No.</TableHead>
+              <TableHead>สี</TableHead>
               <TableHead className="w-[150px]">ตัวอย่างสี</TableHead>
+              <TableHead className="w-[120px]">สถานะ</TableHead>
               <TableHead className="w-[100px] text-center">จัดการ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>
             ) : (
               filteredItems.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-mono">{item.code}</TableCell>
-                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell className="font-mono">{item.no}</TableCell>
+                  <TableCell className="font-medium">{item.description}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div 
                         className="w-8 h-8 rounded-lg border border-border shadow-sm"
-                        style={{ backgroundColor: item.hexColor }}
+                        style={{ backgroundColor: item.hex_color }}
                       />
                       <span className="text-muted-foreground text-sm font-mono">
-                        {item.hexColor}
+                        {item.hex_color}
                       </span>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      item.status === 'active' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                        : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+                    }`}>
+                      {item.status === 'active' ? 'Active' : 'Inactive'}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-1">
@@ -187,40 +255,48 @@ export default function ColorsPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="code">รหัส</Label>
+              <Label htmlFor="description">สี</Label>
               <Input
-                id="code"
-                value={formData.code}
-                onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                placeholder="เช่น WHITE, BLACK"
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="เช่น ขาวมุก, ดำเมทัลลิก"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">ชื่อสี</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="เช่น ขาวมุก, ดำมุก"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="hexColor">สี</Label>
+              <Label htmlFor="hex_color">ตัวอย่างสี</Label>
               <div className="flex gap-2">
                 <Input
-                  id="hexColor"
+                  id="hex_color"
                   type="color"
-                  value={formData.hexColor}
-                  onChange={(e) => setFormData({ ...formData, hexColor: e.target.value })}
+                  value={formData.hex_color}
+                  onChange={(e) => setFormData({ ...formData, hex_color: e.target.value })}
                   className="w-16 h-10 p-1 cursor-pointer"
                 />
                 <Input
-                  value={formData.hexColor}
-                  onChange={(e) => setFormData({ ...formData, hexColor: e.target.value })}
+                  value={formData.hex_color}
+                  onChange={(e) => setFormData({ ...formData, hex_color: e.target.value })}
                   placeholder="#000000"
                   className="font-mono"
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>สถานะ</Label>
+              <RadioGroup
+                value={formData.status}
+                onValueChange={(value) => setFormData({ ...formData, status: value })}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="active" id="status-active" />
+                  <Label htmlFor="status-active" className="font-normal cursor-pointer">Active</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="inactive" id="status-inactive" />
+                  <Label htmlFor="status-inactive" className="font-normal cursor-pointer">Inactive</Label>
+                </div>
+              </RadioGroup>
             </div>
           </div>
           <DialogFooter>

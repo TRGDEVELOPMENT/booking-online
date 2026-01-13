@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      colors: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string
+          hex_color: string
+          id: string
+          no: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description: string
+          hex_color?: string
+          id?: string
+          no?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string
+          hex_color?: string
+          id?: string
+          no?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       models: {
         Row: {
           company_id: string

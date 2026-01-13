@@ -315,12 +315,18 @@ export default function ReservationCreate() {
                       <SelectValue placeholder="เลือกสี" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="white">ขาว</SelectItem>
-                      <SelectItem value="black">ดำ</SelectItem>
-                      <SelectItem value="silver">เงิน</SelectItem>
-                      <SelectItem value="gray">เทา</SelectItem>
                       <SelectItem value="red">แดง</SelectItem>
                       <SelectItem value="blue">น้ำเงิน</SelectItem>
+                      <SelectItem value="yellow">เหลือง</SelectItem>
+                      <SelectItem value="white">ขาว</SelectItem>
+                      <SelectItem value="black">ดำ</SelectItem>
+                      <SelectItem value="purple">ม่วง</SelectItem>
+                      <SelectItem value="green">เขียว</SelectItem>
+                      <SelectItem value="orange">ส้ม</SelectItem>
+                      <SelectItem value="brown">น้ำตาล</SelectItem>
+                      <SelectItem value="pink">ชมพู</SelectItem>
+                      <SelectItem value="skyblue">ฟ้า</SelectItem>
+                      <SelectItem value="gray">เทา</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

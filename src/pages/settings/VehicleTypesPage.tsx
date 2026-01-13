@@ -21,12 +21,21 @@ import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface VehicleType {
   id: string;
   no: number;
   description: string;
   company_id: string;
+  status: string;
 }
 
 export default function VehicleTypesPage() {
@@ -38,6 +47,7 @@ export default function VehicleTypesPage() {
   const [editingItem, setEditingItem] = useState<VehicleType | null>(null);
   const [formData, setFormData] = useState({
     description: "",
+    status: "active" as string,
   });
 
   // Fetch data from database
@@ -68,13 +78,13 @@ export default function VehicleTypesPage() {
 
   const handleAdd = () => {
     setEditingItem(null);
-    setFormData({ description: "" });
+    setFormData({ description: "", status: "active" });
     setIsDialogOpen(true);
   };
 
   const handleEdit = (item: VehicleType) => {
     setEditingItem(item);
-    setFormData({ description: item.description });
+    setFormData({ description: item.description, status: item.status });
     setIsDialogOpen(true);
   };
 
@@ -105,16 +115,11 @@ export default function VehicleTypesPage() {
       // Update existing
       const { error } = await supabase
         .from('vehicle_types')
-        .update({ description: formData.description })
+        .update({ 
+          description: formData.description,
+          status: formData.status
+        })
         .eq('id', editingItem.id);
-      
-      if (error) {
-        toast.error('เกิดข้อผิดพลาดในการแก้ไขข้อมูล');
-        console.error('Error updating vehicle type:', error);
-      } else {
-        toast.success("แก้ไขข้อมูลสำเร็จ");
-        fetchVehicleTypes();
-      }
     } else {
       // Get user's company_id from profile
       const { data: profile } = await supabase
@@ -133,7 +138,8 @@ export default function VehicleTypesPage() {
         .from('vehicle_types')
         .insert({ 
           description: formData.description,
-          company_id: profile.company_id
+          company_id: profile.company_id,
+          status: formData.status
         });
       
       if (error) {
@@ -146,7 +152,7 @@ export default function VehicleTypesPage() {
     }
 
     setIsDialogOpen(false);
-    setFormData({ description: "" });
+    setFormData({ description: "", status: "active" });
   };
 
   return (
@@ -180,19 +186,20 @@ export default function VehicleTypesPage() {
             <TableRow>
               <TableHead className="w-[100px]">No.</TableHead>
               <TableHead>Description</TableHead>
+              <TableHead className="w-[100px]">Status</TableHead>
               <TableHead className="w-[120px] text-center">จัดการ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                   กำลังโหลด...
                 </TableCell>
               </TableRow>
             ) : filteredItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>
@@ -201,6 +208,11 @@ export default function VehicleTypesPage() {
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.no}</TableCell>
                   <TableCell>{item.description}</TableCell>
+                  <TableCell>
+                    <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>
+                      {item.status === 'active' ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-1">
                       <Button
@@ -241,10 +253,25 @@ export default function VehicleTypesPage() {
                 id="description"
                 value={formData.description}
                 onChange={(e) =>
-                  setFormData({ description: e.target.value })
+                  setFormData({ ...formData, description: e.target.value })
                 }
                 placeholder="กรอกรายละเอียดชนิดรถยนต์"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => setFormData({ ...formData, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกสถานะ" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

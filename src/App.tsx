@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Dashboard from "@/pages/Dashboard";
 import ReservationList from "@/pages/ReservationList";
 import ReservationCreate from "@/pages/ReservationCreate";
+import ReservationEdit from "@/pages/ReservationEdit";
 import ReservationPrint from "@/pages/ReservationPrint";
 import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/" element={<Dashboard />} />
               <Route path="/reservations" element={<ReservationList />} />
               <Route path="/reservations/create" element={<ReservationCreate />} />
+              <Route path="/reservations/:id/edit" element={<ReservationEdit />} />
             </Route>
             {/* Print page outside MainLayout for clean printing */}
             <Route path="/reservations/:id/print" element={<ReservationPrint />} />

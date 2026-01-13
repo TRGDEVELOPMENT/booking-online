@@ -61,7 +61,7 @@ export interface Customer {
 }
 
 // Vehicle Types
-export type FuelType = 'ICE' | 'Hybrid' | 'PHEV' | 'EV';
+export type FuelType = 'ICE' | 'Hybrid' | 'PHEV' | 'EV' | 'Diesel';
 export type PurchaseType = 'cash' | 'finance';
 
 export interface VehicleModel {

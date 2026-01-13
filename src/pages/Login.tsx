@@ -69,8 +69,9 @@ export default function Login() {
           <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-vivid to-accent flex items-center justify-center shadow-lg mb-4">
             <Car className="w-10 h-10 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold">ชื่อบริษัท</CardTitle>
-          <CardDescription>ระบบใบจองรถยนต์</CardDescription>
+          <CardTitle className="text-3xl font-extrabold bg-gradient-to-r from-blue-vivid to-accent bg-clip-text text-transparent">
+            ระบบบันทึกจอง Online
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">

@@ -70,7 +70,20 @@ const menuItems = [
     id: 'settings', 
     label: 'ตั้งค่าระบบ', 
     icon: Settings, 
-    path: '/settings' 
+    path: '/settings',
+    subItems: [
+      { id: 'settings-home', label: 'ภาพรวม', path: '/settings' },
+      { id: 'vehicle-types', label: 'ชนิดรถยนต์', path: '/settings/vehicle-types' },
+      { id: 'models', label: 'รุ่น (Model)', path: '/settings/models' },
+      { id: 'submodels', label: 'รุ่นย่อย (Sub Model)', path: '/settings/submodels' },
+      { id: 'colors', label: 'สี', path: '/settings/colors' },
+      { id: 'engine-sizes', label: 'ขนาด/กำลังเครื่องยนต์', path: '/settings/engine-sizes' },
+      { id: 'fuel-types', label: 'ประเภทเชื้อเพลิง', path: '/settings/fuel-types' },
+      { id: 'standard-prices', label: 'ราคามาตรฐาน', path: '/settings/standard-prices' },
+      { id: 'freebies', label: 'ของแถม', path: '/settings/freebies' },
+      { id: 'accessories', label: 'อุปกรณ์ตกแต่ง', path: '/settings/accessories' },
+      { id: 'benefits', label: 'สิทธิประโยชน์', path: '/settings/benefits' },
+    ]
   },
 ];
 

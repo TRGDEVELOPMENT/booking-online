@@ -239,6 +239,57 @@ export type Database = {
         }
         Relationships: []
       }
+      standard_prices: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          model_id: string
+          no: number
+          price: number
+          status: string
+          sub_model_id: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          model_id: string
+          no?: number
+          price?: number
+          status?: string
+          sub_model_id: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          model_id?: string
+          no?: number
+          price?: number
+          status?: string
+          sub_model_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standard_prices_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "standard_prices_sub_model_id_fkey"
+            columns: ["sub_model_id"]
+            isOneToOne: false
+            referencedRelation: "sub_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sub_models: {
         Row: {
           company_id: string

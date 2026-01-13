@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,95 +25,201 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
-interface PriceItem {
+interface StandardPrice {
   id: string;
-  model: string;
-  subModel: string;
-  fuelType: string;
+  no: number;
+  model_id: string;
+  sub_model_id: string;
   price: number;
+  status: string;
+  company_id: string;
 }
 
-const mockPrices: PriceItem[] = [
-  { id: '1', model: 'Nissan Kicks', subModel: 'e-POWER E', fuelType: 'e-POWER', price: 899000 },
-  { id: '2', model: 'Nissan Kicks', subModel: 'e-POWER V', fuelType: 'e-POWER', price: 989000 },
-  { id: '3', model: 'Nissan Kicks', subModel: 'e-POWER VL', fuelType: 'e-POWER', price: 1089000 },
-  { id: '4', model: 'Nissan Almera', subModel: 'E', fuelType: 'เบนซิน', price: 549000 },
-  { id: '5', model: 'Nissan Almera', subModel: 'EL', fuelType: 'เบนซิน', price: 619000 },
-  { id: '6', model: 'Nissan Almera', subModel: 'VL', fuelType: 'เบนซิน', price: 689000 },
-];
+interface Model {
+  id: string;
+  description: string;
+}
 
-const models = ['Nissan Kicks', 'Nissan Almera', 'Nissan Navara', 'Isuzu D-Max', 'Isuzu MU-X'];
-const fuelTypes = ['e-POWER', 'เบนซิน', 'ดีเซล', 'ไฮบริด', 'EV'];
+interface SubModel {
+  id: string;
+  description: string;
+  model_id: string;
+}
 
 export default function StandardPricesPage() {
-  const [prices, setPrices] = useState<PriceItem[]>(mockPrices);
+  const { profile } = useAuth();
+  const [prices, setPrices] = useState<StandardPrice[]>([]);
+  const [models, setModels] = useState<Model[]>([]);
+  const [subModels, setSubModels] = useState<SubModel[]>([]);
+  const [filteredSubModels, setFilteredSubModels] = useState<SubModel[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<PriceItem | null>(null);
-  const [formData, setFormData] = useState({ model: '', subModel: '', fuelType: '', price: 0 });
+  const [editingItem, setEditingItem] = useState<StandardPrice | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [formData, setFormData] = useState({ 
+    model_id: '', 
+    sub_model_id: '', 
+    price: 0,
+    status: 'active'
+  });
 
-  const filteredItems = prices.filter(
-    item => 
-      item.model.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      item.subModel.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (formData.model_id) {
+      const filtered = subModels.filter(sm => sm.model_id === formData.model_id);
+      setFilteredSubModels(filtered);
+      // Reset sub_model_id if it's not in the filtered list
+      if (!filtered.find(sm => sm.id === formData.sub_model_id)) {
+        setFormData(prev => ({ ...prev, sub_model_id: '' }));
+      }
+    } else {
+      setFilteredSubModels([]);
+    }
+  }, [formData.model_id, subModels]);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const [pricesRes, modelsRes, subModelsRes] = await Promise.all([
+        supabase.from('standard_prices').select('*').order('no', { ascending: true }),
+        supabase.from('models').select('id, description').eq('status', 'active').order('no', { ascending: true }),
+        supabase.from('sub_models').select('id, description, model_id').eq('status', 'active').order('no', { ascending: true })
+      ]);
+
+      if (pricesRes.error) throw pricesRes.error;
+      if (modelsRes.error) throw modelsRes.error;
+      if (subModelsRes.error) throw subModelsRes.error;
+
+      setPrices(pricesRes.data || []);
+      setModels(modelsRes.data || []);
+      setSubModels(subModelsRes.data || []);
+    } catch (error: any) {
+      console.error('Error fetching data:', error);
+      toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getModelName = (modelId: string) => {
+    return models.find(m => m.id === modelId)?.description || '-';
+  };
+
+  const getSubModelName = (subModelId: string) => {
+    return subModels.find(sm => sm.id === subModelId)?.description || '-';
+  };
+
+  const filteredItems = prices.filter(item => {
+    const modelName = getModelName(item.model_id).toLowerCase();
+    const subModelName = getSubModelName(item.sub_model_id).toLowerCase();
+    const search = searchTerm.toLowerCase();
+    return modelName.includes(search) || subModelName.includes(search);
+  });
 
   const handleAdd = () => {
     setEditingItem(null);
-    setFormData({ model: '', subModel: '', fuelType: '', price: 0 });
+    setFormData({ model_id: '', sub_model_id: '', price: 0, status: 'active' });
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (item: PriceItem) => {
+  const handleEdit = (item: StandardPrice) => {
     setEditingItem(item);
     setFormData({ 
-      model: item.model, 
-      subModel: item.subModel, 
-      fuelType: item.fuelType, 
-      price: item.price 
+      model_id: item.model_id, 
+      sub_model_id: item.sub_model_id, 
+      price: item.price,
+      status: item.status
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('คุณต้องการลบรายการนี้หรือไม่?')) {
-      setPrices(prev => prev.filter(item => item.id !== id));
-      toast.success('ลบข้อมูลเรียบร้อยแล้ว');
+      try {
+        const { error } = await supabase.from('standard_prices').delete().eq('id', id);
+        if (error) throw error;
+        setPrices(prev => prev.filter(item => item.id !== id));
+        toast.success('ลบข้อมูลเรียบร้อยแล้ว');
+      } catch (error: any) {
+        console.error('Error deleting:', error);
+        toast.error('เกิดข้อผิดพลาดในการลบข้อมูล');
+      }
     }
   };
 
-  const handleSubmit = () => {
-    if (!formData.model || !formData.subModel || !formData.price) {
+  const handleSubmit = async () => {
+    if (!formData.model_id || !formData.sub_model_id || !formData.price) {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
 
-    if (editingItem) {
-      setPrices(prev =>
-        prev.map(item =>
-          item.id === editingItem.id
-            ? { ...item, ...formData }
-            : item
-        )
-      );
-      toast.success('แก้ไขข้อมูลเรียบร้อยแล้ว');
-    } else {
-      const newItem: PriceItem = {
-        id: Date.now().toString(),
-        ...formData,
-      };
-      setPrices(prev => [...prev, newItem]);
-      toast.success('เพิ่มข้อมูลเรียบร้อยแล้ว');
-    }
+    try {
+      if (editingItem) {
+        const { error } = await supabase
+          .from('standard_prices')
+          .update({
+            model_id: formData.model_id,
+            sub_model_id: formData.sub_model_id,
+            price: formData.price,
+            status: formData.status
+          })
+          .eq('id', editingItem.id);
 
-    setIsDialogOpen(false);
+        if (error) throw error;
+        
+        setPrices(prev =>
+          prev.map(item =>
+            item.id === editingItem.id
+              ? { ...item, ...formData }
+              : item
+          )
+        );
+        toast.success('แก้ไขข้อมูลเรียบร้อยแล้ว');
+      } else {
+        const { data, error } = await supabase
+          .from('standard_prices')
+          .insert({
+            model_id: formData.model_id,
+            sub_model_id: formData.sub_model_id,
+            price: formData.price,
+            status: formData.status,
+            company_id: profile?.company_id
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        
+        setPrices(prev => [...prev, data]);
+        toast.success('เพิ่มข้อมูลเรียบร้อยแล้ว');
+      }
+
+      setIsDialogOpen(false);
+    } catch (error: any) {
+      console.error('Error saving:', error);
+      toast.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+    }
   };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('th-TH').format(price);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">กำลังโหลด...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -144,28 +250,38 @@ export default function StandardPricesPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>รุ่น</TableHead>
-              <TableHead>รุ่นย่อย</TableHead>
-              <TableHead>ประเภทเชื้อเพลิง</TableHead>
-              <TableHead className="text-right">ราคา (บาท)</TableHead>
+              <TableHead className="w-[80px]">No.</TableHead>
+              <TableHead>Model</TableHead>
+              <TableHead>Sub Model</TableHead>
+              <TableHead className="text-right">Price (บาท)</TableHead>
+              <TableHead className="w-[100px] text-center">สถานะ</TableHead>
               <TableHead className="w-[100px] text-center">จัดการ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>
             ) : (
               filteredItems.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.model}</TableCell>
-                  <TableCell>{item.subModel}</TableCell>
-                  <TableCell>{item.fuelType}</TableCell>
+                  <TableCell className="font-medium">{item.no}</TableCell>
+                  <TableCell className="font-medium">{getModelName(item.model_id)}</TableCell>
+                  <TableCell>{getSubModelName(item.sub_model_id)}</TableCell>
                   <TableCell className="text-right font-mono">
                     {formatPrice(item.price)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      item.status === 'active' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {item.status === 'active' ? 'Active' : 'Inactive'}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-1">
@@ -202,48 +318,40 @@ export default function StandardPricesPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>รุ่น</Label>
+              <Label>Model</Label>
               <Select
-                value={formData.model}
-                onValueChange={(value) => setFormData({ ...formData, model: value })}
+                value={formData.model_id}
+                onValueChange={(value) => setFormData({ ...formData, model_id: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="เลือกรุ่น" />
+                  <SelectValue placeholder="เลือก Model" />
                 </SelectTrigger>
                 <SelectContent>
                   {models.map(model => (
-                    <SelectItem key={model} value={model}>{model}</SelectItem>
+                    <SelectItem key={model.id} value={model.id}>{model.description}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="subModel">รุ่นย่อย</Label>
-              <Input
-                id="subModel"
-                value={formData.subModel}
-                onChange={(e) => setFormData({ ...formData, subModel: e.target.value })}
-                placeholder="เช่น e-POWER V, EL"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>ประเภทเชื้อเพลิง</Label>
+              <Label>Sub Model</Label>
               <Select
-                value={formData.fuelType}
-                onValueChange={(value) => setFormData({ ...formData, fuelType: value })}
+                value={formData.sub_model_id}
+                onValueChange={(value) => setFormData({ ...formData, sub_model_id: value })}
+                disabled={!formData.model_id}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="เลือกประเภทเชื้อเพลิง" />
+                  <SelectValue placeholder={formData.model_id ? "เลือก Sub Model" : "กรุณาเลือก Model ก่อน"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {fuelTypes.map(fuel => (
-                    <SelectItem key={fuel} value={fuel}>{fuel}</SelectItem>
+                  {filteredSubModels.map(subModel => (
+                    <SelectItem key={subModel.id} value={subModel.id}>{subModel.description}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">ราคา (บาท)</Label>
+              <Label htmlFor="price">Price (บาท)</Label>
               <Input
                 id="price"
                 type="number"
@@ -251,6 +359,23 @@ export default function StandardPricesPage() {
                 onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) || 0 })}
                 placeholder="0"
               />
+            </div>
+            <div className="space-y-2">
+              <Label>สถานะ</Label>
+              <RadioGroup
+                value={formData.status}
+                onValueChange={(value) => setFormData({ ...formData, status: value })}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="active" id="status-active" />
+                  <Label htmlFor="status-active" className="font-normal cursor-pointer">Active</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="inactive" id="status-inactive" />
+                  <Label htmlFor="status-inactive" className="font-normal cursor-pointer">Inactive</Label>
+                </div>
+              </RadioGroup>
             </div>
           </div>
           <DialogFooter>

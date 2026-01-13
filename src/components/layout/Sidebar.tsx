@@ -181,7 +181,11 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
                   {hasSubItems ? (
                     <>
                       <button
-                        onClick={() => toggleMenu(item.id)}
+                        onClick={() => {
+                          toggleMenu(item.id);
+                          navigate(item.path);
+                          setIsMobileOpen(false);
+                        }}
                         className={cn(
                           "sidebar-item w-full justify-between",
                           active && "sidebar-item-active"

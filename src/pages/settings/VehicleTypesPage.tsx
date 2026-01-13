@@ -22,13 +22,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface VehicleType {
   id: string;
@@ -258,20 +252,22 @@ export default function VehicleTypesPage() {
                 placeholder="กรอกรายละเอียดชนิดรถยนต์"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
+            <div className="space-y-3">
+              <Label>Status</Label>
+              <RadioGroup
                 value={formData.status}
                 onValueChange={(value) => setFormData({ ...formData, status: value })}
+                className="flex gap-6"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกสถานะ" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="active" id="status-active" />
+                  <Label htmlFor="status-active" className="font-normal cursor-pointer">Active</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="inactive" id="status-inactive" />
+                  <Label htmlFor="status-inactive" className="font-normal cursor-pointer">Inactive</Label>
+                </div>
+              </RadioGroup>
             </div>
           </div>
           <DialogFooter>

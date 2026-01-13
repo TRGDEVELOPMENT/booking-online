@@ -10,30 +10,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Reservation } from '@/types/reservation';
-import { WorkflowStageLabels, DocumentStatusLabels } from '@/types/reservation';
+import type { DatabaseReservation } from '@/types/database-reservation';
+import { DatabaseStatusLabels } from '@/types/database-reservation';
+import { branches } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 
 interface ReservationTableProps {
-  reservations: Reservation[];
+  reservations: DatabaseReservation[];
   selectedIds: string[];
   onSelectChange: (ids: string[]) => void;
 }
 
-const statusStyles = {
+const statusStyles: Record<string, string> = {
   draft: 'status-draft',
   final: 'status-complete',
   cancelled: 'status-cancelled',
-};
-
-const stageColors: Record<string, string> = {
-  step1: 'bg-gray-100 text-gray-700 border-gray-200',
-  step2: 'bg-blue-100 text-blue-700 border-blue-200',
-  step3: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  step4: 'bg-purple-100 text-purple-700 border-purple-200',
-  step5: 'bg-green-100 text-green-700 border-green-200',
-  step6: 'bg-teal-100 text-teal-700 border-teal-200',
-  step7: 'bg-red-100 text-red-700 border-red-200',
 };
 
 export function ReservationTable({ reservations, selectedIds, onSelectChange }: ReservationTableProps) {
@@ -61,6 +52,12 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange }: 
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const getBranchName = (branchId: string | null) => {
+    if (!branchId) return '-';
+    const branch = branches.find(b => b.id === branchId);
+    return branch?.name || branchId;
   };
 
   if (reservations.length === 0) {
@@ -91,17 +88,17 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange }: 
               </th>
               <th className="text-left px-4 py-3 text-sm font-semibold">เลขที่เอกสาร</th>
               <th className="text-left px-4 py-3 text-sm font-semibold">สถานะ</th>
-              <th className="text-left px-4 py-3 text-sm font-semibold">ผู้จอง / ผู้ซื้อ</th>
+              <th className="text-left px-4 py-3 text-sm font-semibold">ผู้จอง</th>
               <th className="text-left px-4 py-3 text-sm font-semibold">รุ่นรถ / สี</th>
+              <th className="text-right px-4 py-3 text-sm font-semibold">ราคาสุทธิ</th>
               <th className="text-right px-4 py-3 text-sm font-semibold">เงินจอง</th>
               <th className="text-left px-4 py-3 text-sm font-semibold">สาขา</th>
-              <th className="text-left px-4 py-3 text-sm font-semibold">ผู้สร้าง</th>
-              <th className="text-left px-4 py-3 text-sm font-semibold">อัปเดต</th>
+              <th className="text-left px-4 py-3 text-sm font-semibold">วันที่สร้าง</th>
               <th className="text-center px-4 py-3 text-sm font-semibold">ดำเนินการ</th>
             </tr>
           </thead>
           <tbody>
-            {reservations.map((reservation, index) => (
+            {reservations.map((reservation) => (
               <tr 
                 key={reservation.id}
                 className={cn(
@@ -116,63 +113,53 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange }: 
                   />
                 </td>
                 <td className="px-4 py-3">
-                  <div>
-                    <Link 
-                      to={`/reservations/${reservation.id}`}
-                      className="font-medium text-primary hover:underline"
-                    >
-                      {reservation.finalNo || reservation.draftNo}
-                    </Link>
-                    {reservation.finalNo && (
-                      <p className="text-xs text-muted-foreground">
-                        Draft: {reservation.draftNo}
-                      </p>
-                    )}
-                  </div>
+                  <Link 
+                    to={`/reservations/${reservation.id}`}
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {reservation.document_number}
+                  </Link>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex flex-col gap-1">
-                    <Badge className={cn("status-badge w-fit", statusStyles[reservation.documentStatus])}>
-                      {DocumentStatusLabels[reservation.documentStatus]}
-                    </Badge>
-                    <Badge className={cn("status-badge w-fit text-xs border", stageColors[reservation.workflowStage])}>
-                      {WorkflowStageLabels[reservation.workflowStage]}
-                    </Badge>
-                  </div>
+                  <Badge className={cn("status-badge w-fit", statusStyles[reservation.status] || 'status-draft')}>
+                    {DatabaseStatusLabels[reservation.status] || reservation.status}
+                  </Badge>
                 </td>
                 <td className="px-4 py-3">
                   <div>
                     <p className="font-medium text-foreground">
-                      {reservation.bookingCustomer.title} {reservation.bookingCustomer.firstName} {reservation.bookingCustomer.lastName}
+                      {reservation.customer_name}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {reservation.bookingCustomer.phone}
+                      {reservation.customer_phone || '-'}
                     </p>
                   </div>
                 </td>
                 <td className="px-4 py-3">
                   <div>
                     <p className="font-medium text-foreground">
-                      {reservation.vehicleModelName} {reservation.vehicleSubmodelName}
+                      {reservation.model || '-'} {reservation.submodel || ''}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {reservation.vehicleColorName} • {reservation.fuelType}
+                      {reservation.color || '-'} {reservation.fuel_type ? `• ${reservation.fuel_type}` : ''}
                     </p>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <p className="font-semibold text-foreground">
-                    {reservation.depositAmount ? `฿${reservation.depositAmount.toLocaleString()}` : '-'}
+                    {reservation.net_price ? `฿${reservation.net_price.toLocaleString()}` : '-'}
+                  </p>
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <p className="font-semibold text-foreground">
+                    {reservation.deposit_amount ? `฿${reservation.deposit_amount.toLocaleString()}` : '-'}
                   </p>
                 </td>
                 <td className="px-4 py-3 text-sm text-muted-foreground">
-                  สำนักงานใหญ่
-                </td>
-                <td className="px-4 py-3">
-                  <p className="text-sm text-foreground">{reservation.salesUserName}</p>
+                  {getBranchName(reservation.branch_id)}
                 </td>
                 <td className="px-4 py-3 text-sm text-muted-foreground">
-                  {formatDate(reservation.updatedAt)}
+                  {formatDate(reservation.created_at)}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-center gap-1">
@@ -181,7 +168,7 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange }: 
                         <Eye className="w-4 h-4" />
                       </Button>
                     </Link>
-                    {reservation.documentStatus === 'draft' && (
+                    {reservation.status === 'draft' && (
                       <Link to={`/reservations/${reservation.id}/edit`}>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
                           <Edit className="w-4 h-4" />

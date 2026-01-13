@@ -154,29 +154,6 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
           </div>
         </div>
 
-        {/* Company Selector */}
-        <div className="p-4 border-b border-sidebar-border">
-          <label className="text-xs text-sidebar-foreground/60 mb-2 block">
-            เลือกบริษัท
-          </label>
-          <Select value={selectedCompany} onValueChange={onCompanyChange}>
-            <SelectTrigger className="w-full bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
-              <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4" />
-                <SelectValue placeholder="เลือกบริษัท" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {companies.map(company => (
-                <SelectItem key={company.id} value={company.id}>
-                  <span className="font-medium">{company.code}</span>
-                  <span className="text-muted-foreground ml-2 text-sm">- {company.name}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* Navigation */}
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-1">

@@ -97,11 +97,11 @@ export default function ReservationCreate() {
 
           {/* Form Sections */}
           <div className="space-y-6">
-            {/* Section 1: Branch/BU Selection */}
+            {/* Section 1: Branch/Vehicle Type Selection */}
             <div className="form-section">
               <div className="form-section-header flex items-center gap-2">
                 <Building2 className="w-5 h-5" />
-                ข้อมูลสาขา / หน่วยธุรกิจ
+                ข้อมูลสาขา / ประเภทรถยนต์
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -113,24 +113,21 @@ export default function ReservationCreate() {
                     <SelectContent>
                       {companyBranches.map(branch => (
                         <SelectItem key={branch.id} value={branch.id}>
-                          {branch.code} - {branch.name}
+                          {branch.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="bu">หน่วยธุรกิจ (BU) <span className="text-destructive">*</span></Label>
-                  <Select value={selectedBU} onValueChange={setSelectedBU} disabled={!selectedBranch}>
+                  <Label htmlFor="vehicleType">ประเภทรถยนต์ <span className="text-destructive">*</span></Label>
+                  <Select value={selectedBU} onValueChange={setSelectedBU}>
                     <SelectTrigger className="input-focus">
-                      <SelectValue placeholder="เลือกหน่วยธุรกิจ" />
+                      <SelectValue placeholder="เลือกประเภทรถยนต์" />
                     </SelectTrigger>
                     <SelectContent>
-                      {branchBUs.map(bu => (
-                        <SelectItem key={bu.id} value={bu.id}>
-                          {bu.code} - {bu.name}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="personal">รถยนต์ส่วนบุคคลไม่เกิน 7 ที่นั่ง</SelectItem>
+                      <SelectItem value="pickup">รถยนต์กระบะ</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

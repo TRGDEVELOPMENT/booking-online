@@ -228,8 +228,12 @@ export default function ReservationCreate() {
                   <Label>เลขบัตรประชาชน <span className="text-destructive">*</span></Label>
                   <Input 
                     value={bookingIdNo} 
-                    onChange={(e) => setBookingIdNo(e.target.value)}
-                    placeholder="X-XXXX-XXXXX-XX-X"
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 13);
+                      setBookingIdNo(value);
+                    }}
+                    placeholder="กรอกเลข 13 หลัก"
+                    maxLength={13}
                     className="input-focus"
                   />
                 </div>

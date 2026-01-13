@@ -93,7 +93,7 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">อีเมล</Label>
+              <Label htmlFor="email">ชื่อผู้ใช้งาน</Label>
               <Input
                 id="email"
                 type="email"

@@ -114,15 +114,20 @@ export default function ReservationCreate() {
   // Calculate net price
   const finalPrice = basePrice - discountAmount;
 
-  // Generate document number
+  // Generate document number based on company format
   const generateDocumentNumber = () => {
     const now = new Date();
     const year = now.getFullYear().toString().slice(-2);
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    const branchCode = branches.find(b => b.id === selectedBranch)?.code || 'XX';
-    return `RSV-${selectedCompany}-${branchCode}-${year}${month}${day}-${random}`;
+    const running = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
+    
+    // Format: BPKRS-yymm-00001 for BPK
+    if (selectedCompany === 'BPK') {
+      return `BPKRS-${year}${month}-${running}`;
+    }
+    
+    // Default format for other companies: [COMPANY]RS-yymm-00001
+    return `${selectedCompany}RS-${year}${month}-${running}`;
   };
 
   const handleSaveDraft = async () => {

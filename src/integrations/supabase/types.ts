@@ -147,7 +147,7 @@ export type Database = {
           id?: string
           last_name: string
           mobile_phone?: string | null
-          no?: number
+          no: number
           postal_code?: string | null
           province?: string | null
           status?: string
@@ -584,6 +584,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_next_customer_no: { Args: { p_company_id: string }; Returns: number }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {

@@ -506,7 +506,6 @@ export type Database = {
       }
       surnames: {
         Row: {
-          company_id: string
           created_at: string
           description: string
           id: string
@@ -515,7 +514,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          company_id: string
           created_at?: string
           description: string
           id?: string
@@ -524,7 +522,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          company_id?: string
           created_at?: string
           description?: string
           id?: string

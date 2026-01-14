@@ -28,7 +28,6 @@ interface Surname {
   no: number;
   description: string;
   status: string;
-  company_id: string;
 }
 
 export default function SurnamesPage() {
@@ -43,7 +42,7 @@ export default function SurnamesPage() {
     status: 'active',
   });
 
-  const companyId = localStorage.getItem('selectedCompany') || '';
+  
 
   useEffect(() => {
     fetchSurnames();
@@ -118,7 +117,6 @@ export default function SurnamesPage() {
         const { error } = await supabase.from('surnames').insert({
           description: formData.description,
           status: formData.status,
-          company_id: companyId,
         });
 
         if (error) throw error;

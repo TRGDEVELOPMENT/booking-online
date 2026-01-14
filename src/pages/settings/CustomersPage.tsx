@@ -338,56 +338,58 @@ export default function CustomersPage() {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>
               {editingItem ? 'แก้ไขข้อมูลลูกค้า' : 'เพิ่มข้อมูลลูกค้า'}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
-            <div className="space-y-2">
-              <Label>ประเภทลูกค้า</Label>
-              <RadioGroup
-                value={formData.customer_type}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, customer_type: value })
-                }
-                className="flex gap-6"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="individual" id="individual" />
-                  <Label htmlFor="individual" className="cursor-pointer font-normal">
-                    บุคคลธรรมดา
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="corporate" id="corporate" />
-                  <Label htmlFor="corporate" className="cursor-pointer font-normal">
-                    นิติบุคคล
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>ประเภทลูกค้า</Label>
+                <RadioGroup
+                  value={formData.customer_type}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, customer_type: value })
+                  }
+                  className="flex gap-6"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="individual" id="individual" />
+                    <Label htmlFor="individual" className="cursor-pointer font-normal">
+                      บุคคลธรรมดา
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="corporate" id="corporate" />
+                    <Label htmlFor="corporate" className="cursor-pointer font-normal">
+                      นิติบุคคล
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="surname_id">คำนำหน้าชื่อ</Label>
-              <Select
-                value={formData.surname_id}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, surname_id: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกคำนำหน้าชื่อ" />
-                </SelectTrigger>
-                <SelectContent>
-                  {surnames.map((surname) => (
-                    <SelectItem key={surname.id} value={surname.id}>
-                      {surname.description}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label htmlFor="surname_id">คำนำหน้าชื่อ</Label>
+                <Select
+                  value={formData.surname_id}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, surname_id: value })
+                  }
+                >
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="เลือก" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {surnames.map((surname) => (
+                      <SelectItem key={surname.id} value={surname.id}>
+                        {surname.description}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

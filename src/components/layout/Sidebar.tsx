@@ -77,7 +77,7 @@ const menuItems: MenuItem[] = [
     id: 'customers', 
     label: 'ข้อมูลลูกค้า', 
     icon: Users, 
-    path: '/customers' 
+    path: '/settings/customers' 
   },
   { 
     id: 'vehicles', 

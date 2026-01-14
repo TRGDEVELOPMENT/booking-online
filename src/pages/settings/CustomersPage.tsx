@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { TablesInsert } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -177,37 +178,48 @@ export default function CustomersPage() {
     }
 
     try {
-      const dataToSave = {
-        surname_id: formData.surname_id || null,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        telephone: formData.telephone || null,
-        mobile_phone: formData.mobile_phone || null,
-        email: formData.email || null,
-        tax_id: formData.tax_id || null,
-        address1: formData.address1 || null,
-        address2: formData.address2 || null,
-        district: formData.district || null,
-        province: formData.province || null,
-        postal_code: formData.postal_code || null,
-        customer_type: formData.customer_type,
-        status: formData.status,
-        updated_at: new Date().toISOString(),
-      };
-
       if (editingItem) {
         const { error } = await supabase
           .from('customers')
-          .update(dataToSave)
+          .update({
+            surname_id: formData.surname_id || null,
+            first_name: formData.first_name,
+            last_name: formData.last_name,
+            telephone: formData.telephone || null,
+            mobile_phone: formData.mobile_phone || null,
+            email: formData.email || null,
+            tax_id: formData.tax_id || null,
+            address1: formData.address1 || null,
+            address2: formData.address2 || null,
+            district: formData.district || null,
+            province: formData.province || null,
+            postal_code: formData.postal_code || null,
+            customer_type: formData.customer_type,
+            status: formData.status,
+          })
           .eq('id', editingItem.id);
 
         if (error) throw error;
         toast.success('แก้ไขข้อมูลสำเร็จ');
       } else {
-        const { error } = await supabase.from('customers').insert({
-          ...dataToSave,
+        const insertData = {
           company_id: companyId,
-        });
+          surname_id: formData.surname_id || null,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          telephone: formData.telephone || null,
+          mobile_phone: formData.mobile_phone || null,
+          email: formData.email || null,
+          tax_id: formData.tax_id || null,
+          address1: formData.address1 || null,
+          address2: formData.address2 || null,
+          district: formData.district || null,
+          province: formData.province || null,
+          postal_code: formData.postal_code || null,
+          customer_type: formData.customer_type,
+          status: formData.status,
+        } as TablesInsert<'customers'>;
+        const { error } = await supabase.from('customers').insert(insertData);
 
         if (error) throw error;
         toast.success('เพิ่มข้อมูลสำเร็จ');

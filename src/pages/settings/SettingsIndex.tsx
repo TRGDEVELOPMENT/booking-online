@@ -10,6 +10,8 @@ import {
   Wrench, 
   Award,
   ArrowRight,
+  User,
+  Users,
   type LucideIcon
 } from 'lucide-react';
 
@@ -113,6 +115,24 @@ const settingsItems: SettingsItem[] = [
     description: 'จัดการสิทธิประโยชน์ เช่น ฟรีค่าแรง, ดอกเบี้ย 0%',
     color: 'text-yellow-600',
     bgColor: 'bg-yellow-100 group-hover:bg-yellow-600'
+  },
+  { 
+    id: 'surnames', 
+    label: 'คำนำหน้าชื่อ', 
+    icon: User, 
+    path: '/settings/surnames',
+    description: 'จัดการคำนำหน้าชื่อ เช่น นาย, นาง, นางสาว',
+    color: 'text-cyan-600',
+    bgColor: 'bg-cyan-100 group-hover:bg-cyan-600'
+  },
+  { 
+    id: 'customers', 
+    label: 'ข้อมูลลูกค้า', 
+    icon: Users, 
+    path: '/settings/customers',
+    description: 'จัดการข้อมูลลูกค้า ชื่อ ที่อยู่ เบอร์ติดต่อ',
+    color: 'text-teal-600',
+    bgColor: 'bg-teal-100 group-hover:bg-teal-600'
   },
 ];
 

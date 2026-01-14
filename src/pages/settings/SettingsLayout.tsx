@@ -10,6 +10,8 @@ import {
   Wrench, 
   Award,
   Settings,
+  User,
+  Users,
   type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -33,6 +35,8 @@ const settingsMenuItems: MenuItem[] = [
   { id: 'freebies', label: 'ของแถม', icon: Gift, path: '/settings/freebies', color: 'text-red-500' },
   { id: 'accessories', label: 'อุปกรณ์ติดตั้งเพิ่มเติม', icon: Wrench, path: '/settings/accessories', color: 'text-amber-500' },
   { id: 'benefits', label: 'สิทธิ์ประโยชน์อื่นๆ', icon: Award, path: '/settings/benefits', color: 'text-yellow-500' },
+  { id: 'surnames', label: 'คำนำหน้าชื่อ', icon: User, path: '/settings/surnames', color: 'text-cyan-500' },
+  { id: 'customers', label: 'ข้อมูลลูกค้า', icon: Users, path: '/settings/customers', color: 'text-teal-500' },
 ];
 
 export default function SettingsLayout() {

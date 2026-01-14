@@ -45,6 +45,11 @@ interface Customer {
   mobile_phone: string | null;
   email: string | null;
   tax_id: string | null;
+  address1: string | null;
+  address2: string | null;
+  district: string | null;
+  province: string | null;
+  postal_code: string | null;
   status: string;
   company_id: string;
   surnames?: Surname;
@@ -66,6 +71,11 @@ export default function CustomersPage() {
     mobile_phone: '',
     email: '',
     tax_id: '',
+    address1: '',
+    address2: '',
+    district: '',
+    province: '',
+    postal_code: '',
     status: 'active',
   });
 
@@ -112,6 +122,11 @@ export default function CustomersPage() {
       mobile_phone: '',
       email: '',
       tax_id: '',
+      address1: '',
+      address2: '',
+      district: '',
+      province: '',
+      postal_code: '',
       status: 'active',
     });
     setIsDialogOpen(true);
@@ -127,6 +142,11 @@ export default function CustomersPage() {
       mobile_phone: item.mobile_phone || '',
       email: item.email || '',
       tax_id: item.tax_id || '',
+      address1: item.address1 || '',
+      address2: item.address2 || '',
+      district: item.district || '',
+      province: item.province || '',
+      postal_code: item.postal_code || '',
       status: item.status,
     });
     setIsDialogOpen(true);
@@ -161,6 +181,11 @@ export default function CustomersPage() {
         mobile_phone: formData.mobile_phone || null,
         email: formData.email || null,
         tax_id: formData.tax_id || null,
+        address1: formData.address1 || null,
+        address2: formData.address2 || null,
+        district: formData.district || null,
+        province: formData.province || null,
+        postal_code: formData.postal_code || null,
         status: formData.status,
         updated_at: new Date().toISOString(),
       };
@@ -412,6 +437,67 @@ export default function CustomersPage() {
                   setFormData({ ...formData, tax_id: e.target.value })
                 }
                 placeholder="หมายเลขประจำตัวผู้เสียภาษี"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address1">ที่อยู่ 1</Label>
+              <Input
+                id="address1"
+                value={formData.address1}
+                onChange={(e) =>
+                  setFormData({ ...formData, address1: e.target.value })
+                }
+                placeholder="ที่อยู่ 1"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address2">ที่อยู่ 2</Label>
+              <Input
+                id="address2"
+                value={formData.address2}
+                onChange={(e) =>
+                  setFormData({ ...formData, address2: e.target.value })
+                }
+                placeholder="ที่อยู่ 2"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="district">เขต/อำเภอ</Label>
+                <Input
+                  id="district"
+                  value={formData.district}
+                  onChange={(e) =>
+                    setFormData({ ...formData, district: e.target.value })
+                  }
+                  placeholder="เขต/อำเภอ"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="province">จังหวัด</Label>
+                <Input
+                  id="province"
+                  value={formData.province}
+                  onChange={(e) =>
+                    setFormData({ ...formData, province: e.target.value })
+                  }
+                  placeholder="จังหวัด"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="postal_code">รหัสไปรษณีย์</Label>
+              <Input
+                id="postal_code"
+                value={formData.postal_code}
+                onChange={(e) =>
+                  setFormData({ ...formData, postal_code: e.target.value })
+                }
+                placeholder="รหัสไปรษณีย์"
               />
             </div>
 

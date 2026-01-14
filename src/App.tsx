@@ -25,6 +25,8 @@ import StandardPricesPage from "@/pages/settings/StandardPricesPage";
 import FreebiesPage from "@/pages/settings/FreebiesPage";
 import AccessoriesPage from "@/pages/settings/AccessoriesPage";
 import BenefitsPage from "@/pages/settings/BenefitsPage";
+import SurnamesPage from "@/pages/settings/SurnamesPage";
+import CustomersPage from "@/pages/settings/CustomersPage";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +57,8 @@ const App = () => (
               <Route path="/settings/freebies" element={<FreebiesPage />} />
               <Route path="/settings/accessories" element={<AccessoriesPage />} />
               <Route path="/settings/benefits" element={<BenefitsPage />} />
+              <Route path="/settings/surnames" element={<SurnamesPage />} />
+              <Route path="/settings/customers" element={<CustomersPage />} />
             </Route>
             {/* Print page outside MainLayout for clean printing */}
             <Route path="/reservations/:id/print" element={<ReservationPrint />} />

@@ -113,6 +113,62 @@ export type Database = {
         }
         Relationships: []
       }
+      customers: {
+        Row: {
+          company_id: string
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string
+          mobile_phone: string | null
+          no: number
+          status: string
+          surname_id: string | null
+          tax_id: string | null
+          telephone: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          email?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          mobile_phone?: string | null
+          no?: number
+          status?: string
+          surname_id?: string | null
+          tax_id?: string | null
+          telephone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          mobile_phone?: string | null
+          no?: number
+          status?: string
+          surname_id?: string | null
+          tax_id?: string | null
+          telephone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_surname_id_fkey"
+            columns: ["surname_id"]
+            isOneToOne: false
+            referencedRelation: "surnames"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       engine_sizes: {
         Row: {
           company_id: string
@@ -429,6 +485,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      surnames: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string
+          id: string
+          no: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description: string
+          id?: string
+          no?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          no?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

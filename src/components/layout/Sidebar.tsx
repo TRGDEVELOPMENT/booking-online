@@ -23,6 +23,7 @@ import {
   Gift,
   Wrench,
   Award,
+  User,
   type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -107,6 +108,7 @@ const menuItems: MenuItem[] = [
       { id: 'freebies', label: 'ของแถม', path: '/settings/freebies', icon: Gift },
       { id: 'accessories', label: 'อุปกรณ์ตกแต่ง', path: '/settings/accessories', icon: Wrench },
       { id: 'benefits', label: 'สิทธิประโยชน์', path: '/settings/benefits', icon: Award },
+      { id: 'surnames', label: 'คำนำหน้าชื่อ', path: '/settings/surnames', icon: User },
     ]
   },
 ];

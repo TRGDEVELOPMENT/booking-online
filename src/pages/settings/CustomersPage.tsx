@@ -50,6 +50,7 @@ interface Customer {
   district: string | null;
   province: string | null;
   postal_code: string | null;
+  customer_type: string;
   status: string;
   company_id: string;
   surnames?: Surname;
@@ -76,6 +77,7 @@ export default function CustomersPage() {
     district: '',
     province: '',
     postal_code: '',
+    customer_type: 'individual',
     status: 'active',
   });
 
@@ -127,6 +129,7 @@ export default function CustomersPage() {
       district: '',
       province: '',
       postal_code: '',
+      customer_type: 'individual',
       status: 'active',
     });
     setIsDialogOpen(true);
@@ -147,6 +150,7 @@ export default function CustomersPage() {
       district: item.district || '',
       province: item.province || '',
       postal_code: item.postal_code || '',
+      customer_type: item.customer_type || 'individual',
       status: item.status,
     });
     setIsDialogOpen(true);
@@ -186,6 +190,7 @@ export default function CustomersPage() {
         district: formData.district || null,
         province: formData.province || null,
         postal_code: formData.postal_code || null,
+        customer_type: formData.customer_type,
         status: formData.status,
         updated_at: new Date().toISOString(),
       };
@@ -340,6 +345,30 @@ export default function CustomersPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-2">
+              <Label>ประเภทลูกค้า</Label>
+              <RadioGroup
+                value={formData.customer_type}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, customer_type: value })
+                }
+                className="flex gap-6"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="individual" id="individual" />
+                  <Label htmlFor="individual" className="cursor-pointer font-normal">
+                    บุคคลธรรมดา
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="corporate" id="corporate" />
+                  <Label htmlFor="corporate" className="cursor-pointer font-normal">
+                    นิติบุคคล
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="surname_id">คำนำหน้าชื่อ</Label>
               <Select

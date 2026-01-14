@@ -115,14 +115,19 @@ export type Database = {
       }
       customers: {
         Row: {
+          address1: string | null
+          address2: string | null
           company_id: string
           created_at: string
+          district: string | null
           email: string | null
           first_name: string
           id: string
           last_name: string
           mobile_phone: string | null
           no: number
+          postal_code: string | null
+          province: string | null
           status: string
           surname_id: string | null
           tax_id: string | null
@@ -130,14 +135,19 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          address1?: string | null
+          address2?: string | null
           company_id: string
           created_at?: string
+          district?: string | null
           email?: string | null
           first_name: string
           id?: string
           last_name: string
           mobile_phone?: string | null
           no?: number
+          postal_code?: string | null
+          province?: string | null
           status?: string
           surname_id?: string | null
           tax_id?: string | null
@@ -145,14 +155,19 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          address1?: string | null
+          address2?: string | null
           company_id?: string
           created_at?: string
+          district?: string | null
           email?: string | null
           first_name?: string
           id?: string
           last_name?: string
           mobile_phone?: string | null
           no?: number
+          postal_code?: string | null
+          province?: string | null
           status?: string
           surname_id?: string | null
           tax_id?: string | null

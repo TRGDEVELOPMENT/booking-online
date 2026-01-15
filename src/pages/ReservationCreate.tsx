@@ -14,10 +14,14 @@ import {
   Star,
   Plus,
   Trash2,
-  Loader2
+  Loader2,
+  Search,
+  CheckCircle2,
+  X
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
+import { CustomerSearchDialog, type Customer } from '@/components/reservations/CustomerSearchDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,7 +42,7 @@ import {
   standardSubmodels 
 } from '@/data/mockData';
 import { cn } from '@/lib/utils';
-import type { CustomerType, FuelType, PurchaseType } from '@/types/reservation';
+import type { FuelType, PurchaseType } from '@/types/reservation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -56,8 +60,12 @@ export default function ReservationCreate() {
   const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedBU, setSelectedBU] = useState('');
   
-  // Booking Customer
-  const [bookingCustomerType, setBookingCustomerType] = useState<CustomerType>('individual');
+  // Booking Customer - now using search/select
+  const [bookingCustomerType, setBookingCustomerType] = useState<'individual' | 'corporate'>('individual');
+  const [selectedBookingCustomer, setSelectedBookingCustomer] = useState<Customer | null>(null);
+  const [isBookingSearchOpen, setIsBookingSearchOpen] = useState(false);
+  
+  // Legacy fields (kept for backward compatibility, will be removed)
   const [bookingTitle, setBookingTitle] = useState('');
   const [bookingFirstName, setBookingFirstName] = useState('');
   const [bookingLastName, setBookingLastName] = useState('');
@@ -65,8 +73,10 @@ export default function ReservationCreate() {
   const [bookingPhone, setBookingPhone] = useState('');
   const [bookingEmail, setBookingEmail] = useState('');
   
-  // Buyer
+  // Buyer - now using search/select
   const [isBuyerSame, setIsBuyerSame] = useState(true);
+  const [selectedBuyerCustomer, setSelectedBuyerCustomer] = useState<Customer | null>(null);
+  const [isBuyerSearchOpen, setIsBuyerSearchOpen] = useState(false);
   
   // Vehicle
   const [selectedModel, setSelectedModel] = useState('');
@@ -136,16 +146,12 @@ export default function ReservationCreate() {
       toast.error('กรุณาเลือกสาขา');
       return;
     }
-    if (!bookingFirstName || !bookingLastName) {
-      toast.error('กรุณากรอกชื่อ-นามสกุลผู้จอง');
+    if (!selectedBookingCustomer) {
+      toast.error('กรุณาเลือกลูกค้าผู้จอง');
       return;
     }
-    if (!bookingIdNo) {
-      toast.error('กรุณากรอกเลขบัตรประชาชน');
-      return;
-    }
-    if (!bookingPhone) {
-      toast.error('กรุณากรอกเบอร์โทรศัพท์');
+    if (!isBuyerSame && !selectedBuyerCustomer) {
+      toast.error('กรุณาเลือกลูกค้าผู้ซื้อรถ');
       return;
     }
     if (basePrice <= 0) {
@@ -157,23 +163,47 @@ export default function ReservationCreate() {
 
     try {
       const documentNumber = generateDocumentNumber();
-      const customerName = `${bookingTitle}${bookingFirstName} ${bookingLastName}`;
+      const customerName = `${selectedBookingCustomer.surnames?.description || ''}${selectedBookingCustomer.first_name} ${selectedBookingCustomer.last_name}`;
       const modelName = vehicleModels.find(m => m.id === selectedModel)?.name || '';
       const submodelName = standardSubmodels.find(s => s.id === selectedSubmodel)?.name || '';
+
+      // Get customer address
+      const customerAddress = [
+        selectedBookingCustomer.address1,
+        selectedBookingCustomer.address2,
+        selectedBookingCustomer.district,
+        selectedBookingCustomer.province,
+        selectedBookingCustomer.postal_code
+      ].filter(Boolean).join(' ');
+
+      // Get buyer info
+      const buyerCustomer = isBuyerSame ? selectedBookingCustomer : selectedBuyerCustomer;
+      const buyerName = buyerCustomer 
+        ? `${buyerCustomer.surnames?.description || ''}${buyerCustomer.first_name} ${buyerCustomer.last_name}`
+        : null;
+      const buyerAddress = buyerCustomer ? [
+        buyerCustomer.address1,
+        buyerCustomer.address2,
+        buyerCustomer.district,
+        buyerCustomer.province,
+        buyerCustomer.postal_code
+      ].filter(Boolean).join(' ') : null;
 
       const reservationData = {
         document_number: documentNumber,
         company_id: selectedCompany,
         branch_id: selectedBranch,
         status: 'draft',
-        customer_type: bookingCustomerType,
+        customer_type: selectedBookingCustomer.customer_type,
         customer_name: customerName,
-        customer_id_card: bookingIdNo,
-        customer_phone: bookingPhone,
-        customer_email: bookingEmail || null,
-        buyer_name: isBuyerSame ? customerName : null,
-        buyer_id_card: isBuyerSame ? bookingIdNo : null,
-        buyer_phone: isBuyerSame ? bookingPhone : null,
+        customer_id_card: selectedBookingCustomer.tax_id,
+        customer_phone: selectedBookingCustomer.mobile_phone,
+        customer_email: selectedBookingCustomer.email || null,
+        customer_address: customerAddress || null,
+        buyer_name: buyerName,
+        buyer_id_card: buyerCustomer?.tax_id || null,
+        buyer_phone: buyerCustomer?.mobile_phone || null,
+        buyer_address: buyerAddress || null,
         vehicle_type: selectedBU || null,
         model: modelName || null,
         submodel: submodelName || null,
@@ -273,7 +303,10 @@ export default function ReservationCreate() {
                 <Label>ประเภทผู้จอง <span className="text-destructive">*</span></Label>
                 <RadioGroup 
                   value={bookingCustomerType} 
-                  onValueChange={(v) => setBookingCustomerType(v as CustomerType)}
+                  onValueChange={(v) => {
+                    setBookingCustomerType(v as 'individual' | 'corporate');
+                    setSelectedBookingCustomer(null); // Reset when type changes
+                  }}
                   className="flex gap-4 mt-2"
                 >
                   <div className="flex items-center space-x-2">
@@ -287,75 +320,74 @@ export default function ReservationCreate() {
                 </RadioGroup>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label>คำนำหน้า</Label>
-                  <Select value={bookingTitle} onValueChange={setBookingTitle}>
-                    <SelectTrigger className="input-focus">
-                      <SelectValue placeholder="เลือก" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="นาย">นาย</SelectItem>
-                      <SelectItem value="นาง">นาง</SelectItem>
-                      <SelectItem value="นางสาว">นางสาว</SelectItem>
-                      <SelectItem value="บริษัท">บริษัท</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {/* Customer Selection */}
+              {!selectedBookingCustomer ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsBookingSearchOpen(true)}
+                  className="gap-2"
+                >
+                  <Search className="w-4 h-4" />
+                  เลือกลูกค้า
+                </Button>
+              ) : (
+                <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                        <span className="font-medium text-green-600">ลูกค้าที่เลือก</span>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">รหัส:</span>
+                          <span className="font-mono">{selectedBookingCustomer.customer_id}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Tax ID:</span>
+                          <span>{selectedBookingCustomer.tax_id}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">ชื่อ:</span>
+                          <span className="font-medium">
+                            {selectedBookingCustomer.surnames?.description || ''}{selectedBookingCustomer.first_name} {selectedBookingCustomer.last_name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">เบอร์โทร:</span>
+                          <span>{selectedBookingCustomer.mobile_phone || selectedBookingCustomer.telephone || '-'}</span>
+                        </div>
+                        {selectedBookingCustomer.email && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">อีเมล:</span>
+                            <span>{selectedBookingCustomer.email}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedBookingCustomer(null)}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsBookingSearchOpen(true)}
+                    className="mt-3 gap-2"
+                  >
+                    <Search className="w-4 h-4" />
+                    เปลี่ยนลูกค้า
+                  </Button>
                 </div>
-                <div className="space-y-2 md:col-span-1">
-                  <Label>ชื่อ <span className="text-destructive">*</span></Label>
-                  <Input 
-                    value={bookingFirstName} 
-                    onChange={(e) => setBookingFirstName(e.target.value)}
-                    placeholder="ชื่อ"
-                    className="input-focus"
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>นามสกุล <span className="text-destructive">*</span></Label>
-                  <Input 
-                    value={bookingLastName} 
-                    onChange={(e) => setBookingLastName(e.target.value)}
-                    placeholder="นามสกุล"
-                    className="input-focus"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                <div className="space-y-2">
-                  <Label>เลขบัตรประชาชน <span className="text-destructive">*</span></Label>
-                  <Input 
-                    value={bookingIdNo} 
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '').slice(0, 13);
-                      setBookingIdNo(value);
-                    }}
-                    placeholder="กรอกเลข 13 หลัก"
-                    maxLength={13}
-                    className="input-focus"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>เบอร์โทรศัพท์ <span className="text-destructive">*</span></Label>
-                  <Input 
-                    value={bookingPhone} 
-                    onChange={(e) => setBookingPhone(e.target.value)}
-                    placeholder="0XX-XXX-XXXX"
-                    className="input-focus"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>อีเมล</Label>
-                  <Input 
-                    type="email"
-                    value={bookingEmail} 
-                    onChange={(e) => setBookingEmail(e.target.value)}
-                    placeholder="email@example.com"
-                    className="input-focus"
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Section 3: Buyer (if different) */}
@@ -377,26 +409,63 @@ export default function ReservationCreate() {
               </div>
 
               {!isBuyerSame && (
-                <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    กรุณากรอกข้อมูลผู้ซื้อรถ (หากเป็นคนละบุคคลกับผู้จอง)
-                  </p>
-                  {/* Same fields as booking customer */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>คำนำหน้า + ชื่อ <span className="text-destructive">*</span></Label>
-                      <Input placeholder="นาย/นาง/นางสาว ชื่อ" className="input-focus" />
+                !selectedBuyerCustomer ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsBuyerSearchOpen(true)}
+                    className="gap-2"
+                  >
+                    <Search className="w-4 h-4" />
+                    เลือกลูกค้าผู้ซื้อ
+                  </Button>
+                ) : (
+                  <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle2 className="w-5 h-5 text-green-600" />
+                          <span className="font-medium text-green-600">ผู้ซื้อที่เลือก</span>
+                        </div>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">รหัส:</span>
+                            <span className="font-mono">{selectedBuyerCustomer.customer_id}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">ชื่อ:</span>
+                            <span className="font-medium">
+                              {selectedBuyerCustomer.surnames?.description || ''}{selectedBuyerCustomer.first_name} {selectedBuyerCustomer.last_name}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">เบอร์โทร:</span>
+                            <span>{selectedBuyerCustomer.mobile_phone || '-'}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedBuyerCustomer(null)}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
                     </div>
-                    <div className="space-y-2">
-                      <Label>นามสกุล <span className="text-destructive">*</span></Label>
-                      <Input placeholder="นามสกุล" className="input-focus" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>เบอร์โทรศัพท์ <span className="text-destructive">*</span></Label>
-                      <Input placeholder="0XX-XXX-XXXX" className="input-focus" />
-                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsBuyerSearchOpen(true)}
+                      className="mt-3 gap-2"
+                    >
+                      <Search className="w-4 h-4" />
+                      เปลี่ยนลูกค้า
+                    </Button>
                   </div>
-                </div>
+                )
               )}
             </div>
 
@@ -792,6 +861,22 @@ export default function ReservationCreate() {
           </div>
         </div>
       </div>
+
+      {/* Customer Search Dialogs */}
+      <CustomerSearchDialog
+        open={isBookingSearchOpen}
+        onOpenChange={setIsBookingSearchOpen}
+        onSelect={setSelectedBookingCustomer}
+        companyId={selectedCompany}
+        customerType={bookingCustomerType}
+      />
+
+      <CustomerSearchDialog
+        open={isBuyerSearchOpen}
+        onOpenChange={setIsBuyerSearchOpen}
+        onSelect={setSelectedBuyerCustomer}
+        companyId={selectedCompany}
+      />
     </>
   );
 }

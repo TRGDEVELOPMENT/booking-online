@@ -132,7 +132,7 @@ export type Database = {
           province: string | null
           status: string
           surname_id: string | null
-          tax_id: string | null
+          tax_id: string
           telephone: string | null
           updated_at: string
         }
@@ -154,7 +154,7 @@ export type Database = {
           province?: string | null
           status?: string
           surname_id?: string | null
-          tax_id?: string | null
+          tax_id: string
           telephone?: string | null
           updated_at?: string
         }
@@ -176,7 +176,7 @@ export type Database = {
           province?: string | null
           status?: string
           surname_id?: string | null
-          tax_id?: string | null
+          tax_id?: string
           telephone?: string | null
           updated_at?: string
         }

@@ -1408,7 +1408,8 @@ export default function ReservationEdit() {
                   onClick={handleSave}
                   disabled={isSaving}
                 >
-                  {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'บันทึกและปิด'}
+                  {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  ส่งขออนุมัติ
                   {!isSaving && <ArrowRight className="w-4 h-4" />}
                 </Button>
               </div>

@@ -24,6 +24,8 @@ import {
   Wrench,
   Award,
   User,
+  CalendarDays,
+  Clock,
   type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -90,7 +92,11 @@ const menuItems: MenuItem[] = [
     id: 'reports', 
     label: 'รายงาน', 
     icon: BarChart3, 
-    path: '/reports' 
+    path: '/reports',
+    subItems: [
+      { id: 'monthly', label: 'ใบจองรายเดือน', path: '/reports/monthly', icon: CalendarDays },
+      { id: 'pending-approval', label: 'ใบจองที่ยังไม่อนุมัติ', path: '/reports/pending-approval', icon: Clock },
+    ]
   },
   { 
     id: 'settings', 

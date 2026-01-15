@@ -39,6 +39,7 @@ interface Surname {
 interface Customer {
   id: string;
   no: number;
+  customer_id: string;
   surname_id: string | null;
   first_name: string;
   last_name: string;
@@ -235,6 +236,7 @@ export default function CustomersPage() {
 
   const filteredCustomers = customers.filter(
     (item) =>
+      item.customer_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -284,6 +286,7 @@ export default function CustomersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-16">ลำดับ</TableHead>
+                <TableHead className="w-36">รหัสลูกค้า</TableHead>
                 <TableHead className="w-24">คำนำหน้า</TableHead>
                 <TableHead>ชื่อ</TableHead>
                 <TableHead>นามสกุล</TableHead>
@@ -296,7 +299,7 @@ export default function CustomersPage() {
             <TableBody>
               {filteredCustomers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                     ไม่พบข้อมูล
                   </TableCell>
                 </TableRow>
@@ -304,6 +307,7 @@ export default function CustomersPage() {
                 filteredCustomers.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell>{item.no}</TableCell>
+                    <TableCell className="font-mono text-sm">{item.customer_id}</TableCell>
                     <TableCell>
                       {item.surnames?.description || getSurnameName(item.surname_id)}
                     </TableCell>

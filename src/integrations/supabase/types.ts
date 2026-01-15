@@ -316,6 +316,10 @@ export type Database = {
       reservations: {
         Row: {
           accessories: Json | null
+          approval_remark: string | null
+          approval_status: string | null
+          approved_at: string | null
+          approved_by: string | null
           benefits: Json | null
           branch_id: string | null
           buyer_address: string | null
@@ -349,6 +353,10 @@ export type Database = {
           list_price: number | null
           model: string | null
           net_price: number | null
+          review_remark: string | null
+          review_status: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: string
           submodel: string | null
           updated_at: string
@@ -356,6 +364,10 @@ export type Database = {
         }
         Insert: {
           accessories?: Json | null
+          approval_remark?: string | null
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           benefits?: Json | null
           branch_id?: string | null
           buyer_address?: string | null
@@ -389,6 +401,10 @@ export type Database = {
           list_price?: number | null
           model?: string | null
           net_price?: number | null
+          review_remark?: string | null
+          review_status?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
           submodel?: string | null
           updated_at?: string
@@ -396,6 +412,10 @@ export type Database = {
         }
         Update: {
           accessories?: Json | null
+          approval_remark?: string | null
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           benefits?: Json | null
           branch_id?: string | null
           buyer_address?: string | null
@@ -429,6 +449,10 @@ export type Database = {
           list_price?: number | null
           model?: string | null
           net_price?: number | null
+          review_remark?: string | null
+          review_status?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
           submodel?: string | null
           updated_at?: string

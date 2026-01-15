@@ -24,7 +24,12 @@ import {
   Smartphone,
   Mail,
   Link as LinkIcon,
-  RefreshCw
+  RefreshCw,
+  ClipboardCheck,
+  UserCheck,
+  RotateCcw,
+  XCircle,
+  ThumbsUp
 } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Badge } from '@/components/ui/badge';
@@ -116,6 +121,18 @@ export default function ReservationEdit() {
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isSendingLink, setIsSendingLink] = useState(false);
   const [otpExpiresAt, setOtpExpiresAt] = useState<string | null>(null);
+
+  // Review (หัวหน้าทีมขาย)
+  const [reviewStatus, setReviewStatus] = useState<'pending' | 'reviewed' | 'returned'>('pending');
+  const [reviewRemark, setReviewRemark] = useState('');
+  const [reviewedAt, setReviewedAt] = useState<string | null>(null);
+  const [isSavingReview, setIsSavingReview] = useState(false);
+
+  // Approval (ผู้จัดการฝ่ายขาย)
+  const [approvalStatus, setApprovalStatus] = useState<'pending' | 'approved' | 'rejected'>('pending');
+  const [approvalRemark, setApprovalRemark] = useState('');
+  const [approvedAt, setApprovedAt] = useState<string | null>(null);
+  const [isSavingApproval, setIsSavingApproval] = useState(false);
 
   // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์
   const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
@@ -225,6 +242,28 @@ export default function ReservationEdit() {
         }
         if (data.confirmed_at) {
           setConfirmedAt(data.confirmed_at);
+        }
+        
+        // Review data
+        if (data.review_status) {
+          setReviewStatus(data.review_status as 'pending' | 'reviewed' | 'returned');
+        }
+        if (data.review_remark) {
+          setReviewRemark(data.review_remark);
+        }
+        if (data.reviewed_at) {
+          setReviewedAt(data.reviewed_at);
+        }
+        
+        // Approval data
+        if (data.approval_status) {
+          setApprovalStatus(data.approval_status as 'pending' | 'approved' | 'rejected');
+        }
+        if (data.approval_remark) {
+          setApprovalRemark(data.approval_remark);
+        }
+        if (data.approved_at) {
+          setApprovedAt(data.approved_at);
         }
       } catch (err) {
         console.error('Error:', err);
@@ -1271,7 +1310,295 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 11: รายละเอียดการชำระเงิน (เฉพาะการเงิน) */}
+            {/* Section 10: ตรวจสอบใบจอง (หัวหน้าทีมขาย) */}
+            <div className="form-section border-2 border-orange-500/20 bg-orange-50/50 dark:bg-orange-950/20">
+              <div className="form-section-header flex items-center justify-between">
+                <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
+                  <ClipboardCheck className="w-5 h-5" />
+                  ตรวจสอบใบจอง (หัวหน้าทีมขาย)
+                </div>
+                {reviewStatus === 'pending' && (
+                  <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400">
+                    <Clock className="w-3 h-3 mr-1" />
+                    รอตรวจสอบ
+                  </Badge>
+                )}
+                {reviewStatus === 'reviewed' && (
+                  <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-400">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    ตรวจสอบแล้ว
+                  </Badge>
+                )}
+                {reviewStatus === 'returned' && (
+                  <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/30 dark:text-orange-400">
+                    <RotateCcw className="w-3 h-3 mr-1" />
+                    ส่งกลับแก้ไข
+                  </Badge>
+                )}
+              </div>
+
+              {reviewStatus === 'reviewed' && reviewedAt ? (
+                <div className="p-4 bg-green-100/50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+                      <CheckCircle className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-green-800 dark:text-green-300">ตรวจสอบแล้ว</p>
+                      <p className="text-sm text-green-600 dark:text-green-400">
+                        {new Date(reviewedAt).toLocaleDateString('th-TH', { 
+                          year: 'numeric', month: 'long', day: 'numeric' 
+                        })} เวลา {new Date(reviewedAt).toLocaleTimeString('th-TH', { 
+                          hour: '2-digit', minute: '2-digit' 
+                        })} น.
+                      </p>
+                    </div>
+                  </div>
+                  {reviewRemark && (
+                    <div className="p-3 bg-white/50 dark:bg-black/20 rounded border border-green-200 dark:border-green-700">
+                      <p className="text-sm text-muted-foreground mb-1">Remark:</p>
+                      <p className="text-sm">{reviewRemark}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Remark</Label>
+                    <Textarea 
+                      value={reviewRemark}
+                      onChange={(e) => setReviewRemark(e.target.value)}
+                      placeholder="หมายเหตุการตรวจสอบ..."
+                      className="input-focus min-h-[80px]"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-3 pt-2">
+                    <Button 
+                      variant="outline"
+                      className="gap-2 border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-400"
+                      onClick={async () => {
+                        setIsSavingReview(true);
+                        try {
+                          const now = new Date().toISOString();
+                          await supabase
+                            .from('reservations')
+                            .update({ 
+                              review_status: 'returned',
+                              review_remark: reviewRemark,
+                              reviewed_by: user?.id,
+                              reviewed_at: now,
+                              status: 'draft'
+                            })
+                            .eq('id', id);
+                          setReviewStatus('returned');
+                          setReviewedAt(now);
+                          toast.success('ส่งกลับไปแก้ไขแล้ว');
+                        } catch (err) {
+                          toast.error('เกิดข้อผิดพลาด');
+                        } finally {
+                          setIsSavingReview(false);
+                        }
+                      }}
+                      disabled={isSavingReview}
+                    >
+                      {isSavingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                      ส่งกลับไปแก้ไข
+                    </Button>
+                    <Button 
+                      className="gap-2 bg-orange-600 hover:bg-orange-700 text-white"
+                      onClick={async () => {
+                        setIsSavingReview(true);
+                        try {
+                          const now = new Date().toISOString();
+                          await supabase
+                            .from('reservations')
+                            .update({ 
+                              review_status: 'reviewed',
+                              review_remark: reviewRemark,
+                              reviewed_by: user?.id,
+                              reviewed_at: now,
+                              status: 'pending'
+                            })
+                            .eq('id', id);
+                          setReviewStatus('reviewed');
+                          setReviewedAt(now);
+                          toast.success('บันทึกการตรวจสอบสำเร็จ');
+                        } catch (err) {
+                          toast.error('เกิดข้อผิดพลาด');
+                        } finally {
+                          setIsSavingReview(false);
+                        }
+                      }}
+                      disabled={isSavingReview}
+                    >
+                      {isSavingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                      บันทึกการตรวจสอบ
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Section 11: อนุมัติใบจอง (ผู้จัดการฝ่ายขาย) */}
+            <div className="form-section border-2 border-purple-500/20 bg-purple-50/50 dark:bg-purple-950/20">
+              <div className="form-section-header flex items-center justify-between">
+                <div className="flex items-center gap-2 text-purple-700 dark:text-purple-400">
+                  <UserCheck className="w-5 h-5" />
+                  อนุมัติใบจอง (ผู้จัดการฝ่ายขาย)
+                </div>
+                {approvalStatus === 'pending' && (
+                  <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400">
+                    <Clock className="w-3 h-3 mr-1" />
+                    รออนุมัติ
+                  </Badge>
+                )}
+                {approvalStatus === 'approved' && (
+                  <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-400">
+                    <ThumbsUp className="w-3 h-3 mr-1" />
+                    อนุมัติแล้ว
+                  </Badge>
+                )}
+                {approvalStatus === 'rejected' && (
+                  <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-400">
+                    <XCircle className="w-3 h-3 mr-1" />
+                    ไม่อนุมัติ
+                  </Badge>
+                )}
+              </div>
+
+              {approvalStatus !== 'pending' && approvedAt ? (
+                <div className={cn(
+                  "p-4 rounded-lg border",
+                  approvalStatus === 'approved' 
+                    ? "bg-green-100/50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+                    : "bg-red-100/50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+                )}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center",
+                      approvalStatus === 'approved' ? "bg-green-500" : "bg-red-500"
+                    )}>
+                      {approvalStatus === 'approved' 
+                        ? <ThumbsUp className="w-5 h-5 text-white" />
+                        : <XCircle className="w-5 h-5 text-white" />
+                      }
+                    </div>
+                    <div>
+                      <p className={cn(
+                        "font-semibold",
+                        approvalStatus === 'approved' 
+                          ? "text-green-800 dark:text-green-300"
+                          : "text-red-800 dark:text-red-300"
+                      )}>
+                        {approvalStatus === 'approved' ? 'อนุมัติแล้ว' : 'ไม่อนุมัติ'}
+                      </p>
+                      <p className={cn(
+                        "text-sm",
+                        approvalStatus === 'approved'
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-red-600 dark:text-red-400"
+                      )}>
+                        {new Date(approvedAt).toLocaleDateString('th-TH', { 
+                          year: 'numeric', month: 'long', day: 'numeric' 
+                        })} เวลา {new Date(approvedAt).toLocaleTimeString('th-TH', { 
+                          hour: '2-digit', minute: '2-digit' 
+                        })} น.
+                      </p>
+                    </div>
+                  </div>
+                  {approvalRemark && (
+                    <div className={cn(
+                      "p-3 rounded border",
+                      approvalStatus === 'approved'
+                        ? "bg-white/50 dark:bg-black/20 border-green-200 dark:border-green-700"
+                        : "bg-white/50 dark:bg-black/20 border-red-200 dark:border-red-700"
+                    )}>
+                      <p className="text-sm text-muted-foreground mb-1">Remark:</p>
+                      <p className="text-sm">{approvalRemark}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Remark</Label>
+                    <Textarea 
+                      value={approvalRemark}
+                      onChange={(e) => setApprovalRemark(e.target.value)}
+                      placeholder="หมายเหตุการอนุมัติ..."
+                      className="input-focus min-h-[80px]"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-3 pt-2">
+                    <Button 
+                      variant="outline"
+                      className="gap-2 border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400"
+                      onClick={async () => {
+                        setIsSavingApproval(true);
+                        try {
+                          const now = new Date().toISOString();
+                          await supabase
+                            .from('reservations')
+                            .update({ 
+                              approval_status: 'rejected',
+                              approval_remark: approvalRemark,
+                              approved_by: user?.id,
+                              approved_at: now,
+                              status: 'rejected'
+                            })
+                            .eq('id', id);
+                          setApprovalStatus('rejected');
+                          setApprovedAt(now);
+                          toast.success('บันทึกการไม่อนุมัติแล้ว');
+                        } catch (err) {
+                          toast.error('เกิดข้อผิดพลาด');
+                        } finally {
+                          setIsSavingApproval(false);
+                        }
+                      }}
+                      disabled={isSavingApproval}
+                    >
+                      {isSavingApproval ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                      Reject
+                    </Button>
+                    <Button 
+                      className="gap-2 bg-purple-600 hover:bg-purple-700 text-white"
+                      onClick={async () => {
+                        setIsSavingApproval(true);
+                        try {
+                          const now = new Date().toISOString();
+                          await supabase
+                            .from('reservations')
+                            .update({ 
+                              approval_status: 'approved',
+                              approval_remark: approvalRemark,
+                              approved_by: user?.id,
+                              approved_at: now,
+                              status: 'approved'
+                            })
+                            .eq('id', id);
+                          setApprovalStatus('approved');
+                          setApprovedAt(now);
+                          toast.success('อนุมัติใบจองสำเร็จ');
+                        } catch (err) {
+                          toast.error('เกิดข้อผิดพลาด');
+                        } finally {
+                          setIsSavingApproval(false);
+                        }
+                      }}
+                      disabled={isSavingApproval}
+                    >
+                      {isSavingApproval ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsUp className="w-4 h-4" />}
+                      Approve
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Section 12: รายละเอียดการชำระเงิน (เฉพาะการเงิน) */}
             <div className="form-section border-2 border-primary/20 bg-primary/5">
               <div className="form-section-header flex items-center gap-2 text-primary">
                 <CreditCard className="w-5 h-5" />

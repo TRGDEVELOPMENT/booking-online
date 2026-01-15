@@ -361,6 +361,20 @@ export default function CustomersPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4 overflow-y-auto flex-1">
+            {/* เลขประจำตัวผู้เสียภาษี/เลขบัตรประชาชน - ย้ายมาอยู่ด้านบน */}
+            <div className="space-y-2">
+              <Label htmlFor="tax_id">เลขประจำตัวผู้เสียภาษี/เลขบัตรประชาชน</Label>
+              <Input
+                id="tax_id"
+                value={formData.tax_id}
+                onChange={(e) =>
+                  setFormData({ ...formData, tax_id: e.target.value })
+                }
+                placeholder="เลขประจำตัวผู้เสียภาษี/เลขบัตรประชาชน"
+                maxLength={13}
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>ประเภทลูกค้า</Label>
@@ -472,18 +486,6 @@ export default function CustomersPage() {
                   setFormData({ ...formData, email: e.target.value })
                 }
                 placeholder="อีเมล"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tax_id">TAX ID</Label>
-              <Input
-                id="tax_id"
-                value={formData.tax_id}
-                onChange={(e) =>
-                  setFormData({ ...formData, tax_id: e.target.value })
-                }
-                placeholder="หมายเลขประจำตัวผู้เสียภาษี"
               />
             </div>
 

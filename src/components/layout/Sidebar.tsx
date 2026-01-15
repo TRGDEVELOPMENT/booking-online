@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   FileText, 
   List,
+  Ban,
   FilePlus2, 
   Users, 
   Car, 
@@ -83,10 +84,10 @@ const menuItems: MenuItem[] = [
     path: '/settings/customers' 
   },
   { 
-    id: 'vehicles', 
-    label: 'ข้อมูลรถยนต์', 
-    icon: Car, 
-    path: '/vehicles' 
+    id: 'cancelled', 
+    label: 'ยกเลิกใบจอง', 
+    icon: Ban, 
+    path: '/reservations/cancelled' 
   },
   { 
     id: 'reports', 

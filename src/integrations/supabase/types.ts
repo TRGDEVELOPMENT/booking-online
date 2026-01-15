@@ -119,6 +119,7 @@ export type Database = {
           address2: string | null
           company_id: string
           created_at: string
+          customer_id: string
           customer_type: string
           district: string | null
           email: string | null
@@ -140,6 +141,7 @@ export type Database = {
           address2?: string | null
           company_id: string
           created_at?: string
+          customer_id: string
           customer_type?: string
           district?: string | null
           email?: string | null
@@ -161,6 +163,7 @@ export type Database = {
           address2?: string | null
           company_id?: string
           created_at?: string
+          customer_id?: string
           customer_type?: string
           district?: string | null
           email?: string | null
@@ -584,6 +587,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_customer_id: { Args: { p_company_id: string }; Returns: string }
       get_next_customer_no: { Args: { p_company_id: string }; Returns: number }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_role: {

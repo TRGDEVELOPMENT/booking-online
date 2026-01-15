@@ -28,6 +28,10 @@ import BenefitsPage from "@/pages/settings/BenefitsPage";
 import SurnamesPage from "@/pages/settings/SurnamesPage";
 import CustomersPage from "@/pages/settings/CustomersPage";
 
+// Reports Pages
+import MonthlyReservationsPage from "@/pages/reports/MonthlyReservationsPage";
+import PendingApprovalPage from "@/pages/reports/PendingApprovalPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -44,6 +48,10 @@ const App = () => (
               <Route path="/reservations" element={<ReservationList />} />
               <Route path="/reservations/create" element={<ReservationCreate />} />
               <Route path="/reservations/:id/edit" element={<ReservationEdit />} />
+              
+              {/* Reports Routes */}
+              <Route path="/reports/monthly" element={<MonthlyReservationsPage />} />
+              <Route path="/reports/pending-approval" element={<PendingApprovalPage />} />
               
               {/* Settings Routes */}
               <Route path="/settings" element={<SettingsIndex />} />

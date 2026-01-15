@@ -324,6 +324,13 @@ export type Database = {
           buyer_phone: string | null
           color: string | null
           company_id: string
+          confirmation_method: string | null
+          confirmation_otp: string | null
+          confirmation_otp_expires_at: string | null
+          confirmation_status: string | null
+          confirmation_token: string | null
+          confirmation_token_expires_at: string | null
+          confirmed_at: string | null
           created_at: string
           created_by: string | null
           customer_address: string | null
@@ -357,6 +364,13 @@ export type Database = {
           buyer_phone?: string | null
           color?: string | null
           company_id: string
+          confirmation_method?: string | null
+          confirmation_otp?: string | null
+          confirmation_otp_expires_at?: string | null
+          confirmation_status?: string | null
+          confirmation_token?: string | null
+          confirmation_token_expires_at?: string | null
+          confirmed_at?: string | null
           created_at?: string
           created_by?: string | null
           customer_address?: string | null
@@ -390,6 +404,13 @@ export type Database = {
           buyer_phone?: string | null
           color?: string | null
           company_id?: string
+          confirmation_method?: string | null
+          confirmation_otp?: string | null
+          confirmation_otp_expires_at?: string | null
+          confirmation_status?: string | null
+          confirmation_token?: string | null
+          confirmation_token_expires_at?: string | null
+          confirmed_at?: string | null
           created_at?: string
           created_by?: string | null
           customer_address?: string | null

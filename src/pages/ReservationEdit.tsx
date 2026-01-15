@@ -17,8 +17,17 @@ import {
   Loader2,
   CreditCard,
   Upload,
-  CheckCircle
+  CheckCircle,
+  Send,
+  Clock,
+  ShieldCheck,
+  Smartphone,
+  Mail,
+  Link as LinkIcon,
+  RefreshCw
 } from 'lucide-react';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
 import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
 import { Button } from '@/components/ui/button';
@@ -97,10 +106,16 @@ export default function ReservationEdit() {
   const [paymentFile, setPaymentFile] = useState<File | null>(null);
   const [isSavingPayment, setIsSavingPayment] = useState(false);
 
-  // Customer Confirmation
-  const [customerConfirmed, setCustomerConfirmed] = useState(false);
-  const [confirmationDate, setConfirmationDate] = useState('');
-  const [confirmationTime, setConfirmationTime] = useState('');
+  // Customer Confirmation - New Design
+  const [confirmationStatus, setConfirmationStatus] = useState<'pending' | 'otp_sent' | 'link_sent' | 'confirmed'>('pending');
+  const [confirmationMethod, setConfirmationMethod] = useState<'otp' | 'link'>('otp');
+  const [confirmedAt, setConfirmedAt] = useState<string | null>(null);
+  const [otpCode, setOtpCode] = useState('');
+  const [linkSendMethod, setLinkSendMethod] = useState<'sms' | 'email'>('sms');
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isSendingLink, setIsSendingLink] = useState(false);
+  const [otpExpiresAt, setOtpExpiresAt] = useState<string | null>(null);
 
   // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์
   const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
@@ -199,6 +214,17 @@ export default function ReservationEdit() {
         }
         if (Array.isArray(data.benefits)) {
           setBenefits(data.benefits as Array<{ id: number; name: string; value: number }>);
+        }
+        
+        // Confirmation data
+        if (data.confirmation_status) {
+          setConfirmationStatus(data.confirmation_status as 'pending' | 'otp_sent' | 'link_sent' | 'confirmed');
+        }
+        if (data.confirmation_method) {
+          setConfirmationMethod(data.confirmation_method as 'otp' | 'link');
+        }
+        if (data.confirmed_at) {
+          setConfirmedAt(data.confirmed_at);
         }
       } catch (err) {
         console.error('Error:', err);
@@ -740,46 +766,348 @@ export default function ReservationEdit() {
 
             {/* Section 6: ยืนยันสัญญาจอง */}
             <div className="form-section border-2 border-green-500/20 bg-green-50/50 dark:bg-green-950/20">
-              <div className="form-section-header flex items-center gap-2 text-green-700 dark:text-green-400">
-                <CheckCircle className="w-5 h-5" />
-                ยืนยันสัญญาจอง
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Checkbox 
-                    id="customerConfirmed" 
-                    checked={customerConfirmed}
-                    onCheckedChange={(checked) => setCustomerConfirmed(checked as boolean)}
-                  />
-                  <Label htmlFor="customerConfirmed" className="cursor-pointer text-base font-medium">
-                    ลูกค้ายืนยันการจอง
-                  </Label>
+              <div className="form-section-header flex items-center justify-between">
+                <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                  <ShieldCheck className="w-5 h-5" />
+                  ยืนยันสัญญาจอง
                 </div>
-
-                {customerConfirmed && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-background rounded-lg border border-border">
-                    <div className="space-y-2">
-                      <Label>วันที่ยืนยัน</Label>
-                      <Input 
-                        type="date"
-                        value={confirmationDate}
-                        onChange={(e) => setConfirmationDate(e.target.value)}
-                        className="input-focus"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>เวลายืนยัน</Label>
-                      <Input 
-                        type="time"
-                        value={confirmationTime}
-                        onChange={(e) => setConfirmationTime(e.target.value)}
-                        className="input-focus"
-                      />
-                    </div>
-                  </div>
+                {/* Status Badge */}
+                {confirmationStatus === 'pending' && (
+                  <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400">
+                    <Clock className="w-3 h-3 mr-1" />
+                    รอยืนยัน
+                  </Badge>
+                )}
+                {confirmationStatus === 'otp_sent' && (
+                  <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400">
+                    <Send className="w-3 h-3 mr-1" />
+                    ส่ง OTP แล้ว
+                  </Badge>
+                )}
+                {confirmationStatus === 'link_sent' && (
+                  <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400">
+                    <LinkIcon className="w-3 h-3 mr-1" />
+                    ส่ง Link แล้ว
+                  </Badge>
+                )}
+                {confirmationStatus === 'confirmed' && (
+                  <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-400">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    ยืนยันแล้ว
+                  </Badge>
                 )}
               </div>
+              
+              {/* Confirmed State */}
+              {confirmationStatus === 'confirmed' && confirmedAt ? (
+                <div className="p-4 bg-green-100/50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-green-800 dark:text-green-300">ลูกค้ายืนยันการจองแล้ว</p>
+                      <p className="text-sm text-green-600 dark:text-green-400">
+                        วันที่ {new Date(confirmedAt).toLocaleDateString('th-TH', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })} เวลา {new Date(confirmedAt).toLocaleTimeString('th-TH', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })} น.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Method Selection */}
+                  <div>
+                    <Label className="text-base font-medium mb-3 block">เลือกวิธียืนยัน</Label>
+                    <RadioGroup 
+                      value={confirmationMethod} 
+                      onValueChange={(v) => setConfirmationMethod(v as 'otp' | 'link')}
+                      className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                    >
+                      <label 
+                        className={cn(
+                          "flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all",
+                          confirmationMethod === 'otp' 
+                            ? "border-green-500 bg-green-50 dark:bg-green-950/30" 
+                            : "border-border hover:border-green-300"
+                        )}
+                      >
+                        <RadioGroupItem value="otp" className="mt-1" />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 font-medium">
+                            <Smartphone className="w-4 h-4 text-green-600" />
+                            ส่งรหัส OTP ให้ลูกค้า
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            ลูกค้าจะได้รับ SMS รหัส OTP 6 หลัก และแจ้งกลับมาที่พนักงานขาย
+                          </p>
+                        </div>
+                      </label>
+                      
+                      <label 
+                        className={cn(
+                          "flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all",
+                          confirmationMethod === 'link' 
+                            ? "border-green-500 bg-green-50 dark:bg-green-950/30" 
+                            : "border-border hover:border-green-300"
+                        )}
+                      >
+                        <RadioGroupItem value="link" className="mt-1" />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 font-medium">
+                            <LinkIcon className="w-4 h-4 text-green-600" />
+                            ส่ง Link ให้ลูกค้ากดยืนยัน
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            ลูกค้าจะได้รับ Link สำหรับยืนยันการจอง และระบบจะ Stamp เวลาอัตโนมัติ
+                          </p>
+                        </div>
+                      </label>
+                    </RadioGroup>
+                  </div>
+
+                  {/* OTP Method */}
+                  {confirmationMethod === 'otp' && (
+                    <div className="p-4 bg-background rounded-lg border border-border space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">หมายเลขโทรศัพท์ลูกค้า</p>
+                          <p className="font-medium">
+                            {bookingPhone ? `${bookingPhone.slice(0, 3)}-XXX-${bookingPhone.slice(-4)}` : 'ไม่ระบุ'}
+                          </p>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          onClick={async () => {
+                            if (!bookingPhone) {
+                              toast.error('กรุณากรอกเบอร์โทรศัพท์ลูกค้า');
+                              return;
+                            }
+                            setIsSendingOtp(true);
+                            try {
+                              // Mock OTP sending for now
+                              await new Promise(resolve => setTimeout(resolve, 1500));
+                              setConfirmationStatus('otp_sent');
+                              setOtpExpiresAt(new Date(Date.now() + 5 * 60 * 1000).toISOString());
+                              toast.success('ส่งรหัส OTP ไปที่ลูกค้าแล้ว');
+                            } catch (err) {
+                              toast.error('เกิดข้อผิดพลาดในการส่ง OTP');
+                            } finally {
+                              setIsSendingOtp(false);
+                            }
+                          }}
+                          disabled={isSendingOtp || confirmationStatus === 'otp_sent'}
+                          className="gap-2"
+                        >
+                          {isSendingOtp ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Send className="w-4 h-4" />
+                          )}
+                          {confirmationStatus === 'otp_sent' ? 'ส่ง OTP แล้ว' : 'ส่ง OTP'}
+                        </Button>
+                      </div>
+
+                      {confirmationStatus === 'otp_sent' && (
+                        <>
+                          <div className="pt-4 border-t border-border">
+                            <Label className="mb-2 block">กรอกรหัส OTP จากลูกค้า</Label>
+                            <div className="flex items-center gap-4">
+                              <InputOTP 
+                                maxLength={6} 
+                                value={otpCode}
+                                onChange={setOtpCode}
+                              >
+                                <InputOTPGroup>
+                                  <InputOTPSlot index={0} />
+                                  <InputOTPSlot index={1} />
+                                  <InputOTPSlot index={2} />
+                                  <InputOTPSlot index={3} />
+                                  <InputOTPSlot index={4} />
+                                  <InputOTPSlot index={5} />
+                                </InputOTPGroup>
+                              </InputOTP>
+                              <Button 
+                                onClick={async () => {
+                                  if (otpCode.length !== 6) {
+                                    toast.error('กรุณากรอกรหัส OTP 6 หลัก');
+                                    return;
+                                  }
+                                  setIsVerifyingOtp(true);
+                                  try {
+                                    // Mock OTP verification
+                                    await new Promise(resolve => setTimeout(resolve, 1000));
+                                    const now = new Date().toISOString();
+                                    setConfirmationStatus('confirmed');
+                                    setConfirmedAt(now);
+                                    // Update database
+                                    await supabase
+                                      .from('reservations')
+                                      .update({ 
+                                        confirmation_status: 'confirmed',
+                                        confirmation_method: 'otp',
+                                        confirmed_at: now
+                                      })
+                                      .eq('id', id);
+                                    toast.success('ยืนยันการจองสำเร็จ');
+                                  } catch (err) {
+                                    toast.error('รหัส OTP ไม่ถูกต้อง');
+                                  } finally {
+                                    setIsVerifyingOtp(false);
+                                  }
+                                }}
+                                disabled={isVerifyingOtp || otpCode.length !== 6}
+                                className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                              >
+                                {isVerifyingOtp ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="w-4 h-4" />
+                                )}
+                                ยืนยัน OTP
+                              </Button>
+                            </div>
+                            <div className="flex items-center justify-between mt-3">
+                              <p className="text-sm text-muted-foreground">
+                                <Clock className="w-3 h-3 inline mr-1" />
+                                รหัส OTP หมดอายุใน 5 นาที
+                              </p>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={async () => {
+                                  setIsSendingOtp(true);
+                                  try {
+                                    await new Promise(resolve => setTimeout(resolve, 1500));
+                                    setOtpCode('');
+                                    setOtpExpiresAt(new Date(Date.now() + 5 * 60 * 1000).toISOString());
+                                    toast.success('ส่งรหัส OTP ใหม่แล้ว');
+                                  } finally {
+                                    setIsSendingOtp(false);
+                                  }
+                                }}
+                                disabled={isSendingOtp}
+                                className="text-green-600 hover:text-green-700 gap-1"
+                              >
+                                <RefreshCw className="w-3 h-3" />
+                                ส่งรหัสใหม่
+                              </Button>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Link Method */}
+                  {confirmationMethod === 'link' && (
+                    <div className="p-4 bg-background rounded-lg border border-border space-y-4">
+                      <div>
+                        <Label className="mb-2 block">เลือกช่องทางส่ง Link</Label>
+                        <RadioGroup 
+                          value={linkSendMethod} 
+                          onValueChange={(v) => setLinkSendMethod(v as 'sms' | 'email')}
+                          className="flex gap-4"
+                        >
+                          <label className={cn(
+                            "flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-all",
+                            linkSendMethod === 'sms' ? "border-green-500 bg-green-50 dark:bg-green-950/30" : "border-border"
+                          )}>
+                            <RadioGroupItem value="sms" />
+                            <Smartphone className="w-4 h-4" />
+                            <span>SMS</span>
+                            <span className="text-sm text-muted-foreground">
+                              ({bookingPhone ? `${bookingPhone.slice(0, 3)}-XXX-${bookingPhone.slice(-4)}` : 'ไม่ระบุ'})
+                            </span>
+                          </label>
+                          <label className={cn(
+                            "flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-all",
+                            linkSendMethod === 'email' ? "border-green-500 bg-green-50 dark:bg-green-950/30" : "border-border"
+                          )}>
+                            <RadioGroupItem value="email" />
+                            <Mail className="w-4 h-4" />
+                            <span>Email</span>
+                            <span className="text-sm text-muted-foreground">
+                              ({bookingEmail || 'ไม่ระบุ'})
+                            </span>
+                          </label>
+                        </RadioGroup>
+                      </div>
+
+                      <Button 
+                        onClick={async () => {
+                          const contact = linkSendMethod === 'sms' ? bookingPhone : bookingEmail;
+                          if (!contact) {
+                            toast.error(`กรุณากรอก${linkSendMethod === 'sms' ? 'เบอร์โทรศัพท์' : 'อีเมล'}ลูกค้า`);
+                            return;
+                          }
+                          setIsSendingLink(true);
+                          try {
+                            // Mock link sending
+                            await new Promise(resolve => setTimeout(resolve, 1500));
+                            setConfirmationStatus('link_sent');
+                            // Update database
+                            await supabase
+                              .from('reservations')
+                              .update({ 
+                                confirmation_status: 'link_sent',
+                                confirmation_method: 'link'
+                              })
+                              .eq('id', id);
+                            toast.success(`ส่ง Link ยืนยันไปที่${linkSendMethod === 'sms' ? 'โทรศัพท์' : 'อีเมล'}ลูกค้าแล้ว`);
+                          } catch (err) {
+                            toast.error('เกิดข้อผิดพลาดในการส่ง Link');
+                          } finally {
+                            setIsSendingLink(false);
+                          }
+                        }}
+                        disabled={isSendingLink || confirmationStatus === 'link_sent'}
+                        className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        {isSendingLink ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                        {confirmationStatus === 'link_sent' ? 'ส่ง Link แล้ว - รอลูกค้ายืนยัน' : 'ส่ง Link ยืนยัน'}
+                      </Button>
+
+                      {confirmationStatus === 'link_sent' && (
+                        <div className="flex items-center justify-between pt-3 border-t border-border">
+                          <p className="text-sm text-muted-foreground">
+                            <Clock className="w-3 h-3 inline mr-1" />
+                            รอลูกค้ากดยืนยันจาก Link ที่ส่งไป
+                          </p>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={async () => {
+                              setIsSendingLink(true);
+                              try {
+                                await new Promise(resolve => setTimeout(resolve, 1500));
+                                toast.success('ส่ง Link ใหม่แล้ว');
+                              } finally {
+                                setIsSendingLink(false);
+                              }
+                            }}
+                            disabled={isSendingLink}
+                            className="text-green-600 hover:text-green-700 gap-1"
+                          >
+                            <RefreshCw className="w-3 h-3" />
+                            ส่ง Link ใหม่
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Section 7: ของแถม */}

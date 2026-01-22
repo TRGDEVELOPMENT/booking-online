@@ -87,7 +87,7 @@ const menuItems: MenuItem[] = [
     id: 'cancelled', 
     label: 'ยกเลิกใบจอง', 
     icon: Ban, 
-    path: '/reservations/cancelled' 
+    path: '/reservations/cancel' 
   },
   { 
     id: 'reports', 

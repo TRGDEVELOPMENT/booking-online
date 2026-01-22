@@ -25,6 +25,7 @@ import { Header } from '@/components/layout/Header';
 import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
 import { CustomerSearchDialog, type Customer } from '@/components/reservations/CustomerSearchDialog';
 import FileUploadSection from '@/components/reservations/FileUploadSection';
+import { useReservationAttachments, type AttachmentFile } from '@/hooks/useReservationAttachments';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -49,15 +50,6 @@ import type { FuelType, PurchaseType } from '@/types/reservation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-
-// Attachment file type
-interface UploadedFile {
-  id: string;
-  file: File;
-  name: string;
-  size: number;
-  type: string;
-}
 
 // Note: Payment section, Review section, and Approval section are hidden for 'sale' role
 
@@ -120,8 +112,42 @@ export default function ReservationCreate() {
   const [paymentFile, setPaymentFile] = useState<File | null>(null);
   const [isSavingPayment, setIsSavingPayment] = useState(false);
   
-  // Attachments
-  const [attachments, setAttachments] = useState<UploadedFile[]>([]);
+  // Attachments - using hook (will save after reservation is created)
+  const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
+  const [attachmentFiles, setAttachmentFiles] = useState<AttachmentFile[]>([]);
+  
+  // Add files handler
+  const handleAddFiles = (files: File[]) => {
+    const newAttachments: AttachmentFile[] = files.map(file => ({
+      id: `new-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      file,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      isNew: true
+    }));
+    setAttachmentFiles(prev => [...prev, ...newAttachments]);
+    setPendingAttachments(prev => [...prev, ...files]);
+  };
+  
+  // Remove file handler
+  const handleRemoveFile = (id: string) => {
+    const file = attachmentFiles.find(f => f.id === id);
+    if (file?.file) {
+      setPendingAttachments(prev => prev.filter(f => f !== file.file));
+    }
+    setAttachmentFiles(prev => prev.filter(f => f.id !== id));
+  };
+  
+  // Open file handler
+  const handleOpenFile = (attachment: AttachmentFile) => {
+    if (attachment.file) {
+      const url = URL.createObjectURL(attachment.file);
+      window.open(url, '_blank');
+    } else if (attachment.url) {
+      window.open(attachment.url, '_blank');
+    }
+  };
 
   // Handle payment file selection
   const handlePaymentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -255,14 +281,64 @@ export default function ReservationCreate() {
         created_by: user?.id || null,
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('reservations')
-        .insert(reservationData);
+        .insert(reservationData)
+        .select('id')
+        .single();
 
       if (error) {
         console.error('Error saving reservation:', error);
         toast.error('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
         return;
+      }
+
+      // Save attachments if any
+      if (data?.id && pendingAttachments.length > 0) {
+        let savedCount = 0;
+        for (const file of pendingAttachments) {
+          try {
+            // Generate unique file path
+            const fileExt = file.name.split('.').pop() || 'file';
+            const filePath = `${selectedCompany}/${data.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+
+            // Upload to storage
+            const { error: uploadError } = await supabase.storage
+              .from('reservation-attachments')
+              .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: false
+              });
+
+            if (uploadError) {
+              console.error('Upload error:', uploadError);
+              continue;
+            }
+
+            // Save to database
+            const { error: dbError } = await supabase
+              .from('reservation_attachments')
+              .insert({
+                reservation_id: data.id,
+                company_id: selectedCompany,
+                file_name: file.name,
+                file_path: filePath,
+                file_size: file.size,
+                file_type: file.type,
+                uploaded_by: user?.id
+              });
+
+            if (!dbError) {
+              savedCount++;
+            }
+          } catch (err) {
+            console.error('Error saving attachment:', err);
+          }
+        }
+        
+        if (savedCount > 0) {
+          toast.success(`บันทึกเอกสารแนบ ${savedCount} ไฟล์สำเร็จ`);
+        }
       }
 
       toast.success('บันทึกใบจองสำเร็จ');
@@ -960,8 +1036,10 @@ export default function ReservationCreate() {
 
             {/* Section 7: Attachments */}
             <FileUploadSection
-              files={attachments}
-              onFilesChange={setAttachments}
+              files={attachmentFiles}
+              onFilesAdd={handleAddFiles}
+              onFileRemove={handleRemoveFile}
+              onFileOpen={handleOpenFile}
             />
 
             {/* Action Buttons */}

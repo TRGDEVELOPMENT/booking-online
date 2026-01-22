@@ -1636,7 +1636,16 @@ export default function ReservationEdit() {
                 {/* Payment Amount */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>จำนวนเงิน <span className="text-destructive">*</span></Label>
+                    <Label>ลูกค้าชำระเงินจอง (บาท)</Label>
+                    <Input 
+                      type="text"
+                      value={depositAmount > 0 ? depositAmount.toLocaleString() : '0'}
+                      disabled
+                      className="input-focus bg-muted cursor-not-allowed"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>จำนวนเงินโอนที่ได้รับ (บาท) <span className="text-destructive">*</span></Label>
                     <Input 
                       type="text"
                       inputMode="numeric"

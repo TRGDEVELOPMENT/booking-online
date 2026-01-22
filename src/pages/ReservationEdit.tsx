@@ -1426,7 +1426,7 @@ export default function ReservationEdit() {
                     ) : (
                       <Save className="w-4 h-4" />
                     )}
-                    บันทึกรายการชำระเงิน
+                    บันทึกยืนยันรับเงินจอง
                   </Button>
                 </div>
               </div>

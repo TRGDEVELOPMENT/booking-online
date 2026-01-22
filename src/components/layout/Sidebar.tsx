@@ -27,6 +27,7 @@ import {
   User,
   CalendarDays,
   Clock,
+  Wallet,
   type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -50,6 +51,7 @@ interface SubItem {
   label: string;
   path: string;
   icon?: LucideIcon;
+  roles?: string[]; // Optional: restrict to specific roles
 }
 
 interface MenuItem {
@@ -75,6 +77,7 @@ const menuItems: MenuItem[] = [
     subItems: [
       { id: 'list', label: 'รายการใบจอง', path: '/reservations', icon: List },
       { id: 'create', label: 'สร้างใบจองใหม่', path: '/reservations/create', icon: FilePlus2 },
+      { id: 'pending-payment', label: 'ใบจองรอยืนยันรับเงิน', path: '/reservations/pending-payment', icon: Wallet, roles: ['cashier'] },
     ]
   },
   { 
@@ -123,8 +126,22 @@ const menuItems: MenuItem[] = [
 export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, roles, signOut } = useAuth();
+  const { profile, roles, signOut, hasRole } = useAuth();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['reservations']);
+  
+  // Check if user is a cashier
+  const isCashier = hasRole('cashier');
+  
+  // Filter subItems based on role
+  const filterSubItemsByRole = (subItems?: SubItem[]) => {
+    if (!subItems) return [];
+    return subItems.filter(subItem => {
+      // If no role restriction, show to everyone
+      if (!subItem.roles || subItem.roles.length === 0) return true;
+      // Check if user has any of the required roles
+      return subItem.roles.some(role => hasRole(role as any));
+    });
+  };
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const toggleMenu = (menuId: string) => {
@@ -205,7 +222,8 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
           <ul className="space-y-1">
             {menuItems.map(item => {
               const Icon = item.icon;
-              const hasSubItems = item.subItems && item.subItems.length > 0;
+              const filteredSubItems = filterSubItemsByRole(item.subItems);
+              const hasSubItems = filteredSubItems.length > 0;
               const isExpanded = expandedMenus.includes(item.id);
               const active = isActive(item.path);
 
@@ -236,7 +254,7 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
                       </button>
                       {isExpanded && (
                         <ul className="mt-1 ml-4 pl-4 border-l border-sidebar-border space-y-1">
-                          {item.subItems.map(subItem => {
+                          {filteredSubItems.map(subItem => {
                             const SubIcon = subItem.icon;
                             return (
                               <li key={subItem.id}>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { 
   Save, 
   ArrowRight, 
@@ -62,10 +62,14 @@ import { toast } from 'sonner';
 
 export default function ReservationEdit() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { selectedCompany } = useOutletContext<{ selectedCompany: string }>();
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
   const company = companies.find(c => c.id === selectedCompany);
+  
+  // Check if in cashier mode
+  const isCashierMode = searchParams.get('mode') === 'cashier' || hasRole('cashier');
 
   // Loading states
   const [isLoading, setIsLoading] = useState(true);
@@ -306,7 +310,21 @@ export default function ReservationEdit() {
     }
   };
 
-  // Save payment details
+  // Save payment details (without confirmation)
+  const handleSavePaymentDetails = async () => {
+    setIsSavingPayment(true);
+    try {
+      // Save payment details without final confirmation
+      toast.success('บันทึกรายละเอียดการชำระเงินสำเร็จ');
+    } catch (err) {
+      console.error('Error saving payment details:', err);
+      toast.error('เกิดข้อผิดพลาดในการบันทึก');
+    } finally {
+      setIsSavingPayment(false);
+    }
+  };
+
+  // Save payment with confirmation
   const handleSavePayment = async () => {
     if (paymentAmount <= 0) {
       toast.error('กรุณากรอกจำนวนเงิน');
@@ -316,11 +334,16 @@ export default function ReservationEdit() {
     setIsSavingPayment(true);
     try {
       // For now, just show success - actual implementation would save to database
-      toast.success('บันทึกรายการชำระเงินสำเร็จ');
+      toast.success('บันทึกยืนยันรับเงินจองสำเร็จ');
       // Reset form after saving
       setPaymentAmount(0);
       setPaymentDescription('');
       setPaymentFile(null);
+      
+      // Navigate back to pending payment list for cashier
+      if (isCashierMode) {
+        navigate('/reservations/pending-payment');
+      }
     } catch (err) {
       console.error('Error saving payment:', err);
       toast.error('เกิดข้อผิดพลาดในการบันทึก');
@@ -430,8 +453,8 @@ export default function ReservationEdit() {
   return (
     <>
       <Header 
-        title="แก้ไขใบจอง"
-        subtitle={`${company?.code} - เลขที่: ${documentNumber}`}
+        title={isCashierMode ? "รับเงินจอง" : "แก้ไขใบจอง"}
+        subtitle={`${company?.code} - เลขที่: ${documentNumber}${isCashierMode ? ' (โหมดแคชเชียร์)' : ''}`}
       />
       
       <div className="flex-1 p-6 overflow-auto">
@@ -450,8 +473,8 @@ export default function ReservationEdit() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="branch">สาขา <span className="text-destructive">*</span></Label>
-                  <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                    <SelectTrigger className="input-focus">
+                  <Select value={selectedBranch} onValueChange={setSelectedBranch} disabled={isCashierMode}>
+                    <SelectTrigger className={cn("input-focus", isCashierMode && "bg-muted cursor-not-allowed")}>
                       <SelectValue placeholder="เลือกสาขา" />
                     </SelectTrigger>
                     <SelectContent>
@@ -465,8 +488,8 @@ export default function ReservationEdit() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="vehicleType">ประเภทรถยนต์ <span className="text-destructive">*</span></Label>
-                  <Select value={selectedBU} onValueChange={setSelectedBU}>
-                    <SelectTrigger className="input-focus">
+                  <Select value={selectedBU} onValueChange={setSelectedBU} disabled={isCashierMode}>
+                    <SelectTrigger className={cn("input-focus", isCashierMode && "bg-muted cursor-not-allowed")}>
                       <SelectValue placeholder="เลือกประเภทรถยนต์" />
                     </SelectTrigger>
                     <SelectContent>
@@ -492,13 +515,14 @@ export default function ReservationEdit() {
                   value={bookingCustomerType} 
                   onValueChange={(v) => setBookingCustomerType(v as CustomerType)}
                   className="flex gap-4 mt-2"
+                  disabled={isCashierMode}
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="individual" id="individual" />
+                    <RadioGroupItem value="individual" id="individual" disabled={isCashierMode} />
                     <Label htmlFor="individual" className="cursor-pointer">บุคคลธรรมดา</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="corporate" id="corporate" />
+                    <RadioGroupItem value="corporate" id="corporate" disabled={isCashierMode} />
                     <Label htmlFor="corporate" className="cursor-pointer">นิติบุคคล</Label>
                   </div>
                 </RadioGroup>
@@ -507,8 +531,8 @@ export default function ReservationEdit() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label>คำนำหน้า</Label>
-                  <Select value={bookingTitle} onValueChange={setBookingTitle}>
-                    <SelectTrigger className="input-focus">
+                  <Select value={bookingTitle} onValueChange={setBookingTitle} disabled={isCashierMode}>
+                    <SelectTrigger className={cn("input-focus", isCashierMode && "bg-muted cursor-not-allowed")}>
                       <SelectValue placeholder="เลือก" />
                     </SelectTrigger>
                     <SelectContent>
@@ -525,7 +549,8 @@ export default function ReservationEdit() {
                     value={bookingFirstName} 
                     onChange={(e) => setBookingFirstName(e.target.value)}
                     placeholder="ชื่อ"
-                    className="input-focus"
+                    disabled={isCashierMode}
+                    className={cn("input-focus", isCashierMode && "bg-muted cursor-not-allowed")}
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
@@ -534,7 +559,8 @@ export default function ReservationEdit() {
                     value={bookingLastName} 
                     onChange={(e) => setBookingLastName(e.target.value)}
                     placeholder="นามสกุล"
-                    className="input-focus"
+                    disabled={isCashierMode}
+                    className={cn("input-focus", isCashierMode && "bg-muted cursor-not-allowed")}
                   />
                 </div>
               </div>
@@ -550,7 +576,8 @@ export default function ReservationEdit() {
                     }}
                     placeholder="กรอกเลข 13 หลัก"
                     maxLength={13}
-                    className="input-focus"
+                    disabled={isCashierMode}
+                    className={cn("input-focus", isCashierMode && "bg-muted cursor-not-allowed")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -559,7 +586,8 @@ export default function ReservationEdit() {
                     value={bookingPhone} 
                     onChange={(e) => setBookingPhone(e.target.value)}
                     placeholder="0XX-XXX-XXXX"
-                    className="input-focus"
+                    disabled={isCashierMode}
+                    className={cn("input-focus", isCashierMode && "bg-muted cursor-not-allowed")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -569,7 +597,8 @@ export default function ReservationEdit() {
                     value={bookingEmail} 
                     onChange={(e) => setBookingEmail(e.target.value)}
                     placeholder="email@example.com"
-                    className="input-focus"
+                    disabled={isCashierMode}
+                    className={cn("input-focus", isCashierMode && "bg-muted cursor-not-allowed")}
                   />
                 </div>
               </div>
@@ -1414,8 +1443,23 @@ export default function ReservationEdit() {
                   </div>
                 </div>
 
-                {/* Save Payment Button */}
-                <div className="pt-4 border-t border-border">
+                {/* Save Payment Buttons */}
+                <div className="flex items-center gap-3 pt-4 border-t border-border">
+                  {/* บันทึกรายละเอียด button */}
+                  <Button 
+                    variant="outline"
+                    onClick={handleSavePaymentDetails}
+                    disabled={isSavingPayment}
+                    className="gap-2"
+                  >
+                    {isSavingPayment ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                    บันทึกรายละเอียด
+                  </Button>
+                  {/* บันทึกยืนยันรับเงินจอง button */}
                   <Button 
                     onClick={handleSavePayment}
                     disabled={isSavingPayment || paymentAmount <= 0}
@@ -1432,7 +1476,8 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 11: ตรวจสอบใบจอง (หัวหน้าทีมขาย) */}
+            {/* Section 11: ตรวจสอบใบจอง (หัวหน้าทีมขาย) - Hidden for cashiers */}
+            {!isCashierMode && (
             <div className="form-section border-2 border-orange-500/20 bg-orange-50/50 dark:bg-orange-950/20">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
@@ -1561,8 +1606,10 @@ export default function ReservationEdit() {
                 </div>
               )}
             </div>
+            )}
 
-            {/* Section 11: อนุมัติใบจอง (ผู้จัดการฝ่ายขาย) */}
+            {/* Section 12: อนุมัติใบจอง (ผู้จัดการฝ่ายขาย) - Hidden for cashiers */}
+            {!isCashierMode && (
             <div className="form-section border-2 border-purple-500/20 bg-purple-50/50 dark:bg-purple-950/20">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-purple-700 dark:text-purple-400">
@@ -1719,7 +1766,10 @@ export default function ReservationEdit() {
                 </div>
               )}
             </div>
-            {/* Action Buttons */}
+            )}
+            
+            {/* Action Buttons - Different for cashier mode */}
+            {!isCashierMode && (
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
               <Button 
                 variant="outline" 
@@ -1749,6 +1799,19 @@ export default function ReservationEdit() {
                 </Button>
               </div>
             </div>
+            )}
+            
+            {/* Cashier Action Button */}
+            {isCashierMode && (
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/reservations/pending-payment')}
+              >
+                กลับไปหน้ารายการ
+              </Button>
+            </div>
+            )}
           </div>
         </div>
       </div>

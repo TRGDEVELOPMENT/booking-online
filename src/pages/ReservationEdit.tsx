@@ -36,6 +36,7 @@ import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
 import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
 import FileUploadSection from '@/components/reservations/FileUploadSection';
+import { useReservationAttachments } from '@/hooks/useReservationAttachments';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -147,8 +148,18 @@ export default function ReservationEdit() {
   const [accessories, setAccessories] = useState<Array<{ id: number; name: string; value: number }>>([]);
   const [benefits, setBenefits] = useState<Array<{ id: number; name: string; value: number }>>([]);
   
-  // Attachments
-  const [attachments, setAttachments] = useState<Array<{ id: string; file: File; name: string; size: number; type: string }>>([]);
+  // Attachments - using hook for real file storage
+  const {
+    attachments,
+    isLoading: isLoadingAttachments,
+    addFiles: handleAddFiles,
+    removeFile: handleRemoveFile,
+    saveAttachments,
+    openFile: handleOpenFile
+  } = useReservationAttachments({ 
+    reservationId: id, 
+    companyId: selectedCompany 
+  });
 
   // Fetch reservation data
   useEffect(() => {
@@ -431,6 +442,15 @@ export default function ReservationEdit() {
         console.error('Error updating reservation:', error);
         toast.error('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
         return;
+      }
+
+      // Save any new attachments
+      const newAttachments = attachments.filter(a => a.isNew);
+      if (newAttachments.length > 0) {
+        const { success, savedCount } = await saveAttachments(id);
+        if (success && savedCount > 0) {
+          toast.success(`บันทึกเอกสารแนบ ${savedCount} ไฟล์สำเร็จ`);
+        }
       }
 
       toast.success('บันทึกการแก้ไขสำเร็จ');
@@ -1335,8 +1355,11 @@ export default function ReservationEdit() {
             {/* Section 9: Attachments */}
             <FileUploadSection
               files={attachments}
-              onFilesChange={setAttachments}
+              onFilesAdd={(files) => handleAddFiles(files)}
+              onFileRemove={handleRemoveFile}
+              onFileOpen={handleOpenFile}
               disabled={isCashierMode}
+              isLoading={isLoadingAttachments}
             />
 
             {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Hidden for sale role */}

@@ -35,6 +35,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
 import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
+import FileUploadSection from '@/components/reservations/FileUploadSection';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -145,6 +146,9 @@ export default function ReservationEdit() {
   const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
   const [accessories, setAccessories] = useState<Array<{ id: number; name: string; value: number }>>([]);
   const [benefits, setBenefits] = useState<Array<{ id: number; name: string; value: number }>>([]);
+  
+  // Attachments
+  const [attachments, setAttachments] = useState<Array<{ id: string; file: File; name: string; size: number; type: string }>>([]);
 
   // Fetch reservation data
   useEffect(() => {
@@ -1329,18 +1333,11 @@ export default function ReservationEdit() {
             </div>
 
             {/* Section 9: Attachments */}
-            <div className="form-section">
-              <div className="form-section-header flex items-center gap-2">
-                <Paperclip className="w-5 h-5" />
-                เอกสารแนบ
-              </div>
-              <div className="p-4 bg-muted/30 rounded-lg border border-dashed border-border text-center">
-                <p className="text-muted-foreground">ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
-                <Button variant="outline" size="sm" className="mt-2">
-                  เลือกไฟล์
-                </Button>
-              </div>
-            </div>
+            <FileUploadSection
+              files={attachments}
+              onFilesChange={setAttachments}
+              disabled={isCashierMode}
+            />
 
             {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Hidden for sale role */}
             {!isSaleRole && (

@@ -7,7 +7,6 @@ import {
   Car, 
   Wallet, 
   Gift, 
-  Paperclip,
   Building2,
   Users,
   Wrench,
@@ -19,11 +18,13 @@ import {
   CheckCircle2,
   X,
   CreditCard,
-  Upload
+  Upload,
+  Paperclip
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
 import { CustomerSearchDialog, type Customer } from '@/components/reservations/CustomerSearchDialog';
+import FileUploadSection from '@/components/reservations/FileUploadSection';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -48,6 +49,15 @@ import type { FuelType, PurchaseType } from '@/types/reservation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+
+// Attachment file type
+interface UploadedFile {
+  id: string;
+  file: File;
+  name: string;
+  size: number;
+  type: string;
+}
 
 // Note: Payment section, Review section, and Approval section are hidden for 'sale' role
 
@@ -109,6 +119,9 @@ export default function ReservationCreate() {
   const [paymentDescription, setPaymentDescription] = useState('');
   const [paymentFile, setPaymentFile] = useState<File | null>(null);
   const [isSavingPayment, setIsSavingPayment] = useState(false);
+  
+  // Attachments
+  const [attachments, setAttachments] = useState<UploadedFile[]>([]);
 
   // Handle payment file selection
   const handlePaymentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -946,18 +959,10 @@ export default function ReservationCreate() {
             )}
 
             {/* Section 7: Attachments */}
-            <div className="form-section">
-              <div className="form-section-header flex items-center gap-2">
-                <Paperclip className="w-5 h-5" />
-                เอกสารแนบ
-              </div>
-              <div className="p-4 bg-muted/30 rounded-lg border border-dashed border-border text-center">
-                <p className="text-muted-foreground">ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
-                <Button variant="outline" size="sm" className="mt-2">
-                  เลือกไฟล์
-                </Button>
-              </div>
-            </div>
+            <FileUploadSection
+              files={attachments}
+              onFilesChange={setAttachments}
+            />
 
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">

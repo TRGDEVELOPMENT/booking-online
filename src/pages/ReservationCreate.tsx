@@ -17,7 +17,9 @@ import {
   Loader2,
   Search,
   CheckCircle2,
-  X
+  X,
+  CreditCard,
+  Upload
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
@@ -95,6 +97,21 @@ export default function ReservationCreate() {
   const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
   const [accessories, setAccessories] = useState<Array<{ id: number; name: string; value: number }>>([]);
   const [benefits, setBenefits] = useState<Array<{ id: number; name: string; value: number }>>([]);
+
+  // Payment Details (Finance Section)
+  const [paymentType, setPaymentType] = useState<string>('cash');
+  const [paymentAmount, setPaymentAmount] = useState(0);
+  const [paymentDescription, setPaymentDescription] = useState('');
+  const [paymentFile, setPaymentFile] = useState<File | null>(null);
+  const [isSavingPayment, setIsSavingPayment] = useState(false);
+
+  // Handle payment file selection
+  const handlePaymentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPaymentFile(file);
+    }
+  };
 
   const addItem = (type: 'freebies' | 'accessories' | 'benefits') => {
     const newItem = { id: Date.now(), name: '', value: 0 };
@@ -812,6 +829,112 @@ export default function ReservationCreate() {
                   <Plus className="w-4 h-4" />
                   เพิ่มรายการ
                 </Button>
+              </div>
+            </div>
+
+            {/* Section: รายละเอียดการชำระเงิน (เฉพาะการเงิน) */}
+            <div className="form-section border-2 border-primary/20 bg-primary/5">
+              <div className="form-section-header flex items-center gap-2 text-primary">
+                <CreditCard className="w-5 h-5" />
+                รายละเอียดการชำระเงิน (เฉพาะการเงิน)
+              </div>
+              
+              <div className="space-y-4">
+                {/* Payment Type */}
+                <div>
+                  <Label>ประเภทการชำระเงิน <span className="text-destructive">*</span></Label>
+                  <RadioGroup 
+                    value={paymentType} 
+                    onValueChange={setPaymentType}
+                    className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2"
+                  >
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <RadioGroupItem value="cash" id="payment-cash" />
+                      <Label htmlFor="payment-cash" className="cursor-pointer flex-1">เงินสด</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <RadioGroupItem value="transfer" id="payment-transfer" />
+                      <Label htmlFor="payment-transfer" className="cursor-pointer flex-1">เงินโอน</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <RadioGroupItem value="credit" id="payment-credit" />
+                      <Label htmlFor="payment-credit" className="cursor-pointer flex-1">บัตรเครดิต</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <RadioGroupItem value="po" id="payment-po" />
+                      <Label htmlFor="payment-po" className="cursor-pointer flex-1">ใบสั่งซื้อ</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                {/* Payment Amount */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>ลูกค้าชำระเงินจอง (บาท)</Label>
+                    <Input 
+                      type="text"
+                      value={depositAmount > 0 ? depositAmount.toLocaleString() : '0'}
+                      disabled
+                      className="input-focus bg-muted cursor-not-allowed"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>จำนวนเงินโอนที่ได้รับ (บาท) <span className="text-destructive">*</span></Label>
+                    <Input 
+                      type="text"
+                      inputMode="numeric"
+                      value={paymentAmount > 0 ? paymentAmount.toLocaleString() : ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        setPaymentAmount(value ? Number(value) : 0);
+                      }}
+                      placeholder="กรอกจำนวนเงิน"
+                      className="input-focus"
+                    />
+                  </div>
+                </div>
+
+                {/* Payment Description */}
+                <div className="space-y-2">
+                  <Label>รายละเอียด</Label>
+                  <Textarea 
+                    value={paymentDescription}
+                    onChange={(e) => setPaymentDescription(e.target.value)}
+                    placeholder="กรอกรายละเอียดเพิ่มเติม (ถ้ามี)"
+                    className="input-focus min-h-[100px]"
+                  />
+                </div>
+
+                {/* Attach File */}
+                <div className="space-y-2">
+                  <Label>แนบไฟล์หลักฐานการชำระเงิน</Label>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 px-4 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                      <Upload className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">เลือกไฟล์</span>
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/*,.pdf"
+                        onChange={handlePaymentFileChange}
+                      />
+                    </label>
+                    {paymentFile && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Paperclip className="w-4 h-4 text-primary" />
+                        <span className="text-foreground">{paymentFile.name}</span>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 text-destructive hover:text-destructive"
+                          onClick={() => setPaymentFile(null)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 

@@ -49,11 +49,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
+// Note: Payment section, Review section, and Approval section are hidden for 'sale' role
+
 export default function ReservationCreate() {
   const navigate = useNavigate();
   const { selectedCompany } = useOutletContext<{ selectedCompany: string }>();
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
   const company = companies.find(c => c.id === selectedCompany);
+  
+  // Check if user is a sales advisor (hide certain sections)
+  const isSaleRole = hasRole('sale');
 
   // Loading state
   const [isSaving, setIsSaving] = useState(false);
@@ -832,7 +837,8 @@ export default function ReservationCreate() {
               </div>
             </div>
 
-            {/* Section: รายละเอียดการชำระเงิน (เฉพาะการเงิน) */}
+            {/* Section: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Hidden for sale role */}
+            {!isSaleRole && (
             <div className="form-section border-2 border-primary/20 bg-primary/5">
               <div className="form-section-header flex items-center gap-2 text-primary">
                 <CreditCard className="w-5 h-5" />
@@ -937,6 +943,7 @@ export default function ReservationCreate() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Section 7: Attachments */}
             <div className="form-section">

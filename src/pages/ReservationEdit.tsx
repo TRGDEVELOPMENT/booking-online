@@ -70,6 +70,9 @@ export default function ReservationEdit() {
   
   // Check if in cashier mode
   const isCashierMode = searchParams.get('mode') === 'cashier' || hasRole('cashier');
+  
+  // Check if user is a sales advisor (hide certain sections)
+  const isSaleRole = hasRole('sale');
 
   // Loading states
   const [isLoading, setIsLoading] = useState(true);
@@ -1339,7 +1342,8 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) */}
+            {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Hidden for sale role */}
+            {!isSaleRole && (
             <div className="form-section border-2 border-primary/20 bg-primary/5">
               <div className="form-section-header flex items-center gap-2 text-primary">
                 <CreditCard className="w-5 h-5" />
@@ -1475,9 +1479,10 @@ export default function ReservationEdit() {
                 </div>
               </div>
             </div>
+            )}
 
-            {/* Section 11: ตรวจสอบใบจอง (หัวหน้าทีมขาย) - Hidden for cashiers */}
-            {!isCashierMode && (
+            {/* Section 11: ตรวจสอบใบจอง (หัวหน้าทีมขาย) - Hidden for cashiers and sale role */}
+            {!isCashierMode && !isSaleRole && (
             <div className="form-section border-2 border-orange-500/20 bg-orange-50/50 dark:bg-orange-950/20">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
@@ -1608,8 +1613,8 @@ export default function ReservationEdit() {
             </div>
             )}
 
-            {/* Section 12: อนุมัติใบจอง (ผู้จัดการฝ่ายขาย) - Hidden for cashiers */}
-            {!isCashierMode && (
+            {/* Section 12: อนุมัติใบจอง (ผู้จัดการฝ่ายขาย) - Hidden for cashiers and sale role */}
+            {!isCashierMode && !isSaleRole && (
             <div className="form-section border-2 border-purple-500/20 bg-purple-50/50 dark:bg-purple-950/20">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-purple-700 dark:text-purple-400">

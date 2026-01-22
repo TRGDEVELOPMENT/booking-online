@@ -1525,7 +1525,7 @@ export default function ReservationEdit() {
                       disabled={isSavingReview}
                     >
                       {isSavingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
-                      ส่งกลับไปแก้ไข
+                      Reject
                     </Button>
                     <Button 
                       className="gap-2 bg-orange-600 hover:bg-orange-700 text-white"
@@ -1555,7 +1555,7 @@ export default function ReservationEdit() {
                       disabled={isSavingReview}
                     >
                       {isSavingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                      บันทึกการตรวจสอบ
+                      Approve
                     </Button>
                   </div>
                 </div>

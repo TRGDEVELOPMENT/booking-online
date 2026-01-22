@@ -11,6 +11,7 @@ import ReservationCreate from "@/pages/ReservationCreate";
 import ReservationEdit from "@/pages/ReservationEdit";
 import ReservationPrint from "@/pages/ReservationPrint";
 import ReservationCancelPage from "@/pages/ReservationCancelPage";
+import ReservationPendingPaymentPage from "@/pages/ReservationPendingPaymentPage";
 import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/reservations/create" element={<ReservationCreate />} />
               <Route path="/reservations/:id/edit" element={<ReservationEdit />} />
               <Route path="/reservations/cancel" element={<ReservationCancelPage />} />
+              <Route path="/reservations/pending-payment" element={<ReservationPendingPaymentPage />} />
               
               {/* Reports Routes */}
               <Route path="/reports/monthly" element={<MonthlyReservationsPage />} />

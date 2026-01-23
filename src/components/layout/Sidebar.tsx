@@ -28,6 +28,7 @@ import {
   CalendarDays,
   Clock,
   Wallet,
+  BookOpen,
   type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -121,6 +122,12 @@ const menuItems: MenuItem[] = [
       { id: 'benefits', label: 'สิทธิประโยชน์', path: '/settings/benefits', icon: Award },
       { id: 'surnames', label: 'คำนำหน้าชื่อ', path: '/settings/surnames', icon: User },
     ]
+  },
+  { 
+    id: 'documentation', 
+    label: 'เอกสารโครงการ', 
+    icon: BookOpen, 
+    path: '/docs' 
   },
 ];
 

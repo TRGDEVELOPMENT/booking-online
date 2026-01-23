@@ -35,6 +35,9 @@ import MonthlyReservationsPage from "@/pages/reports/MonthlyReservationsPage";
 import PendingApprovalPage from "@/pages/reports/PendingApprovalPage";
 import CancelledReservationsPage from "@/pages/reports/CancelledReservationsPage";
 
+// Documentation
+import DocumentationPage from "@/pages/DocumentationPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -77,6 +80,8 @@ const App = () => (
             </Route>
             {/* Print page outside MainLayout for clean printing */}
             <Route path="/reservations/:id/print" element={<ReservationPrint />} />
+            {/* Documentation page */}
+            <Route path="/docs" element={<DocumentationPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

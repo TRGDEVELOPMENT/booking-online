@@ -98,8 +98,9 @@ const menuItems: MenuItem[] = [
     icon: BarChart3, 
     path: '/reports',
     subItems: [
-      { id: 'monthly', label: 'ใบจองรายเดือน', path: '/reports/monthly', icon: CalendarDays },
-      { id: 'pending-approval', label: 'ใบจองที่ยังไม่อนุมัติ', path: '/reports/pending-approval', icon: Clock },
+      { id: 'monthly', label: 'รายงานการจองประจำเดือน', path: '/reports/monthly', icon: CalendarDays },
+      { id: 'pending-approval', label: 'รายงานการจองที่ยังไม่อนุมัติ', path: '/reports/pending-approval', icon: Clock },
+      { id: 'cancelled', label: 'รายงานการยกเลิกการจอง', path: '/reports/cancelled', icon: Ban },
     ]
   },
   { 

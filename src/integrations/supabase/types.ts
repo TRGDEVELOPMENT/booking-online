@@ -87,8 +87,10 @@ export type Database = {
           description: string
           hex_color: string
           id: string
+          model_id: string | null
           no: number
           status: string
+          sub_model_id: string | null
           updated_at: string
         }
         Insert: {
@@ -97,8 +99,10 @@ export type Database = {
           description: string
           hex_color?: string
           id?: string
+          model_id?: string | null
           no?: number
           status?: string
+          sub_model_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -107,11 +111,28 @@ export type Database = {
           description?: string
           hex_color?: string
           id?: string
+          model_id?: string | null
           no?: number
           status?: string
+          sub_model_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "colors_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "colors_sub_model_id_fkey"
+            columns: ["sub_model_id"]
+            isOneToOne: false
+            referencedRelation: "sub_models"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customers: {
         Row: {

@@ -421,7 +421,7 @@ export default function ColorsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">สี</h1>
+          <h1 className="text-2xl font-bold text-foreground">ตั้งค่าสี</h1>
           <p className="text-muted-foreground">จัดการข้อมูลสีรถยนต์ตาม Model และ Sub Model</p>
         </div>
         <div className="flex gap-2">

@@ -57,7 +57,7 @@ import {
   standardSubmodels 
 } from '@/data/mockData';
 import { cn } from '@/lib/utils';
-import type { CustomerType, FuelType, PurchaseType } from '@/types/reservation';
+import type { CustomerType, FuelType, PurchaseType, WorkflowStage, DocumentStatus } from '@/types/reservation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -79,6 +79,9 @@ export default function ReservationEdit() {
   // Loading states
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Reservation status for workflow
+  const [reservationStatus, setReservationStatus] = useState<string>('draft');
   const [documentNumber, setDocumentNumber] = useState('');
 
   // Form state
@@ -188,6 +191,7 @@ export default function ReservationEdit() {
 
         // Populate form with data
         setDocumentNumber(data.document_number);
+        setReservationStatus(data.status || 'draft');
         setSelectedBranch(data.branch_id || '');
         setSelectedBU(data.vehicle_type || '');
         setBookingCustomerType((data.customer_type as CustomerType) || 'individual');
@@ -376,6 +380,36 @@ export default function ReservationEdit() {
   // Calculate net price
   const finalPrice = basePrice - discountAmount;
 
+  // Calculate workflow stage based on status
+  const calculateWorkflowStage = (): WorkflowStage => {
+    // If cancelled
+    if (reservationStatus === 'cancelled') return 'step7';
+    
+    // If approved → Step 6 พิมพ์/ลงนาม
+    if (approvalStatus === 'approved') return 'step6';
+    
+    // If reviewed, waiting for approval → Step 5
+    if (reviewStatus === 'reviewed') return 'step5';
+    
+    // If confirmed, waiting for review → Step 4 (or Step 3 for cashier)
+    if (confirmationStatus === 'confirmed') {
+      return isCashierMode ? 'step3' : 'step4';
+    }
+    
+    // If OTP/Link sent → Step 2
+    if (confirmationStatus === 'otp_sent' || confirmationStatus === 'link_sent') return 'step2';
+    
+    // Default: Step 1 สร้างใบจอง
+    return 'step1';
+  };
+
+  // Calculate document status for workflow display
+  const calculateDocumentStatus = (): DocumentStatus => {
+    if (reservationStatus === 'cancelled') return 'cancelled';
+    if (approvalStatus === 'approved') return 'final';
+    return 'draft';
+  };
+
   const handleSave = async () => {
     if (!id) return;
 
@@ -487,7 +521,7 @@ export default function ReservationEdit() {
       <div className="flex-1 p-6 overflow-auto">
         <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
           {/* Workflow Progress */}
-          <WorkflowSteps currentStage="step1" documentStatus="draft" />
+          <WorkflowSteps currentStage={calculateWorkflowStage()} documentStatus={calculateDocumentStatus()} />
 
           {/* Form Sections */}
           <div className="space-y-6">

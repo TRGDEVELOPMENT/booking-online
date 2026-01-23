@@ -17,11 +17,29 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+
+interface Model {
+  id: string;
+  description: string;
+}
+
+interface SubModel {
+  id: string;
+  model_id: string;
+  description: string;
+}
 
 interface ColorItem {
   id: string;
@@ -30,30 +48,91 @@ interface ColorItem {
   hex_color: string;
   status: string;
   company_id: string;
+  model_id: string | null;
+  sub_model_id: string | null;
+  model?: { description: string } | null;
+  sub_model?: { description: string } | null;
 }
 
 export default function ColorsPage() {
   const { profile } = useAuth();
   const [colors, setColors] = useState<ColorItem[]>([]);
+  const [models, setModels] = useState<Model[]>([]);
+  const [subModels, setSubModels] = useState<SubModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ColorItem | null>(null);
+  
+  // Filter states
+  const [filterModelId, setFilterModelId] = useState<string>('');
+  const [filterSubModelId, setFilterSubModelId] = useState<string>('');
+  const [filteredSubModelsForFilter, setFilteredSubModelsForFilter] = useState<SubModel[]>([]);
+  
+  // Form states
   const [formData, setFormData] = useState({ 
     description: '', 
     hex_color: '#000000',
-    status: 'active'
+    status: 'active',
+    model_id: '',
+    sub_model_id: '',
   });
+  const [filteredSubModelsForForm, setFilteredSubModelsForForm] = useState<SubModel[]>([]);
+  
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchModels = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('models')
+        .select('id, description')
+        .eq('status', 'active')
+        .order('description');
+      
+      if (error) throw error;
+      setModels(data || []);
+    } catch (error: any) {
+      toast.error('เกิดข้อผิดพลาดในการโหลด Models: ' + error.message);
+    }
+  };
+
+  const fetchSubModels = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('sub_models')
+        .select('id, model_id, description')
+        .eq('status', 'active')
+        .order('description');
+      
+      if (error) throw error;
+      setSubModels(data || []);
+    } catch (error: any) {
+      toast.error('เกิดข้อผิดพลาดในการโหลด Sub Models: ' + error.message);
+    }
+  };
 
   const fetchColors = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('colors')
-        .select('*')
+        .select(`
+          *,
+          model:models(description),
+          sub_model:sub_models(description)
+        `)
         .order('no', { ascending: true });
+
+      // Apply filters
+      if (filterModelId) {
+        query = query.eq('model_id', filterModelId);
+      }
+      if (filterSubModelId) {
+        query = query.eq('sub_model_id', filterSubModelId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setColors(data || []);
@@ -65,8 +144,34 @@ export default function ColorsPage() {
   };
 
   useEffect(() => {
-    fetchColors();
+    fetchModels();
+    fetchSubModels();
   }, []);
+
+  useEffect(() => {
+    fetchColors();
+  }, [filterModelId, filterSubModelId]);
+
+  // Update filtered sub models for filter dropdown
+  useEffect(() => {
+    if (filterModelId) {
+      const filtered = subModels.filter(sm => sm.model_id === filterModelId);
+      setFilteredSubModelsForFilter(filtered);
+    } else {
+      setFilteredSubModelsForFilter([]);
+    }
+    setFilterSubModelId('');
+  }, [filterModelId, subModels]);
+
+  // Update filtered sub models for form dropdown
+  useEffect(() => {
+    if (formData.model_id) {
+      const filtered = subModels.filter(sm => sm.model_id === formData.model_id);
+      setFilteredSubModelsForForm(filtered);
+    } else {
+      setFilteredSubModelsForForm([]);
+    }
+  }, [formData.model_id, subModels]);
 
   const filteredItems = colors.filter(
     item => item.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -74,7 +179,13 @@ export default function ColorsPage() {
 
   const handleAdd = () => {
     setEditingItem(null);
-    setFormData({ description: '', hex_color: '#000000', status: 'active' });
+    setFormData({ 
+      description: '', 
+      hex_color: '#000000', 
+      status: 'active',
+      model_id: filterModelId || '',
+      sub_model_id: filterSubModelId || '',
+    });
     setIsDialogOpen(true);
   };
 
@@ -83,7 +194,9 @@ export default function ColorsPage() {
     setFormData({ 
       description: item.description, 
       hex_color: item.hex_color,
-      status: item.status
+      status: item.status,
+      model_id: item.model_id || '',
+      sub_model_id: item.sub_model_id || '',
     });
     setIsDialogOpen(true);
   };
@@ -107,8 +220,8 @@ export default function ColorsPage() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.description) {
-      toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
+    if (!formData.model_id || !formData.sub_model_id || !formData.description) {
+      toast.error('กรุณากรอกข้อมูลให้ครบถ้วน (Model, Sub Model และ สี)');
       return;
     }
 
@@ -117,6 +230,8 @@ export default function ColorsPage() {
         const { error } = await supabase
           .from('colors')
           .update({
+            model_id: formData.model_id,
+            sub_model_id: formData.sub_model_id,
             description: formData.description,
             hex_color: formData.hex_color,
             status: formData.status,
@@ -129,13 +244,21 @@ export default function ColorsPage() {
         const { error } = await supabase
           .from('colors')
           .insert({
+            model_id: formData.model_id,
+            sub_model_id: formData.sub_model_id,
             description: formData.description,
             hex_color: formData.hex_color,
             status: formData.status,
             company_id: profile?.company_id || '',
           });
 
-        if (error) throw error;
+        if (error) {
+          if (error.code === '23505') {
+            toast.error('สีนี้มีอยู่แล้วในรุ่นย่อยนี้');
+            return;
+          }
+          throw error;
+        }
         toast.success('เพิ่มข้อมูลเรียบร้อยแล้ว');
       }
 
@@ -146,17 +269,36 @@ export default function ColorsPage() {
     }
   };
 
+  const getModelDescription = (modelId: string | null) => {
+    if (!modelId) return '-';
+    const model = models.find(m => m.id === modelId);
+    return model?.description || '-';
+  };
+
+  const getSubModelDescription = (subModelId: string | null) => {
+    if (!subModelId) return '-';
+    const subModel = subModels.find(sm => sm.id === subModelId);
+    return subModel?.description || '-';
+  };
+
   const handleExport = () => {
     if (colors.length === 0) {
       toast.error('ไม่มีข้อมูลสำหรับ Export');
       return;
     }
 
-    const headers = ['No', 'Description', 'Hex Color', 'Status'];
+    const headers = ['No', 'Model', 'Sub Model', 'Description', 'Hex Color', 'Status'];
     const csvContent = [
       headers.join(','),
       ...colors.map(item => 
-        [item.no, `"${item.description}"`, item.hex_color, item.status].join(',')
+        [
+          item.no, 
+          `"${item.model?.description || ''}"`,
+          `"${item.sub_model?.description || ''}"`,
+          `"${item.description}"`, 
+          item.hex_color, 
+          item.status
+        ].join(',')
       )
     ].join('\n');
 
@@ -204,17 +346,30 @@ export default function ColorsPage() {
         for (const row of dataRows) {
           // Parse CSV row (handle quoted values)
           const matches = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-          if (!matches || matches.length < 4) continue;
+          if (!matches || matches.length < 6) continue;
 
-          const description = matches[1]?.replace(/^"|"$/g, '').trim();
-          const hexColor = matches[2]?.trim() || '#000000';
-          const status = matches[3]?.trim().toLowerCase() === 'active' ? 'active' : 'inactive';
+          const modelName = matches[1]?.replace(/^"|"$/g, '').trim();
+          const subModelName = matches[2]?.replace(/^"|"$/g, '').trim();
+          const description = matches[3]?.replace(/^"|"$/g, '').trim();
+          const hexColor = matches[4]?.trim() || '#000000';
+          const status = matches[5]?.trim().toLowerCase() === 'active' ? 'active' : 'inactive';
 
-          if (!description) continue;
+          if (!modelName || !subModelName || !description) continue;
+
+          // Find model and sub_model by name
+          const model = models.find(m => m.description === modelName);
+          const subModel = subModels.find(sm => sm.description === subModelName);
+
+          if (!model || !subModel) {
+            errorCount++;
+            continue;
+          }
 
           const { error } = await supabase
             .from('colors')
             .insert({
+              model_id: model.id,
+              sub_model_id: subModel.id,
               description,
               hex_color: hexColor,
               status,
@@ -233,7 +388,7 @@ export default function ColorsPage() {
           fetchColors();
         }
         if (errorCount > 0) {
-          toast.error(`Import ไม่สำเร็จ ${errorCount} รายการ`);
+          toast.error(`Import ไม่สำเร็จ ${errorCount} รายการ (อาจไม่พบ Model/SubModel หรือสีซ้ำ)`);
         }
       } catch (error: any) {
         toast.error('เกิดข้อผิดพลาดในการ Import: ' + error.message);
@@ -248,7 +403,13 @@ export default function ColorsPage() {
     reader.readAsText(file);
   };
 
-  if (loading) {
+  const handleClearFilters = () => {
+    setFilterModelId('');
+    setFilterSubModelId('');
+    setSearchTerm('');
+  };
+
+  if (loading && colors.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-muted-foreground">กำลังโหลด...</div>
@@ -261,7 +422,7 @@ export default function ColorsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">สี</h1>
-          <p className="text-muted-foreground">จัดการข้อมูลสีรถยนต์</p>
+          <p className="text-muted-foreground">จัดการข้อมูลสีรถยนต์ตาม Model และ Sub Model</p>
         </div>
         <div className="flex gap-2">
           <input
@@ -287,32 +448,83 @@ export default function ColorsPage() {
       </div>
 
       <div className="bg-card rounded-xl border border-border">
-        <div className="p-4 border-b border-border">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="ค้นหา..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+        {/* Filter Section */}
+        <div className="p-4 border-b border-border space-y-4">
+          <div className="flex flex-wrap gap-4">
+            <div className="w-48">
+              <Label className="text-sm text-muted-foreground mb-1 block">Model</Label>
+              <Select value={filterModelId} onValueChange={setFilterModelId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="ทั้งหมด" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทั้งหมด</SelectItem>
+                  {models.map((model) => (
+                    <SelectItem key={model.id} value={model.id}>
+                      {model.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-48">
+              <Label className="text-sm text-muted-foreground mb-1 block">Sub Model</Label>
+              <Select 
+                value={filterSubModelId} 
+                onValueChange={setFilterSubModelId}
+                disabled={!filterModelId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={filterModelId ? "ทั้งหมด" : "เลือก Model ก่อน"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทั้งหมด</SelectItem>
+                  {filteredSubModelsForFilter.map((subModel) => (
+                    <SelectItem key={subModel.id} value={subModel.id}>
+                      {subModel.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <Label className="text-sm text-muted-foreground mb-1 block">ค้นหา</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="ค้นหาชื่อสี..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            {(filterModelId || filterSubModelId || searchTerm) && (
+              <div className="flex items-end">
+                <Button variant="ghost" onClick={handleClearFilters} size="sm">
+                  ล้าง Filter
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[80px]">No.</TableHead>
+              <TableHead className="w-[60px]">No.</TableHead>
+              <TableHead className="w-[150px]">Model</TableHead>
+              <TableHead className="w-[150px]">Sub Model</TableHead>
               <TableHead>สี</TableHead>
               <TableHead className="w-[150px]">ตัวอย่างสี</TableHead>
-              <TableHead className="w-[120px]">สถานะ</TableHead>
+              <TableHead className="w-[100px]">สถานะ</TableHead>
               <TableHead className="w-[100px] text-center">จัดการ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>
@@ -320,6 +532,8 @@ export default function ColorsPage() {
               filteredItems.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-mono">{item.no}</TableCell>
+                  <TableCell>{item.model?.description || getModelDescription(item.model_id)}</TableCell>
+                  <TableCell>{item.sub_model?.description || getSubModelDescription(item.sub_model_id)}</TableCell>
                   <TableCell className="font-medium">{item.description}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -376,7 +590,44 @@ export default function ColorsPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="description">สี</Label>
+              <Label>Model <span className="text-destructive">*</span></Label>
+              <Select 
+                value={formData.model_id} 
+                onValueChange={(value) => setFormData({ ...formData, model_id: value, sub_model_id: '' })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือก Model" />
+                </SelectTrigger>
+                <SelectContent>
+                  {models.map((model) => (
+                    <SelectItem key={model.id} value={model.id}>
+                      {model.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Sub Model <span className="text-destructive">*</span></Label>
+              <Select 
+                value={formData.sub_model_id} 
+                onValueChange={(value) => setFormData({ ...formData, sub_model_id: value })}
+                disabled={!formData.model_id}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={formData.model_id ? "เลือก Sub Model" : "กรุณาเลือก Model ก่อน"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredSubModelsForForm.map((subModel) => (
+                    <SelectItem key={subModel.id} value={subModel.id}>
+                      {subModel.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">สี <span className="text-destructive">*</span></Label>
               <Input
                 id="description"
                 value={formData.description}

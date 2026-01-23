@@ -7,7 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -354,16 +355,43 @@ const ReservationCancelPage = () => {
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    เหตุผลในการยกเลิก (ถ้ามี)
-                  </label>
-                  <Textarea
-                    placeholder="ระบุเหตุผลในการยกเลิก..."
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium text-foreground">
+                    เหตุผลในการยกเลิก <span className="text-destructive">*</span>
+                  </Label>
+                  <RadioGroup
                     value={cancelReason}
-                    onChange={(e) => setCancelReason(e.target.value)}
-                    rows={3}
-                  />
+                    onValueChange={setCancelReason}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value="ไม่ผ่านสินเชื่อ" id="reason1" />
+                      <Label htmlFor="reason1" className="font-normal cursor-pointer">
+                        ไม่ผ่านสินเชื่อ
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value="ลูกค้าไม่รับรถ" id="reason2" />
+                      <Label htmlFor="reason2" className="font-normal cursor-pointer">
+                        ลูกค้าไม่รับรถ
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value="ลูกค้าเปลี่ยนใจ" id="reason3" />
+                      <Label htmlFor="reason3" className="font-normal cursor-pointer">
+                        ลูกค้าเปลี่ยนใจ
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value="ลูกค้ายกเลิกจอง" id="reason4" />
+                      <Label htmlFor="reason4" className="font-normal cursor-pointer">
+                        ลูกค้ายกเลิกจอง
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                  {!cancelReason && (
+                    <p className="text-sm text-destructive">กรุณาเลือกเหตุผลในการยกเลิก</p>
+                  )}
                 </div>
               </div>
             </AlertDialogDescription>
@@ -372,7 +400,7 @@ const ReservationCancelPage = () => {
             <AlertDialogCancel disabled={isCancelling}>ยกเลิก</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmCancel}
-              disabled={isCancelling}
+              disabled={isCancelling || !cancelReason}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isCancelling ? (

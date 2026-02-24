@@ -129,6 +129,12 @@ const menuItems: MenuItem[] = [
     icon: BookOpen, 
     path: '/docs' 
   },
+  { 
+    id: 'api-spec', 
+    label: 'API Specification', 
+    icon: BookOpen, 
+    path: '/api-spec' 
+  },
 ];
 
 export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {

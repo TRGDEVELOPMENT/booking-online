@@ -37,6 +37,7 @@ import CancelledReservationsPage from "@/pages/reports/CancelledReservationsPage
 
 // Documentation
 import DocumentationPage from "@/pages/DocumentationPage";
+import ApiSpecPage from "@/pages/ApiSpecPage";
 
 const queryClient = new QueryClient();
 
@@ -80,8 +81,9 @@ const App = () => (
             </Route>
             {/* Print page outside MainLayout for clean printing */}
             <Route path="/reservations/:id/print" element={<ReservationPrint />} />
-            {/* Documentation page */}
+            {/* Documentation pages */}
             <Route path="/docs" element={<DocumentationPage />} />
+            <Route path="/api-spec" element={<ApiSpecPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

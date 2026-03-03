@@ -28,7 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Search, Ban, Loader2, AlertTriangle } from "lucide-react";
+import { Search, Ban, Loader2, AlertTriangle, Printer } from "lucide-react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
 
@@ -65,7 +65,6 @@ const ReservationCancelPage = () => {
         .select("*")
         .eq("company_id", selectedCompany)
         .eq("approval_status", "approved")
-        .neq("status", "cancelled")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -260,9 +259,13 @@ const ReservationCancelPage = () => {
                     {reservation.document_number}
                   </TableCell>
                   <TableCell>
-                    <Badge className="bg-success/20 text-success hover:bg-success/20">
-                      อนุมัติแล้ว
-                    </Badge>
+                    {reservation.status === "cancelled" ? (
+                      <Badge variant="destructive">ยกเลิกแล้ว</Badge>
+                    ) : (
+                      <Badge className="bg-success/20 text-success hover:bg-success/20">
+                        อนุมัติแล้ว
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div>
@@ -296,14 +299,25 @@ const ReservationCancelPage = () => {
                   </TableCell>
                   <TableCell>{formatDate(reservation.created_at)}</TableCell>
                   <TableCell className="text-center">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleOpenCancelDialog(reservation)}
-                    >
-                      <Ban className="h-4 w-4 mr-1" />
-                      ยกเลิก
-                    </Button>
+                    {reservation.status === "cancelled" ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/reservations/${reservation.id}/print`)}
+                      >
+                        <Printer className="h-4 w-4 mr-1" />
+                        พิมพ์
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleOpenCancelDialog(reservation)}
+                      >
+                        <Ban className="h-4 w-4 mr-1" />
+                        ยกเลิก
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))

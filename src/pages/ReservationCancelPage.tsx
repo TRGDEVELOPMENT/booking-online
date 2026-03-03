@@ -213,7 +213,7 @@ const ReservationCancelPage = () => {
       <div className="bg-warning/10 border border-warning/30 rounded-lg p-4 flex items-start gap-3">
         <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-warning-foreground">
+          <p className="text-sm font-medium text-warning">
             แสดงเฉพาะใบจองที่ผ่านการอนุมัติจากผู้จัดการฝ่ายขายแล้วเท่านั้น
           </p>
           <p className="text-sm text-muted-foreground mt-1">

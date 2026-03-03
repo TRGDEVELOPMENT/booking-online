@@ -72,7 +72,7 @@ export default function ColorsPage() {
   // Form states
   const [formData, setFormData] = useState({ 
     description: '', 
-    hex_color: '#000000',
+    hex_color: '',
     status: 'active',
     model_id: '',
     sub_model_id: '',
@@ -535,16 +535,8 @@ export default function ColorsPage() {
                   <TableCell>{item.model?.description || getModelDescription(item.model_id)}</TableCell>
                   <TableCell>{item.sub_model?.description || getSubModelDescription(item.sub_model_id)}</TableCell>
                   <TableCell className="font-medium">{item.description}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-8 h-8 rounded-lg border border-border shadow-sm"
-                        style={{ backgroundColor: item.hex_color }}
-                      />
-                      <span className="text-muted-foreground text-sm font-mono">
-                        {item.hex_color}
-                      </span>
-                    </div>
+                  <TableCell className="text-muted-foreground">
+                    {item.hex_color || '-'}
                   </TableCell>
                   <TableCell>
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -637,21 +629,12 @@ export default function ColorsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="hex_color">ตัวอย่างสี</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="hex_color"
-                  type="color"
-                  value={formData.hex_color}
-                  onChange={(e) => setFormData({ ...formData, hex_color: e.target.value })}
-                  className="w-16 h-10 p-1 cursor-pointer"
-                />
-                <Input
-                  value={formData.hex_color}
-                  onChange={(e) => setFormData({ ...formData, hex_color: e.target.value })}
-                  placeholder="#000000"
-                  className="font-mono"
-                />
-              </div>
+              <Input
+                id="hex_color"
+                value={formData.hex_color}
+                onChange={(e) => setFormData({ ...formData, hex_color: e.target.value })}
+                placeholder="เช่น ขาวมุก, เทาเข้ม"
+              />
             </div>
             <div className="space-y-2">
               <Label>สถานะ</Label>

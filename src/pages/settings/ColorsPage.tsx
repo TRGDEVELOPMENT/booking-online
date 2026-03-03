@@ -516,7 +516,7 @@ export default function ColorsPage() {
               <TableHead className="w-[150px]">Model</TableHead>
               <TableHead className="w-[150px]">Sub Model</TableHead>
               <TableHead>สี</TableHead>
-              <TableHead className="w-[150px]">ตัวอย่างสี</TableHead>
+              <TableHead className="w-[150px]">Code สี</TableHead>
               <TableHead className="w-[100px]">สถานะ</TableHead>
               <TableHead className="w-[100px] text-center">จัดการ</TableHead>
             </TableRow>
@@ -628,7 +628,7 @@ export default function ColorsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="hex_color">ตัวอย่างสี</Label>
+              <Label htmlFor="hex_color">Code สี</Label>
               <Input
                 id="hex_color"
                 value={formData.hex_color}

@@ -11,6 +11,7 @@ import ReservationCreate from "@/pages/ReservationCreate";
 import ReservationEdit from "@/pages/ReservationEdit";
 import ReservationPrint from "@/pages/ReservationPrint";
 import ReservationCancelPage from "@/pages/ReservationCancelPage";
+import ReservationCancelPrint from "@/pages/ReservationCancelPrint";
 import ReservationPendingPaymentPage from "@/pages/ReservationPendingPaymentPage";
 import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
@@ -81,6 +82,7 @@ const App = () => (
             </Route>
             {/* Print page outside MainLayout for clean printing */}
             <Route path="/reservations/:id/print" element={<ReservationPrint />} />
+            <Route path="/reservations/:id/cancel-print" element={<ReservationCancelPrint />} />
             {/* Documentation pages */}
             <Route path="/docs" element={<DocumentationPage />} />
             <Route path="/api-spec" element={<ApiSpecPage />} />

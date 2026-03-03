@@ -303,7 +303,7 @@ const ReservationCancelPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => navigate(`/reservations/${reservation.id}/print`)}
+                        onClick={() => navigate(`/reservations/${reservation.id}/cancel-print`)}
                       >
                         <Printer className="h-4 w-4 mr-1" />
                         พิมพ์

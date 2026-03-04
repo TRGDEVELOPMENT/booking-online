@@ -233,20 +233,21 @@ const ReservationCancelPage = () => {
               <TableHead className="text-right">เงินจอง</TableHead>
               <TableHead>สาขา</TableHead>
               <TableHead>วัน-เวลา ที่ยกเลิก</TableHead>
+              <TableHead className="text-center">สถานะ</TableHead>
               <TableHead className="text-center">ดำเนินการ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-12">
+                <TableCell colSpan={9} className="text-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
                   <p className="mt-2 text-muted-foreground">กำลังโหลดข้อมูล...</p>
                 </TableCell>
               </TableRow>
             ) : filteredReservations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-12">
+                <TableCell colSpan={9} className="text-center py-12">
                   <Ban className="h-12 w-12 mx-auto text-muted-foreground/50" />
                   <p className="mt-2 text-muted-foreground">ไม่พบใบจองที่ผ่านการอนุมัติ</p>
                 </TableCell>
@@ -290,6 +291,13 @@ const ReservationCancelPage = () => {
                     {reservation.status === "cancelled"
                       ? format(new Date(reservation.updated_at), "d MMM yyyy HH:mm", { locale: th })
                       : "-"}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {reservation.status === "cancelled" ? (
+                      <Badge variant="destructive">ยกเลิกแล้ว</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-green-600 border-green-600">อนุมัติแล้ว</Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-1">

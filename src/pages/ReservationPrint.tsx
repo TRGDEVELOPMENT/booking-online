@@ -97,8 +97,24 @@ export default function ReservationPrint() {
       </div>
 
       {/* Print Content */}
-      <div className="print:mt-0 mt-20 p-8 max-w-4xl mx-auto bg-white min-h-screen">
-        <div className="print-content text-sm leading-relaxed" style={{ fontFamily: 'TH Sarabun New, Sarabun, serif' }}>
+      <div className="print:mt-0 mt-20 p-8 max-w-4xl mx-auto bg-white min-h-screen relative">
+        {/* Watermark for cancelled reservations */}
+        {reservation.status === 'cancelled' && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 print:flex">
+            <span
+              className="text-red-500/20 font-bold select-none"
+              style={{
+                fontSize: '8rem',
+                transform: 'rotate(-35deg)',
+                letterSpacing: '0.2em',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              ยกเลิก
+            </span>
+          </div>
+        )}
+        <div className="print-content text-sm leading-relaxed relative z-20" style={{ fontFamily: 'TH Sarabun New, Sarabun, serif' }}>
           
           {/* Cancellation Banner */}
           {reservation.status === 'cancelled' && (

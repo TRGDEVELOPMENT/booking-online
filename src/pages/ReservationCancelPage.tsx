@@ -135,6 +135,7 @@ const ReservationCancelPage = () => {
         .from("reservations")
         .update({
           status: "cancelled",
+          cancel_reason: cancelReason,
         })
         .eq("id", selectedReservation.id);
 

@@ -1,0 +1,1 @@
+ALTER TABLE public.reservations ADD COLUMN cancel_reason text NULL;

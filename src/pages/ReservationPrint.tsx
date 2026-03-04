@@ -100,11 +100,11 @@ export default function ReservationPrint() {
       <div className="print:mt-0 mt-20 p-8 max-w-4xl mx-auto bg-white min-h-screen relative">
         {/* Watermark for cancelled reservations */}
         {reservation.status === 'cancelled' && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 print:flex">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50 print:flex">
             <span
-              className="text-red-500/20 font-bold select-none"
+              className="text-red-500/25 font-bold select-none"
               style={{
-                fontSize: '8rem',
+                fontSize: '10rem',
                 transform: 'rotate(-35deg)',
                 letterSpacing: '0.2em',
                 whiteSpace: 'nowrap',
@@ -114,7 +114,7 @@ export default function ReservationPrint() {
             </span>
           </div>
         )}
-        <div className="print-content text-sm leading-relaxed relative z-20" style={{ fontFamily: 'TH Sarabun New, Sarabun, serif' }}>
+        <div className="print-content text-sm leading-relaxed relative" style={{ fontFamily: 'TH Sarabun New, Sarabun, serif' }}>
           
           {/* Cancellation Banner */}
           {reservation.status === 'cancelled' && (

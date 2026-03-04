@@ -306,7 +306,7 @@ const ReservationCancelPage = () => {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => navigate(`/reservations/${reservation.id}/edit`)}
+                        onClick={() => navigate(`/reservations/${reservation.id}/print`)}
                         title="ดูรายละเอียด"
                       >
                         <Eye className="h-4 w-4" />

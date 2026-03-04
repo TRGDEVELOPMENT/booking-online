@@ -28,7 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Search, Ban, Loader2, AlertTriangle, Printer } from "lucide-react";
+import { Search, Ban, Loader2, AlertTriangle, Printer, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
 
@@ -226,28 +226,27 @@ const ReservationCancelPage = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>เลขที่เอกสาร</TableHead>
-              <TableHead>สถานะ</TableHead>
-              <TableHead>ผู้จอง</TableHead>
-              <TableHead>รุ่นรถ / สี</TableHead>
+              <TableHead>เลขที่เอกสารใบจอง</TableHead>
+              <TableHead>ลูกค้าผู้จอง</TableHead>
+              <TableHead>รุ่นรถ</TableHead>
               <TableHead className="text-right">ราคาสุทธิ</TableHead>
               <TableHead className="text-right">เงินจอง</TableHead>
               <TableHead>สาขา</TableHead>
-              <TableHead>วันที่สร้าง</TableHead>
+              <TableHead>วัน-เวลา ที่ยกเลิก</TableHead>
               <TableHead className="text-center">ดำเนินการ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-12">
+                <TableCell colSpan={8} className="text-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
                   <p className="mt-2 text-muted-foreground">กำลังโหลดข้อมูล...</p>
                 </TableCell>
               </TableRow>
             ) : filteredReservations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-12">
+                <TableCell colSpan={8} className="text-center py-12">
                   <Ban className="h-12 w-12 mx-auto text-muted-foreground/50" />
                   <p className="mt-2 text-muted-foreground">ไม่พบใบจองที่ผ่านการอนุมัติ</p>
                 </TableCell>
@@ -257,15 +256,6 @@ const ReservationCancelPage = () => {
                 <TableRow key={reservation.id}>
                   <TableCell className="font-medium">
                     {reservation.document_number}
-                  </TableCell>
-                  <TableCell>
-                    {reservation.status === "cancelled" ? (
-                      <Badge variant="destructive">ยกเลิกแล้ว</Badge>
-                    ) : (
-                      <Badge className="bg-success/20 text-success hover:bg-success/20">
-                        อนุมัติแล้ว
-                      </Badge>
-                    )}
                   </TableCell>
                   <TableCell>
                     <div>
@@ -283,7 +273,6 @@ const ReservationCancelPage = () => {
                       {reservation.submodel && (
                         <p className="text-sm text-muted-foreground">
                           {reservation.submodel}
-                          {reservation.color && ` / ${reservation.color}`}
                         </p>
                       )}
                     </div>
@@ -297,27 +286,45 @@ const ReservationCancelPage = () => {
                   <TableCell>
                     {branchNames[reservation.branch_id || ""] || reservation.branch_id || "-"}
                   </TableCell>
-                  <TableCell>{formatDate(reservation.created_at)}</TableCell>
-                  <TableCell className="text-center">
-                    {reservation.status === "cancelled" ? (
+                  <TableCell>
+                    {reservation.status === "cancelled"
+                      ? format(new Date(reservation.updated_at), "d MMM yyyy HH:mm", { locale: th })
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-center gap-1">
                       <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/reservations/${reservation.id}/cancel-print`)}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => navigate(`/reservations/${reservation.id}/edit`)}
+                        title="ดูรายละเอียด"
                       >
-                        <Printer className="h-4 w-4 mr-1" />
-                        พิมพ์
+                        <Eye className="h-4 w-4" />
                       </Button>
-                    ) : (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleOpenCancelDialog(reservation)}
-                      >
-                        <Ban className="h-4 w-4 mr-1" />
-                        ยกเลิก
-                      </Button>
-                    )}
+                      {reservation.status !== "cancelled" && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          onClick={() => handleOpenCancelDialog(reservation)}
+                          title="ยกเลิกใบจอง"
+                        >
+                          <Ban className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {reservation.status === "cancelled" && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => navigate(`/reservations/${reservation.id}/cancel-print`)}
+                          title="พิมพ์ฟอร์มยกเลิกสัญญาจอง"
+                        >
+                          <Printer className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

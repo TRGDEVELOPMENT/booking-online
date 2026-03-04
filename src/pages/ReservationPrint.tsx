@@ -100,6 +100,19 @@ export default function ReservationPrint() {
       <div className="print:mt-0 mt-20 p-8 max-w-4xl mx-auto bg-white min-h-screen">
         <div className="print-content text-sm leading-relaxed" style={{ fontFamily: 'TH Sarabun New, Sarabun, serif' }}>
           
+          {/* Cancellation Banner */}
+          {reservation.status === 'cancelled' && (
+            <div className="mb-6 p-4 border-2 border-red-500 bg-red-50 rounded-lg print:border-red-500 print:bg-red-50">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-red-600 font-bold text-lg">✕ ใบจองนี้ถูกยกเลิกแล้ว</span>
+              </div>
+              <p className="text-red-700 text-sm">
+                <span className="font-semibold">เหตุผลในการยกเลิก:</span>{' '}
+                {(reservation as any).cancel_reason || 'ไม่ระบุเหตุผล'}
+              </p>
+            </div>
+          )}
+
           {/* Header */}
           <div className="text-center mb-6">
             <h1 className="text-xl font-bold mb-1">แบบสัญญามาตรฐาน</h1>

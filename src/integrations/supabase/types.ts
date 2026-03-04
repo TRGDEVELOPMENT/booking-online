@@ -391,6 +391,7 @@ export type Database = {
           buyer_id_card: string | null
           buyer_name: string | null
           buyer_phone: string | null
+          cancel_reason: string | null
           color: string | null
           company_id: string
           confirmation_method: string | null
@@ -439,6 +440,7 @@ export type Database = {
           buyer_id_card?: string | null
           buyer_name?: string | null
           buyer_phone?: string | null
+          cancel_reason?: string | null
           color?: string | null
           company_id: string
           confirmation_method?: string | null
@@ -487,6 +489,7 @@ export type Database = {
           buyer_id_card?: string | null
           buyer_name?: string | null
           buyer_phone?: string | null
+          cancel_reason?: string | null
           color?: string | null
           company_id?: string
           confirmation_method?: string | null

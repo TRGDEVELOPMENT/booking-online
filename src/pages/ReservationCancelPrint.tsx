@@ -13,6 +13,20 @@ const companyNames: Record<string, string> = {
   VPA: "บริษัท วี.พี. ออโต้ เอ็นเตอร์ไพรส์ จำกัด",
 };
 
+const cancelReasonSubjectMap: Record<string, string> = {
+  "ไม่ผ่านสินเชื่อ": "บอกเลิกสัญญาจองรถยนต์ กรณีไม่ได้รับอนุมัติสินเชื่อ",
+  "ลูกค้าไม่รับรถ": "บอกเลิกสัญญาจองรถยนต์ กรณีไม่มารับรถยนต์",
+  "ลูกค้าเปลี่ยนใจ": "ขอให้ปฏิบัติตามสัญญาจองรถยนต์ กรณีการขออนุมัติสินเชื่อ",
+  "ลูกค้ายกเลิกจอง": "ยกเลิกสัญญาจองรถยนต์",
+};
+
+const getSubjectByReason = (reason: string | null): string => {
+  if (reason && cancelReasonSubjectMap[reason]) {
+    return cancelReasonSubjectMap[reason];
+  }
+  return "ยกเลิกสัญญาจองรถยนต์";
+};
+
 export default function ReservationCancelPrint() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -137,7 +151,7 @@ export default function ReservationCancelPrint() {
         <div className="mb-2 text-base leading-relaxed">
           <p>
             <span className="font-semibold">เรื่อง</span>
-            &nbsp;&nbsp;&nbsp;&nbsp;ขอให้ปฏิบัติตามสัญญาจองรถยนต์ กรณีการขออนุมัติสินเชื่อ
+            &nbsp;&nbsp;&nbsp;&nbsp;{getSubjectByReason((reservation as any).cancel_reason)}
           </p>
         </div>
 

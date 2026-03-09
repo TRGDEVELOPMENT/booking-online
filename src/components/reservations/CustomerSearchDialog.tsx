@@ -169,44 +169,34 @@ export function CustomerSearchDialog({
                 <span className="ml-2 text-muted-foreground">กำลังค้นหา...</span>
               </div>
             ) : searchResults.length > 0 ? (
-              <div className="space-y-2 pr-4">
-                <p className="text-sm text-muted-foreground mb-3">
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">
                   พบ {searchResults.length} รายการ
                 </p>
-                {searchResults.map((customer) => (
-                  <button
-                    key={customer.id}
-                    onClick={() => handleSelectCustomer(customer)}
-                    className="w-full text-left p-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded">
-                            {customer.customer_id}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {customer.tax_id}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {customer.customer_type === 'corporate' ? (
-                            <Building2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                          ) : (
-                            <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                          )}
-                          <span className="font-medium truncate">
-                            {customer.surnames?.description || ''}{customer.first_name} {customer.last_name}
-                          </span>
-                        </div>
-                        <div className="text-sm text-muted-foreground mt-1">
-                          {customer.mobile_phone || customer.telephone || '-'}
-                          {customer.email && ` | ${customer.email}`}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[130px]">รหัสลูกค้า</TableHead>
+                      <TableHead className="w-[90px]">คำนำหน้า</TableHead>
+                      <TableHead>ชื่อ-นามสกุล</TableHead>
+                      <TableHead className="w-[150px]">เลขบัตรประชาชน</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {searchResults.map((customer) => (
+                      <TableRow
+                        key={customer.id}
+                        onClick={() => handleSelectCustomer(customer)}
+                        className="cursor-pointer hover:bg-accent/50"
+                      >
+                        <TableCell className="font-mono text-xs">{customer.customer_id}</TableCell>
+                        <TableCell className="text-sm">{customer.surnames?.description || '-'}</TableCell>
+                        <TableCell className="font-medium">{customer.first_name} {customer.last_name}</TableCell>
+                        <TableCell className="text-sm">{customer.tax_id}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             ) : hasSearched && searchTerm.trim() ? (
               <div className="text-center py-8">

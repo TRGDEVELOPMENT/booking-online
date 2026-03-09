@@ -42,6 +42,7 @@ import {
 
 type RiskLevel = 'critical' | 'high' | 'medium' | 'low';
 type DevDifficulty = 'very_hard' | 'hard' | 'medium' | 'easy';
+type WeightLevel = 'complete' | 'minor' | 'major' | 'critical';
 
 interface FunctionItem {
   no: number;
@@ -57,7 +58,16 @@ interface FunctionItem {
   devScore: number; // 1-5
   devManDays: number;
   devNotes: string;
+  weightLevel: WeightLevel;
+  weightScore: number; // 10, 7, 4, 1
 }
+
+const weightConfig: Record<WeightLevel, { label: string; score: number; color: string; bgColor: string; borderColor: string; emoji: string; description: string }> = {
+  complete: { label: 'Complete', score: 10, color: 'text-emerald-700', bgColor: 'bg-emerald-100', borderColor: 'border-emerald-300', emoji: '✅', description: 'ไม่มีข้อผิดพลาด — ขาดไปแทบไม่กระทบการใช้งาน' },
+  minor: { label: 'Minor', score: 7, color: 'text-blue-700', bgColor: 'bg-blue-100', borderColor: 'border-blue-300', emoji: '🔵', description: 'กระทบจำกัด มี Workaround — Dev ปานกลาง-ง่าย' },
+  major: { label: 'Major', score: 4, color: 'text-orange-700', bgColor: 'bg-orange-100', borderColor: 'border-orange-300', emoji: '🟠', description: 'กระทบ Workflow หลัก / ทำงานไม่ครบ — Dev ยาก-ปานกลาง' },
+  critical: { label: 'Critical', score: 1, color: 'text-red-700', bgColor: 'bg-red-100', borderColor: 'border-red-300', emoji: '🔴', description: 'ระบบใช้งานไม่ได้ / เงินสูญหาย / กฎหมาย — Dev ยากมาก' },
+};
 
 const riskConfig: Record<RiskLevel, { label: string; color: string; bgColor: string; borderColor: string }> = {
   critical: { label: 'สูงมาก', color: 'text-red-700', bgColor: 'bg-red-100', borderColor: 'border-red-300' },

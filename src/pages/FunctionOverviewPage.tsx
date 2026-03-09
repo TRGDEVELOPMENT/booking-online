@@ -229,23 +229,32 @@ const getWeightBar = (score: number) => {
   );
 };
 
-const getRiskBar = (score: number, maxScore = 5) => {
+const getPerfBadge = (level: PerfLevel) => {
+  const config = perfLevelConfig[level];
+  return (
+    <Badge className={`${config.bgColor} ${config.color} ${config.borderColor} border`}>
+      {config.emoji} {config.label}
+    </Badge>
+  );
+};
+
+const getPerfBar = (score: number) => {
   const colors: Record<number, string> = {
-    1: 'bg-green-500',
-    2: 'bg-yellow-500',
-    3: 'bg-yellow-600',
+    1: 'bg-emerald-500',
+    2: 'bg-cyan-500',
+    3: 'bg-yellow-500',
     4: 'bg-orange-500',
     5: 'bg-red-500',
   };
   return (
-    <div className="flex items-center gap-2 min-w-[100px]">
+    <div className="flex items-center gap-2 min-w-[80px]">
       <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${colors[score] || 'bg-muted-foreground'}`}
-          style={{ width: `${(score / maxScore) * 100}%` }}
+          style={{ width: `${(score / 5) * 100}%` }}
         />
       </div>
-      <span className="text-xs font-bold text-muted-foreground w-6 text-right">{score}/{maxScore}</span>
+      <span className="text-xs font-bold text-muted-foreground w-6 text-right">{score}/5</span>
     </div>
   );
 };

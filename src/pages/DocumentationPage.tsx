@@ -59,17 +59,18 @@ export default function DocumentationPage() {
         <section className="mb-12 print:page-break-after">
           <h2 className="text-2xl font-bold mb-6 border-b pb-2">1. สรุปจำนวน Screen ทั้งหมด</h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <StatBox title="Authentication" count={1} color="bg-blue-100 text-blue-800" />
             <StatBox title="Dashboard" count={1} color="bg-green-100 text-green-800" />
-            <StatBox title="ใบจองรถยนต์" count={6} color="bg-purple-100 text-purple-800" />
-            <StatBox title="รายงาน" count={4} color="bg-orange-100 text-orange-800" />
+            <StatBox title="ใบจองรถยนต์" count={8} color="bg-purple-100 text-purple-800" />
+            <StatBox title="รายงาน" count={3} color="bg-orange-100 text-orange-800" />
             <StatBox title="ตั้งค่าระบบ" count={13} color="bg-pink-100 text-pink-800" />
+            <StatBox title="เอกสาร/เครื่องมือ" count={4} color="bg-cyan-100 text-cyan-800" />
             <StatBox title="Error Page" count={1} color="bg-gray-100 text-gray-800" />
           </div>
 
           <div className="bg-primary/10 rounded-lg p-6 text-center">
-            <p className="text-3xl font-bold text-primary">26 Screens</p>
+            <p className="text-3xl font-bold text-primary">31 Screens</p>
             <p className="text-muted-foreground">จำนวน Screen ทั้งหมด</p>
           </div>
 

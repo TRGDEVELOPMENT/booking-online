@@ -670,10 +670,8 @@ export default function FunctionOverviewPage() {
                         <TableHead className="w-10">#</TableHead>
                         <TableHead>Function</TableHead>
                         <TableHead className="hidden md:table-cell">ผู้รับผิดชอบ</TableHead>
-                        <TableHead className="text-center">ความเสี่ยง</TableHead>
-                        <TableHead className="w-[110px]">Risk</TableHead>
                         <TableHead className="text-center">ความยาก Dev</TableHead>
-                        <TableHead className="w-[110px]">Dev</TableHead>
+                        <TableHead className="w-[110px]">Dev Score</TableHead>
                         <TableHead className="text-center w-20">Man-Days</TableHead>
                         <TableHead className="hidden xl:table-cell">หมายเหตุ Dev</TableHead>
                       </TableRow>

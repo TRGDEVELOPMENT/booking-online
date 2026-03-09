@@ -83,9 +83,12 @@ export function CustomerSearchDialog({
         .select('*, surnames(id, description)')
         .eq('company_id', companyId)
         .eq('status', 'active')
-        .or(`tax_id.ilike.%${term}%,first_name.ilike.%${term}%,last_name.ilike.%${term}%`)
         .order('customer_id', { ascending: true })
-        .limit(20);
+        .limit(50);
+
+      if (term.trim()) {
+        query = query.or(`tax_id.ilike.%${term}%,first_name.ilike.%${term}%,last_name.ilike.%${term}%`);
+      }
 
       if (customerType) {
         query = query.eq('customer_type', customerType);

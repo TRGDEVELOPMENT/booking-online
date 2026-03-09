@@ -364,17 +364,25 @@ export default function FunctionOverviewPage() {
       'Category': f.category,
       'Weight Level': weightConfig[f.weightLevel].label,
       'Weight Score': f.weightScore,
+      'Perf Level': perfLevelConfig[f.perf.level].label,
+      'Perf Score': f.perf.score,
+      'Response Time': f.perf.responseTime,
+      'Concurrent Users': f.perf.concurrentUsers,
+      'Availability': f.perf.availability,
+      'Data Volume': f.perf.dataVolume,
       'Responsible': f.responsible,
       'Description': f.description,
       'Dev Difficulty': devConfig[f.devDifficulty].label,
       'Dev Score (1-5)': f.devScore,
       'Man-Days': f.devManDays,
       'Dev Notes': f.devNotes,
+      'Perf Notes': f.perf.notes,
     }));
     const ws1 = XLSX.utils.json_to_sheet(detailData);
     ws1['!cols'] = [
-      { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 12 }, { wch: 14 },
-      { wch: 22 }, { wch: 50 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
+      { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 12 }, { wch: 12 },
+      { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 12 },
+      { wch: 22 }, { wch: 50 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 }, { wch: 50 },
     ];
 
     // Sheet 3: Summary by Category

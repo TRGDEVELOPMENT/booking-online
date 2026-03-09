@@ -58,6 +58,7 @@ const App = () => (
               <Route path="/reservations/create" element={<ReservationCreate />} />
               <Route path="/reservations/:id/edit" element={<ReservationEdit />} />
               <Route path="/reservations/cancel" element={<ReservationCancelPage />} />
+              <Route path="/reservations/:id/cancel-detail" element={<ReservationCancelDetail />} />
               <Route path="/reservations/pending-payment" element={<ReservationPendingPaymentPage />} />
               
               {/* Reports Routes */}

@@ -28,7 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Search, Ban, Loader2, AlertTriangle, Printer, Eye } from "lucide-react";
+import { Search, Ban, Loader2, AlertTriangle, Printer, Eye, FileEdit, ClipboardCheck, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
 

@@ -222,12 +222,81 @@ export default function FunctionOverviewPage() {
     };
   });
 
+  const exportToExcel = () => {
+    // Sheet 1: Function Details
+    const detailData = functions.map(f => ({
+      'No.': f.no,
+      'Function Name': f.name,
+      'Category': f.category,
+      'Responsible': f.responsible,
+      'Description': f.description,
+      'Risk Level': riskConfig[f.riskLevel].label,
+      'Risk Score (1-5)': f.riskScore,
+      'Risk Reason': f.riskReason,
+      'Dev Difficulty': devConfig[f.devDifficulty].label,
+      'Dev Score (1-5)': f.devScore,
+      'Man-Days': f.devManDays,
+      'Dev Notes': f.devNotes,
+    }));
+    const ws1 = XLSX.utils.json_to_sheet(detailData);
+    ws1['!cols'] = [
+      { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 22 }, { wch: 50 },
+      { wch: 12 }, { wch: 14 }, { wch: 40 },
+      { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
+    ];
+
+    // Sheet 2: Summary by Category
+    const summaryData = categoryStats.map(c => ({
+      'Category': c.name,
+      'จำนวน Function': c.count,
+      'Avg Risk Score': c.avgRisk,
+      'Avg Dev Score': c.avgDev,
+      'Total Man-Days': c.totalDays,
+    }));
+    summaryData.push({
+      'Category': 'รวมทั้งหมด',
+      'จำนวน Function': functions.length,
+      'Avg Risk Score': +avgRisk,
+      'Avg Dev Score': +avgDev,
+      'Total Man-Days': totalManDays,
+    });
+    const ws2 = XLSX.utils.json_to_sheet(summaryData);
+    ws2['!cols'] = [{ wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }];
+
+    // Sheet 3: Risk & Dev Distribution
+    const distData = [
+      { 'ประเภท': 'Risk - Critical', 'จำนวน': criticalCount },
+      { 'ประเภท': 'Risk - High', 'จำนวน': highCount },
+      { 'ประเภท': 'Risk - Medium', 'จำนวน': mediumCount },
+      { 'ประเภท': 'Risk - Low', 'จำนวน': lowCount },
+      { 'ประเภท': '', 'จำนวน': '' },
+      { 'ประเภท': 'Dev - ยากมาก', 'จำนวน': veryHardCount },
+      { 'ประเภท': 'Dev - ยาก', 'จำนวน': hardCount },
+      { 'ประเภท': 'Dev - ปานกลาง', 'จำนวน': devMediumCount },
+      { 'ประเภท': 'Dev - ง่าย', 'จำนวน': easyCount },
+    ];
+    const ws3 = XLSX.utils.json_to_sheet(distData);
+    ws3['!cols'] = [{ wch: 20 }, { wch: 10 }];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws1, 'Function Details');
+    XLSX.utils.book_append_sheet(wb, ws2, 'Summary by Category');
+    XLSX.utils.book_append_sheet(wb, ws3, 'Distribution');
+    XLSX.writeFile(wb, 'FunctionOverview_Assessment.xlsx');
+  };
+
   return (
     <div className="space-y-6">
-      <Header
-        title="Function Overview"
-        subtitle="ภาพรวม Function ทั้งหมด — ความเสี่ยงทาง Business + ความยากในการพัฒนา"
-      />
+      <div className="flex items-center justify-between">
+        <Header
+          title="Function Overview"
+          subtitle="ภาพรวม Function ทั้งหมด — ความเสี่ยงทาง Business + ความยากในการพัฒนา"
+        />
+        <Button onClick={exportToExcel} className="gap-2">
+          <FileSpreadsheet className="h-4 w-4" />
+          Export Excel
+        </Button>
+      </div>
 
       <div className="p-6 space-y-6 max-w-7xl mx-auto">
         {/* Summary Cards Row 1 - Overview */}

@@ -222,8 +222,41 @@ export default function FunctionOverviewPage() {
     };
   });
 
+  // Score Map data: sorted by total score descending
+  const scoreMapData = functions
+    .map(f => ({
+      ...f,
+      totalScore: f.riskScore + f.devScore,
+      priority: f.riskScore + f.devScore >= 8 ? 'วิกฤต' : f.riskScore + f.devScore >= 6 ? 'สูง' : f.riskScore + f.devScore >= 4 ? 'ปานกลาง' : 'ต่ำ',
+    }))
+    .sort((a, b) => b.totalScore - a.totalScore);
+
   const exportToExcel = () => {
-    // Sheet 1: Function Details
+    // Sheet 1: Score Map
+    const scoreMapSheet = scoreMapData.map((f, i) => ({
+      'ลำดับ': i + 1,
+      'F.No': f.no,
+      'Function Name': f.name,
+      'Category': f.category,
+      'Responsible': f.responsible,
+      'Risk Level': riskConfig[f.riskLevel].label,
+      'Risk Score': f.riskScore,
+      'Dev Difficulty': devConfig[f.devDifficulty].label,
+      'Dev Score': f.devScore,
+      'Total Score': f.totalScore,
+      'Priority': f.priority,
+      'Man-Days': f.devManDays,
+      'Risk Reason': f.riskReason,
+      'Dev Notes': f.devNotes,
+    }));
+    const ws0 = XLSX.utils.json_to_sheet(scoreMapSheet);
+    ws0['!cols'] = [
+      { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 22 },
+      { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 12 },
+      { wch: 10 }, { wch: 10 }, { wch: 40 }, { wch: 50 },
+    ];
+
+    // Sheet 2: Function Details
     const detailData = functions.map(f => ({
       'No.': f.no,
       'Function Name': f.name,
@@ -245,7 +278,7 @@ export default function FunctionOverviewPage() {
       { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
     ];
 
-    // Sheet 2: Summary by Category
+    // Sheet 3: Summary by Category
     const summaryData = categoryStats.map(c => ({
       'Category': c.name,
       'จำนวน Function': c.count,
@@ -263,7 +296,7 @@ export default function FunctionOverviewPage() {
     const ws2 = XLSX.utils.json_to_sheet(summaryData);
     ws2['!cols'] = [{ wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }];
 
-    // Sheet 3: Risk & Dev Distribution
+    // Sheet 4: Distribution
     const distData = [
       { 'ประเภท': 'Risk - Critical', 'จำนวน': criticalCount },
       { 'ประเภท': 'Risk - High', 'จำนวน': highCount },
@@ -279,10 +312,11 @@ export default function FunctionOverviewPage() {
     ws3['!cols'] = [{ wch: 20 }, { wch: 10 }];
 
     const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws0, 'Score Map');
     XLSX.utils.book_append_sheet(wb, ws1, 'Function Details');
     XLSX.utils.book_append_sheet(wb, ws2, 'Summary by Category');
     XLSX.utils.book_append_sheet(wb, ws3, 'Distribution');
-    XLSX.writeFile(wb, 'FunctionOverview_Assessment.xlsx');
+    XLSX.writeFile(wb, 'FunctionOverview_ScoreMap.xlsx');
   };
 
   return (

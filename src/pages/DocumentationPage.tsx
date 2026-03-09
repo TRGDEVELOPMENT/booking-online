@@ -88,18 +88,23 @@ export default function DocumentationPage() {
               <tbody>
                 <tr><td className="border p-2">1</td><td className="border p-2">Auth</td><td className="border p-2">Login</td><td className="border p-2 font-mono text-xs">/login</td></tr>
                 <tr><td className="border p-2">2</td><td className="border p-2">Dashboard</td><td className="border p-2">Dashboard</td><td className="border p-2 font-mono text-xs">/</td></tr>
-                <tr><td className="border p-2">3</td><td className="border p-2" rowSpan={6}>ใบจอง</td><td className="border p-2">รายการใบจอง</td><td className="border p-2 font-mono text-xs">/reservations</td></tr>
+                <tr><td className="border p-2">3</td><td className="border p-2" rowSpan={8}>ใบจอง</td><td className="border p-2">รายการใบจอง</td><td className="border p-2 font-mono text-xs">/reservations</td></tr>
                 <tr><td className="border p-2">4</td><td className="border p-2">สร้างใบจองใหม่</td><td className="border p-2 font-mono text-xs">/reservations/create</td></tr>
                 <tr><td className="border p-2">5</td><td className="border p-2">แก้ไขใบจอง</td><td className="border p-2 font-mono text-xs">/reservations/:id/edit</td></tr>
                 <tr><td className="border p-2">6</td><td className="border p-2">พิมพ์ใบจอง</td><td className="border p-2 font-mono text-xs">/reservations/:id/print</td></tr>
                 <tr><td className="border p-2">7</td><td className="border p-2">ยกเลิกใบจอง</td><td className="border p-2 font-mono text-xs">/reservations/cancel</td></tr>
-                <tr><td className="border p-2">8</td><td className="border p-2">รอรับชำระเงิน</td><td className="border p-2 font-mono text-xs">/reservations/pending-payment</td></tr>
-                <tr><td className="border p-2">9</td><td className="border p-2" rowSpan={4}>รายงาน</td><td className="border p-2">รายงานประจำเดือน</td><td className="border p-2 font-mono text-xs">/reports/monthly</td></tr>
-                <tr><td className="border p-2">10</td><td className="border p-2">รอการอนุมัติ</td><td className="border p-2 font-mono text-xs">/reports/pending-approval</td></tr>
-                <tr><td className="border p-2">11</td><td className="border p-2">ใบจองที่ยกเลิก</td><td className="border p-2 font-mono text-xs">/reports/cancelled</td></tr>
-                <tr><td className="border p-2">12</td><td className="border p-2">Default Report</td><td className="border p-2 font-mono text-xs">/reports</td></tr>
-                <tr><td className="border p-2">13-25</td><td className="border p-2">ตั้งค่า</td><td className="border p-2">Master Data (13 หน้า)</td><td className="border p-2 font-mono text-xs">/settings/*</td></tr>
-                <tr><td className="border p-2">26</td><td className="border p-2">Error</td><td className="border p-2">404 Not Found</td><td className="border p-2 font-mono text-xs">*</td></tr>
+                <tr><td className="border p-2">8</td><td className="border p-2">รายละเอียดยกเลิก</td><td className="border p-2 font-mono text-xs">/reservations/:id/cancel-detail</td></tr>
+                <tr><td className="border p-2">9</td><td className="border p-2">พิมพ์ใบยกเลิก</td><td className="border p-2 font-mono text-xs">/reservations/:id/cancel-print</td></tr>
+                <tr><td className="border p-2">10</td><td className="border p-2">รอรับชำระเงิน</td><td className="border p-2 font-mono text-xs">/reservations/pending-payment</td></tr>
+                <tr><td className="border p-2">11</td><td className="border p-2" rowSpan={3}>รายงาน</td><td className="border p-2">รายงานประจำเดือน</td><td className="border p-2 font-mono text-xs">/reports/monthly</td></tr>
+                <tr><td className="border p-2">12</td><td className="border p-2">รอการอนุมัติ</td><td className="border p-2 font-mono text-xs">/reports/pending-approval</td></tr>
+                <tr><td className="border p-2">13</td><td className="border p-2">ใบจองที่ยกเลิก</td><td className="border p-2 font-mono text-xs">/reports/cancelled</td></tr>
+                <tr><td className="border p-2">14-26</td><td className="border p-2">ตั้งค่า</td><td className="border p-2">Master Data (13 หน้า)</td><td className="border p-2 font-mono text-xs">/settings/*</td></tr>
+                <tr><td className="border p-2">27</td><td className="border p-2" rowSpan={4}>เอกสาร/เครื่องมือ</td><td className="border p-2">เอกสารโครงการ</td><td className="border p-2 font-mono text-xs">/docs</td></tr>
+                <tr><td className="border p-2">28</td><td className="border p-2">API Specification</td><td className="border p-2 font-mono text-xs">/api-spec</td></tr>
+                <tr><td className="border p-2">29</td><td className="border p-2">ภาพรวมฟังก์ชัน</td><td className="border p-2 font-mono text-xs">/function-overview</td></tr>
+                <tr><td className="border p-2">30</td><td className="border p-2">Test Cases</td><td className="border p-2 font-mono text-xs">/test-cases</td></tr>
+                <tr><td className="border p-2">31</td><td className="border p-2">Error</td><td className="border p-2">404 Not Found</td><td className="border p-2 font-mono text-xs">*</td></tr>
               </tbody>
             </table>
           </div>

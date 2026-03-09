@@ -239,21 +239,15 @@ export default function FunctionOverviewPage() {
       'Function Name': f.name,
       'Category': f.category,
       'Responsible': f.responsible,
-      'Risk Level': riskConfig[f.riskLevel].label,
-      'Risk Score': f.riskScore,
       'Dev Difficulty': devConfig[f.devDifficulty].label,
       'Dev Score': f.devScore,
-      'Total Score': f.totalScore,
-      'Priority': f.priority,
       'Man-Days': f.devManDays,
-      'Risk Reason': f.riskReason,
       'Dev Notes': f.devNotes,
     }));
     const ws0 = XLSX.utils.json_to_sheet(scoreMapSheet);
     ws0['!cols'] = [
       { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 22 },
-      { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 12 },
-      { wch: 10 }, { wch: 10 }, { wch: 40 }, { wch: 50 },
+      { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 50 },
     ];
 
     // Sheet 2: Function Details

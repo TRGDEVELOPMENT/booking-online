@@ -77,6 +77,12 @@ const menuItems: MenuItem[] = [
     path: '/function-overview' 
   },
   { 
+    id: 'test-cases', 
+    label: 'Test Cases', 
+    icon: ClipboardList, 
+    path: '/test-cases' 
+  },
+  { 
     id: 'reservations', 
     label: 'ใบจองรถยนต์', 
     icon: FileText, 

@@ -457,7 +457,7 @@ const ReservationCancelPage = () => {
               ) : (
                 <>
                   <Ban className="h-4 w-4 mr-2" />
-                  ยืนยันการยกเลิก
+                  บันทึกขอยกเลิก
                 </>
               )}
             </AlertDialogAction>

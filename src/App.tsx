@@ -7,6 +7,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Dashboard from "@/pages/Dashboard";
 import FunctionOverviewPage from "@/pages/FunctionOverviewPage";
+import TestCasesPage from "@/pages/TestCasesPage";
 import ReservationList from "@/pages/ReservationList";
 import ReservationCreate from "@/pages/ReservationCreate";
 import ReservationEdit from "@/pages/ReservationEdit";
@@ -56,6 +57,7 @@ const App = () => (
           <Route element={<MainLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/function-overview" element={<FunctionOverviewPage />} />
+              <Route path="/test-cases" element={<TestCasesPage />} />
               <Route path="/reservations" element={<ReservationList />} />
               <Route path="/reservations/create" element={<ReservationCreate />} />
               <Route path="/reservations/:id/edit" element={<ReservationEdit />} />

@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   FileText, 
   List,
+  ClipboardList,
   Ban,
   FilePlus2, 
   Users, 
@@ -75,6 +76,12 @@ const menuItems: MenuItem[] = [
     label: 'Function Overview', 
     icon: Layers, 
     path: '/function-overview' 
+  },
+  { 
+    id: 'test-cases', 
+    label: 'Test Cases', 
+    icon: ClipboardList, 
+    path: '/test-cases' 
   },
   { 
     id: 'reservations', 

@@ -71,6 +71,12 @@ const menuItems: MenuItem[] = [
     path: '/' 
   },
   { 
+    id: 'function-overview', 
+    label: 'Function Overview', 
+    icon: Layers, 
+    path: '/function-overview' 
+  },
+  { 
     id: 'reservations', 
     label: 'ใบจองรถยนต์', 
     icon: FileText, 

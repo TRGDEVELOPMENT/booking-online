@@ -55,6 +55,7 @@ const App = () => (
           <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/function-overview" element={<FunctionOverviewPage />} />
               <Route path="/reservations" element={<ReservationList />} />
               <Route path="/reservations/create" element={<ReservationCreate />} />
               <Route path="/reservations/:id/edit" element={<ReservationEdit />} />

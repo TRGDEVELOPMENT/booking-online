@@ -121,7 +121,10 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange }: 
                   </Link>
                 </td>
                 <td className="px-4 py-3">
-                  <Badge className={cn("status-badge w-fit", statusStyles[reservation.status] || 'status-draft')}>
+                  <Badge 
+                    variant={reservation.status === 'cancelled' ? null : 'default'}
+                    className={cn("status-badge w-fit", statusStyles[reservation.status] || 'status-draft')}
+                  >
                     {DatabaseStatusLabels[reservation.status] || reservation.status}
                   </Badge>
                 </td>

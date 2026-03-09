@@ -161,7 +161,7 @@
   }
 
   .status-cancelled {
-    @apply bg-red-100 text-red-800 border border-red-200;
+    @apply bg-red-700 text-white border border-red-800;
   }
 
   .workflow-step {

@@ -242,25 +242,36 @@ export default function FunctionOverviewPage() {
   const avgDev = (functions.reduce((sum, f) => sum + f.devScore, 0) / functions.length).toFixed(1);
   const totalManDays = functions.reduce((sum, f) => sum + f.devManDays, 0);
 
+  // Weight Score stats
+  const wCriticalCount = functions.filter(f => f.weightLevel === 'critical').length;
+  const wMajorCount = functions.filter(f => f.weightLevel === 'major').length;
+  const wMinorCount = functions.filter(f => f.weightLevel === 'minor').length;
+  const wCompleteCount = functions.filter(f => f.weightLevel === 'complete').length;
+  const avgWeight = (functions.reduce((sum, f) => sum + f.weightScore, 0) / functions.length).toFixed(1);
+  const totalWeight = functions.reduce((sum, f) => sum + f.weightScore, 0);
+  const maxTotalWeight = functions.length * 10;
+
   const categoryStats = categories.map(cat => {
     const fns = functions.filter(f => f.category === cat);
     return {
       name: cat,
       avgRisk: +(fns.reduce((s, f) => s + f.riskScore, 0) / fns.length).toFixed(1),
       avgDev: +(fns.reduce((s, f) => s + f.devScore, 0) / fns.length).toFixed(1),
+      avgWeight: +(fns.reduce((s, f) => s + f.weightScore, 0) / fns.length).toFixed(1),
+      totalWeight: fns.reduce((s, f) => s + f.weightScore, 0),
       totalDays: +fns.reduce((s, f) => s + f.devManDays, 0).toFixed(1),
       count: fns.length,
     };
   });
 
-  // Score Map data: sorted by total score descending
+  // Score Map data: sorted by weight score ascending (critical first)
   const scoreMapData = functions
     .map(f => ({
       ...f,
       totalScore: f.riskScore + f.devScore,
-      priority: f.riskScore + f.devScore >= 8 ? 'วิกฤต' : f.riskScore + f.devScore >= 6 ? 'สูง' : f.riskScore + f.devScore >= 4 ? 'ปานกลาง' : 'ต่ำ',
+      priority: f.weightLevel,
     }))
-    .sort((a, b) => b.totalScore - a.totalScore);
+    .sort((a, b) => a.weightScore - b.weightScore || b.devScore - a.devScore);
 
   const exportToExcel = () => {
     // Sheet 1: Score Map

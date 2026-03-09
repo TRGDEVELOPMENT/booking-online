@@ -515,12 +515,12 @@ export default function FunctionOverviewPage() {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Pie Chart - Risk Distribution */}
+          {/* Pie Chart - Weight Distribution */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-orange-500" />
-                การกระจายความเสี่ยง
+                <ShieldAlert className="w-4 h-4 text-amber-500" />
+                การกระจาย Weight Score
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -528,15 +528,15 @@ export default function FunctionOverviewPage() {
                 <PieChart>
                   <Pie
                     data={[
-                      { name: 'สูงมาก', value: criticalCount },
-                      { name: 'สูง', value: highCount },
-                      { name: 'ปานกลาง', value: mediumCount },
-                      { name: 'ต่ำ', value: lowCount },
+                      { name: 'Critical (1)', value: wCriticalCount },
+                      { name: 'Major (4)', value: wMajorCount },
+                      { name: 'Minor (7)', value: wMinorCount },
+                      { name: 'Complete (10)', value: wCompleteCount },
                     ]}
                     cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={4} dataKey="value"
                     label={({ name, value }) => `${name}: ${value}`}
                   >
-                    {['#dc2626', '#ea580c', '#ca8a04', '#16a34a'].map((color, i) => (
+                    {['#dc2626', '#ea580c', '#3b82f6', '#10b981'].map((color, i) => (
                       <Cell key={i} fill={color} />
                     ))}
                   </Pie>

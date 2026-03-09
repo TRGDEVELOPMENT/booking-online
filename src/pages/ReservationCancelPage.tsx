@@ -28,7 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Search, Ban, Loader2, AlertTriangle, Printer, Eye } from "lucide-react";
+import { Search, Ban, Loader2, AlertTriangle, Printer, Eye, FileEdit, ClipboardCheck, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
 
@@ -196,6 +196,36 @@ const ReservationCancelPage = () => {
         subtitle={`${selectedCompany} - ${companyNames[selectedCompany] || selectedCompany}`}
       />
 
+      {/* Cancellation Workflow Steps */}
+      <div className="bg-card rounded-xl border border-border/50 p-6 shadow-card">
+        <h3 className="text-sm font-semibold text-muted-foreground mb-4">ขั้นตอนการยกเลิกใบจอง</h3>
+        <div className="flex items-center justify-between relative">
+          {/* Progress Line */}
+          <div className="absolute top-6 left-[16.67%] right-[16.67%] h-1 bg-muted" />
+
+          {[
+            { icon: FileEdit, label: 'บันทึกขอยกเลิกใบจอง', subLabel: 'ที่ปรึกษาการขาย', step: 1 },
+            { icon: ClipboardCheck, label: 'ตรวจสอบการขอยกเลิกใบจอง', subLabel: 'หัวหน้าทีมขาย', step: 2 },
+            { icon: CheckCircle, label: 'อนุมัติยกเลิกใบจอง', subLabel: 'ผู้จัดการฝ่ายขาย', step: 3 },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.step} className="relative z-10 flex flex-col items-center flex-1">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center border-4 bg-muted border-muted-foreground/30 text-muted-foreground">
+                  <Icon className="w-5 h-5" />
+                </div>
+                <p className="mt-2 text-xs md:text-sm font-medium text-center text-foreground">
+                  {item.label}
+                </p>
+                <p className="text-xs text-muted-foreground text-center">
+                  ({item.subLabel})
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Search */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
@@ -297,7 +327,7 @@ const ReservationCancelPage = () => {
                     {reservation.status === "cancelled" ? (
                       <Badge variant="destructive">ยกเลิกแล้ว</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-green-600 border-green-600">อนุมัติใบจองแล้ว</Badge>
+                      <Badge variant="outline" className="text-amber-600 border-amber-500 bg-amber-50">อยู่ระหว่างยกเลิกใบจอง</Badge>
                     )}
                   </TableCell>
                   <TableCell>

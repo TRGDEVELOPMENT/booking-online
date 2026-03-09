@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { companies, branches } from '@/data/mockData';
 import type { DatabaseReservation } from '@/types/database-reservation';
+import bizrLogo from '@/assets/bizr-logo.jpg';
 
 export default function ReservationPrint() {
   const { id } = useParams<{ id: string }>();
@@ -72,17 +73,42 @@ export default function ReservationPrint() {
 
   const company = companies.find(c => c.id === reservation.company_id);
   const branch = branches.find(b => b.id === reservation.branch_id);
-  const today = new Date();
+  const createdDate = new Date(reservation.created_at);
   const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
                       'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-  const thaiYear = today.getFullYear() + 543;
+  const thaiYear = createdDate.getFullYear() + 543;
+  const companyName = company?.name || 'บริษัท บิซ พีเค จำกัด';
+  const branchName = branch?.name || 'ปิ่นเกล้า';
+  const isCancelled = reservation.status === 'cancelled';
+
+  const dotLine = (width = '200px') => (
+    <span style={{ 
+      display: 'inline-block', 
+      width, 
+      borderBottom: '1px dotted #000', 
+      minHeight: '1.2em',
+      verticalAlign: 'bottom'
+    }}>&nbsp;</span>
+  );
+
+  const filledDotLine = (text: string, width = '200px') => (
+    <span style={{ 
+      display: 'inline-block', 
+      width, 
+      borderBottom: '1px dotted #000', 
+      minHeight: '1.2em',
+      verticalAlign: 'bottom',
+      textAlign: 'center',
+      fontWeight: 600
+    }}>{text}</span>
+  );
 
   return (
     <>
-      {/* Print Controls - Hidden when printing */}
+      {/* Print Controls */}
       <div className="print:hidden fixed top-0 left-0 right-0 bg-background/95 backdrop-blur border-b z-50 p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Button variant="outline" onClick={() => navigate('/reservations')}>
+          <Button variant="outline" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             กลับ
           </Button>
@@ -97,9 +123,10 @@ export default function ReservationPrint() {
       </div>
 
       {/* Print Content */}
-      <div className="print:mt-0 mt-20 p-8 max-w-4xl mx-auto bg-white min-h-screen relative">
+      <div className="print:mt-0 mt-20 p-8 max-w-4xl mx-auto bg-white min-h-screen relative" style={{ fontFamily: 'TH Sarabun New, Sarabun, serif', fontSize: '16px', lineHeight: '1.8', color: '#000' }}>
+        
         {/* Watermark for cancelled reservations */}
-        {reservation.status === 'cancelled' && (
+        {isCancelled && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50 print:flex">
             <span
               className="text-red-500/25 font-bold select-none"
@@ -114,10 +141,10 @@ export default function ReservationPrint() {
             </span>
           </div>
         )}
-        <div className="print-content text-sm leading-relaxed relative" style={{ fontFamily: 'TH Sarabun New, Sarabun, serif' }}>
-          
+
+        <div className="relative">
           {/* Cancellation Banner */}
-          {reservation.status === 'cancelled' && (
+          {isCancelled && (
             <div className="mb-6 p-4 border-2 border-red-500 bg-red-50 rounded-lg print:border-red-500 print:bg-red-50">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-red-600 font-bold text-lg">✕ ใบจองนี้ถูกยกเลิกแล้ว</span>
@@ -129,242 +156,253 @@ export default function ReservationPrint() {
             </div>
           )}
 
-          {/* Header */}
-          <div className="text-center mb-6">
-            <h1 className="text-xl font-bold mb-1">แบบสัญญามาตรฐาน</h1>
-            <h2 className="text-lg font-bold">สัญญาจองรถยนต์ (รถใหม่)</h2>
+          {/* ===== PAGE 1: Header & Company Info ===== */}
+          <div className="mb-2">
+            {/* Logo & Title */}
+            <div className="flex items-start gap-4 mb-4">
+              <img src={bizrLogo} alt="BIZR Logo" className="h-16 object-contain" />
+              <div className="flex-1">
+                <div className="text-right text-sm text-gray-500 mb-1">{companyName}</div>
+              </div>
+            </div>
+
+            <h1 className="text-center text-xl font-bold mb-1">แบบสัญญามาตรฐาน สัญญาจองรถยนต์ (รถใหม่)</h1>
+
+            <div className="flex justify-between mt-4 mb-4">
+              <div>เล่มที่ {dotLine('120px')}</div>
+              <div>เลขที่ {filledDotLine(reservation.document_number, '150px')}</div>
+            </div>
           </div>
 
-          {/* Document Info */}
-          <div className="flex justify-between mb-4">
-            <div>เล่มที่ .........................</div>
-            <div>เลขที่ <span className="font-semibold">{reservation.document_number}</span></div>
-          </div>
-
-          {/* Company Info */}
-          <div className="mb-4 p-3 border border-gray-300 rounded">
-            <p className="font-semibold mb-2">ผู้ประกอบธุรกิจ: {company?.name || 'บริษัท บิซ พีเค จำกัด'}</p>
-            <p>สาขา: {branch?.name || 'สำนักงานใหญ่'}</p>
-            <p>ที่อยู่: 800/1 ถนนบรมราชชนนี แขวงบางบำหรุ เขตบางพลัด กรุงเทพมหานคร 10700</p>
-            <p>โทรศัพท์: 02-886-4466 | อีเมล: bizpk_01@nissan-dealer.in.th</p>
+          {/* Company Info Section */}
+          <div className="mb-4">
+            <p>ชื่อผู้ประกอบธุรกิจ <span className="font-bold underline">{companyName}</span> สาขา {filledDotLine(branchName, '120px')}</p>
+            <p>ผู้จัดการฝ่ายขาย ชื่อ - สกุล {dotLine('250px')} หมายเลขโทรศัพท์มือถือ {dotLine('120px')}</p>
+            <p>พนักงานขาย/พนักงานผู้รับจอง ชื่อ - สกุล {dotLine('200px')} หมายเลขโทรศัพท์มือถือ {dotLine('120px')}</p>
           </div>
 
           {/* Contract Date */}
           <div className="mb-4 text-center">
-            <p>
-              สัญญาฉบับนี้ทำขึ้น ณ วันที่ <span className="font-semibold">{today.getDate()}</span> เดือน <span className="font-semibold">{thaiMonths[today.getMonth()]}</span> พ.ศ. <span className="font-semibold">{thaiYear}</span>
-            </p>
+            <p>สัญญาฉบับนี้ทำขึ้น ณ {dotLine('250px')} เมื่อวันที่ {filledDotLine(String(createdDate.getDate()), '40px')} เดือน {filledDotLine(thaiMonths[createdDate.getMonth()], '100px')} พ.ศ. {filledDotLine(String(thaiYear), '60px')}</p>
           </div>
 
-          {/* Parties */}
-          <div className="mb-6">
-            <p className="mb-2">
-              ระหว่าง <span className="font-semibold">{company?.name || 'บริษัท บิซ พีเค จำกัด'}</span> ผู้จำหน่าย/ตัวแทนจำหน่ายรถยนต์ 
-              ซึ่งต่อไปในสัญญานี้เรียกว่า <span className="font-semibold">"ผู้ประกอบธุรกิจ"</span> ฝ่ายหนึ่ง
-            </p>
-            <p>
-              กับ <span className="font-semibold">{reservation.customer_name}</span> 
-              {reservation.customer_phone && <> โทรศัพท์: {reservation.customer_phone}</>}
-              {reservation.customer_email && <> อีเมล: {reservation.customer_email}</>}
-            </p>
-            <p>
-              ซึ่งต่อไปในสัญญานี้เรียกว่า <span className="font-semibold">"ผู้บริโภค"</span> อีกฝ่ายหนึ่ง
-            </p>
+          {/* Party 1 - Business */}
+          <div className="mb-4 text-indent">
+            <p className="indent-8">ระหว่าง <span className="font-bold underline">{companyName}</span> ผู้จำหน่าย/ตัวแทนจำหน่ายรถยนต์ของผู้ประกอบธุรกิจ ☐ สำนักงานใหญ่ ☒ สำนักงานสาขา ตั้งอยู่ เลขที่ 800/1 อาคาร {dotLine('80px')} ชั้น {dotLine('40px')} ห้อง {dotLine('40px')} หมู่ที่ {dotLine('40px')} ตรอก/ซอย {dotLine('80px')} ถนนบรมราชชนนี ตำบล/แขวงบางบำหรุ อำเภอ/เขตบางพลัด จังหวัดกรุงเทพมหานคร</p>
+            <p className="indent-8">หมายเลขโทรศัพท์ 02-8864466 อีเมล bizpk_01@nissan-dealer.in.th</p>
+            <p className="indent-8">โดย {dotLine('40px')} กรรมการผู้มีอำนาจ หรือ {dotLine('150px')} ผู้มีอำนาจกระทำการแทนผู้ประกอบธุรกิจ ตามหนังสือมอบอำนาจ ลงวันที่ {dotLine('40px')} เดือน {dotLine('80px')} พ.ศ. {dotLine('50px')} (ให้แสดงหนังสือมอบอำนาจต่อผู้บริโภค)</p>
+            <p className="indent-8">ซึ่งต่อไปในสัญญานี้เรียกว่า <span className="font-bold">"ผู้ประกอบธุรกิจ"</span> ฝ่ายหนึ่ง</p>
           </div>
 
-          <p className="mb-4 font-semibold">คู่สัญญาทั้งสองฝ่ายตกลงทำสัญญากันโดยมีข้อความดังต่อไปนี้</p>
+          {/* Party 2 - Consumer */}
+          <div className="mb-4">
+            <p className="indent-8">กับนาย/นาง/นางสาว/(อื่นๆ) {filledDotLine(reservation.customer_name, '300px')}</p>
+            <p className="indent-8">บ้านเลขที่/อาคาร {filledDotLine(reservation.customer_address || '', '200px')} ชั้น {dotLine('40px')} ห้อง {dotLine('40px')}</p>
+            <p className="indent-8">หมู่ที่ {dotLine('40px')} ตรอก/ซอย {dotLine('100px')} ถนน {dotLine('150px')}</p>
+            <p className="indent-8">ตำบล/แขวง {dotLine('120px')} อำเภอ/เขต {dotLine('120px')}</p>
+            <p className="indent-8">จังหวัด {dotLine('120px')} หมายเลขโทรศัพท์ที่ทำงาน {dotLine('120px')}</p>
+            <p className="indent-8">หมายเลขโทรศัพท์บ้าน {dotLine('120px')} หมายเลขโทรศัพท์มือถือ {filledDotLine(reservation.customer_phone || '', '120px')}</p>
+            <p className="indent-8">อีเมล {filledDotLine(reservation.customer_email || '', '200px')} ซึ่งต่อไปในสัญญานี้เรียกว่า <span className="font-bold">"ผู้บริโภค"</span> อีกฝ่ายหนึ่ง</p>
+          </div>
 
-          {/* Section 1 */}
-          <div className="mb-6">
-            <h3 className="font-bold mb-3">ข้อ 1. ข้อตกลงการจองรถยนต์</h3>
-            <p className="mb-3">ผู้บริโภคตกลงจองและผู้ประกอบธุรกิจให้จองรถยนต์ โดยมีรายละเอียดเกี่ยวกับรถยนต์ดังนี้</p>
+          {/* Agreement Intro */}
+          <p className="indent-8 mb-4 font-bold">คู่สัญญาทั้งสองฝ่ายตกลงทำสัญญากันโดยมีข้อความดังต่อไปนี้</p>
 
-            {/* 1.1 Vehicle Details */}
-            <div className="mb-4 ml-4">
-              <p className="font-semibold mb-2">1.1 ประเภท/ชนิด</p>
-              <table className="w-full border-collapse border border-gray-300">
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-300 p-2 w-1/4 bg-gray-50">ยี่ห้อ/รุ่น</td>
-                    <td className="border border-gray-300 p-2">{reservation.model || '-'} {reservation.submodel || ''}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2 bg-gray-50">สี</td>
-                    <td className="border border-gray-300 p-2">{reservation.color || '-'}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2 bg-gray-50">ประเภทเชื้อเพลิง</td>
-                    <td className="border border-gray-300 p-2">{reservation.fuel_type || '-'}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2 bg-gray-50">ประเภทรถ</td>
-                    <td className="border border-gray-300 p-2">
-                      {reservation.vehicle_type === 'personal' ? 'รถยนต์ส่วนบุคคลไม่เกิน 7 ที่นั่ง' : 
-                       reservation.vehicle_type === 'pickup' ? 'รถยนต์กระบะ' : reservation.vehicle_type || '-'}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          {/* ===== SECTION 1 ===== */}
+          <div className="mb-4">
+            <p className="font-bold">ข้อ ๑. ข้อตกลงการจองรถยนต์</p>
+            <p className="indent-8">ผู้บริโภคตกลงจองและผู้ประกอบธุรกิจให้จองรถยนต์ โดยมีรายละเอียดเกี่ยวกับรถยนต์ ดังนี้</p>
+          </div>
 
-            {/* 1.2 Accessories */}
-            <div className="mb-4 ml-4">
-              <p className="font-semibold mb-2">1.2 รายการอุปกรณ์ตกแต่งเพิ่มเติมและของแถม หรือสิทธิประโยชน์ต่างๆ</p>
-              {(reservation.freebies && reservation.freebies.length > 0) || 
-               (reservation.accessories && reservation.accessories.length > 0) || 
-               (reservation.benefits && reservation.benefits.length > 0) ? (
-                <table className="w-full border-collapse border border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="border border-gray-300 p-2 text-left w-12">ลำดับ</th>
-                      <th className="border border-gray-300 p-2 text-left">รายการ</th>
-                      <th className="border border-gray-300 p-2 text-left">ประเภท</th>
-                      <th className="border border-gray-300 p-2 text-right w-32">มูลค่า (บาท)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reservation.freebies?.map((item, idx) => (
-                      <tr key={`freebie-${idx}`}>
-                        <td className="border border-gray-300 p-2">{idx + 1}</td>
-                        <td className="border border-gray-300 p-2">{item.name}</td>
-                        <td className="border border-gray-300 p-2">ของแถม</td>
-                        <td className="border border-gray-300 p-2 text-right">{item.value?.toLocaleString() || '-'}</td>
-                      </tr>
-                    ))}
-                    {reservation.accessories?.map((item, idx) => (
-                      <tr key={`acc-${idx}`}>
-                        <td className="border border-gray-300 p-2">{(reservation.freebies?.length || 0) + idx + 1}</td>
-                        <td className="border border-gray-300 p-2">{item.name}</td>
-                        <td className="border border-gray-300 p-2">อุปกรณ์ตกแต่ง</td>
-                        <td className="border border-gray-300 p-2 text-right">{item.value?.toLocaleString() || '-'}</td>
-                      </tr>
-                    ))}
-                    {reservation.benefits?.map((item, idx) => (
-                      <tr key={`benefit-${idx}`}>
-                        <td className="border border-gray-300 p-2">{(reservation.freebies?.length || 0) + (reservation.accessories?.length || 0) + idx + 1}</td>
-                        <td className="border border-gray-300 p-2">{item.name}</td>
-                        <td className="border border-gray-300 p-2">สิทธิประโยชน์</td>
-                        <td className="border border-gray-300 p-2 text-right">{item.value?.toLocaleString() || '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {/* 1.1 Vehicle Type */}
+          <div className="mb-4 ml-6">
+            <p className="font-bold mb-1">๑.๑ ประเภท/ชนิด</p>
+            <p className="indent-4">ยี่ห้อ {filledDotLine(reservation.model || '-', '150px')} รุ่น {filledDotLine(reservation.submodel || '-', '150px')} ปีที่ผลิต {dotLine('60px')}</p>
+            <p className="indent-4">สี {filledDotLine(reservation.color || '-', '150px')} และขนาดหรือกำลังของ เครื่องกำเนิดพลังงาน กรณีรถยนต์ไฟฟ้าให้มีรายละเอียดเกี่ยวกับรถยนต์เพิ่มเติมอย่างน้อย เช่น กำลังของมอเตอร์ไฟฟ้า ประเภทของแบตเตอรี่ ขนาดความจุของแบตเตอรี่</p>
+            <p className="indent-4">เครื่องยนต์ {filledDotLine(reservation.fuel_type || '-', '120px')}</p>
+          </div>
+
+          {/* 1.2 Accessories & Freebies */}
+          <div className="mb-4 ml-6">
+            <p className="font-bold mb-1">๑.๒ รายการอุปกรณ์ติดตั้งเพิ่มเติมและของแถม หรือสิทธิประโยชน์ต่างๆ หรือส่วนที่เพิ่มตัวรถยนต์ที่ ผู้ประกอบธุรกิจจะให้หรือจัดหาให้เพื่อตอบแทน ในกรณีที่ผู้บริโภคตกลงทำสัญญา (ถ้ามี) โดยแนบรายละเอียดรายการทั้งหมดที่ตกลงกัน ตามเอกสารแนบ</p>
+          </div>
+
+          {/* 1.3 Deposit */}
+          <div className="mb-4 ml-6">
+            <p className="font-bold text-lg mb-2">๑.๓ เงินจองหรือผลประโยชน์อื่นใดในลักษณะทำนองเดียวกับเงินจองที่ไม่ใช่เงินมัดจำ (ถ้ามี)</p>
+            <p className="indent-4 mb-1">☐ เงินสดจำนวน {filledDotLine(reservation.deposit_amount?.toLocaleString() || '', '120px')} บาท ({dotLine('200px')})</p>
+            <p className="indent-4 mb-1">☐ โอนเข้าบัญชีชื่อผู้ประกอบธุรกิจ <span className="font-bold underline">{companyName}</span></p>
+            <p className="indent-8 mb-1">เลขที่บัญชี 063-3-145784 ธนาคาร กสิกรไทย จำกัด (มหาชน) สาขา พุทธมณฑลสาย 4 เป็นเงิน {dotLine('100px')} บาท ({dotLine('150px')})</p>
+            <p className="indent-4 mb-1">☐ เช็ค เลขที่ {dotLine('100px')} เล่มที่ {dotLine('60px')} ธนาคาร {dotLine('100px')} เป็นเงิน {dotLine('80px')} บาท ({dotLine('120px')})</p>
+            <p className="indent-4 mb-1">☐ แคชเชียร์เช็คเลขที่ {dotLine('100px')} เลขที่ {dotLine('60px')} เล่มที่ {dotLine('60px')} ธนาคาร {dotLine('100px')} เป็นเงิน {dotLine('80px')} บาท ({dotLine('120px')})</p>
+            <p className="indent-4 mb-1">☐ บัตรเครดิต/บัตรเดบิตธนาคาร {dotLine('120px')} ประเภทบัตรเครดิต/บัตรเดบิต {dotLine('100px')} เป็นเงิน {dotLine('80px')} บาท ({dotLine('120px')})</p>
+            <p className="indent-4 mb-1">☐ อื่น ๆ {dotLine('200px')} เป็นเงิน {dotLine('80px')} บาท ({dotLine('120px')})</p>
+          </div>
+
+          {/* 1.4 Vehicle Price */}
+          <div className="mb-4 ml-6">
+            <p className="font-bold mb-2">๑.๔ ราคารถยนต์ใหม่</p>
+            <p className="indent-4 mb-1">☐ ไม่รวมภาษีมูลค่าเพิ่ม เป็นเงิน {dotLine('120px')} บาท ({dotLine('200px')})</p>
+            <p className="indent-4 mb-1">☒ รวมภาษีมูลค่าเพิ่ม เป็นเงิน {filledDotLine(reservation.net_price?.toLocaleString() || '', '120px')} บาท ({dotLine('200px')})</p>
+          </div>
+
+          {/* ===== SECTION 2 ===== */}
+          <div className="mb-4">
+            <p className="font-bold">ข้อ ๒. กำหนดวัน เดือน ปี และสถานที่ที่ต้องมอบรถยนต์</p>
+            <p className="indent-8">
+              {reservation.expected_delivery_date ? (
+                <>วันที่คาดว่าจะส่งมอบรถยนต์: {filledDotLine(
+                  new Date(reservation.expected_delivery_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }),
+                  '250px'
+                )}</>
               ) : (
-                <p className="text-gray-500 italic">- ไม่มี -</p>
+                <>{dotLine('400px')}</>
               )}
-            </div>
-
-            {/* 1.3 Deposit */}
-            <div className="mb-4 ml-4">
-              <p className="font-semibold mb-2">1.3 เงินจองหรือผลประโยชน์อื่นใดในลักษณะทำนองเดียวกับเงินจอง</p>
-              <p>เงินจอง จำนวน <span className="font-semibold">{reservation.deposit_amount?.toLocaleString() || '0'}</span> บาท</p>
-            </div>
-
-            {/* 1.4 Price */}
-            <div className="mb-4 ml-4">
-              <p className="font-semibold mb-2">1.4 ราคารถยนต์ใหม่</p>
-              <table className="w-full border-collapse border border-gray-300">
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-300 p-2 w-1/3 bg-gray-50">ราคารถ</td>
-                    <td className="border border-gray-300 p-2 text-right">{reservation.list_price?.toLocaleString() || '0'} บาท</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2 bg-gray-50">ส่วนลด</td>
-                    <td className="border border-gray-300 p-2 text-right">{reservation.discount?.toLocaleString() || '0'} บาท</td>
-                  </tr>
-                  <tr className="font-semibold">
-                    <td className="border border-gray-300 p-2 bg-gray-100">ราคาสุทธิ (รวมภาษีมูลค่าเพิ่ม)</td>
-                    <td className="border border-gray-300 p-2 text-right bg-gray-100">{reservation.net_price?.toLocaleString() || '0'} บาท</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            </p>
           </div>
 
-          {/* Section 2 */}
+          {/* ===== SECTION 3 ===== */}
+          <div className="mb-4">
+            <p className="font-bold">ข้อ ๓. ผู้บริโภคมีสิทธิบอกเลิกสัญญาเมื่อผู้ประกอบธุรกิจกระทำการอย่างใดอย่างหนึ่ง ดังต่อไปนี้</p>
+            <p className="indent-8 ml-4">๓.๑ ปรับเปลี่ยนราคารถยนต์สูงขึ้น</p>
+            <p className="indent-8 ml-4">๓.๒ ไม่ส่งมอบรถยนต์ให้ผู้บริโภคภายในเวลาที่กำหนด</p>
+            <p className="indent-8 ml-4">๓.๓ ไม่ส่งมอบรถยนต์ตามยี่ห้อ รุ่น ปีที่ผลิต สี และขนาดหรือกำลังของเครื่องกำเนิดพลังงานที่กำหนดในสัญญา</p>
+            <p className="indent-8 ml-4">๓.๔ ไม่ส่งมอบรถยนต์ ที่มีรายการอุปกรณ์ติดตั้งเพิ่มเติมและของแถมหรือสิทธิประโยชน์ต่าง ๆ หรือส่วนเพิ่มตัวรถยนต์ตามที่กำหนดในสัญญา</p>
+            <p className="indent-8 ml-4">๓.๕ ไม่ส่งมอบรถยนต์ที่มีราคาส่วนลด (ถ้ามี) ตามที่กำหนดในสัญญา</p>
+          </div>
+
+          {/* ===== SECTION 4 ===== */}
+          <div className="mb-4">
+            <p className="font-bold">ข้อ ๔. ผู้ประกอบธุรกิจมีสิทธิบอกเลิกสัญญา</p>
+            <p className="indent-8">เมื่อผู้บริโภคไม่เข้าไปรับรถยนต์ภายในกำหนดระยะเวลาที่กำหนดไว้ในสัญญาและไม่แจ้งเหตุขัดข้อง ให้ทราบ ให้ผู้ประกอบธุรกิจมีสิทธิริบเงินจองได้</p>
+          </div>
+
+          {/* ===== SECTION 5 ===== */}
+          <div className="mb-4">
+            <p className="font-bold">ข้อ ๕. ผู้บริโภคหรือผู้ประกอบธุรกิจฝ่ายหนึ่งฝ่ายใดมีสิทธิบอกเลิกสัญญา</p>
+            <p className="indent-8">หากมีข้อเท็จจริงที่ผู้ประกอบธุรกิจได้รับทราบว่า ผู้บริโภคต้องขอสินเชื่อเพื่อการซื้อรถยนต์และผู้บริโภคไม่ได้รับอนุมัติสินเชื่อตามที่ขอภายในกำหนดเวลาส่งมอบรถยนต์</p>
+          </div>
+
+          {/* ===== SECTION 6 ===== */}
+          <div className="mb-4">
+            <p className="font-bold">ข้อ ๖. ผู้ประกอบธุรกิจคืนเงิน</p>
+            <p className="indent-8">เมื่อมีการบอกเลิกสัญญาตามข้อ ๓ หรือ ข้อ ๔ แล้ว ผู้ประกอบธุรกิจต้องคืนเงินจองหรือผลประโยชน์อื่นใดในลักษณะทำนองเดียวกับเงินจองที่ไม่ใช่เงินมัดจำทั้งหมดให้แก่ผู้บริโภค</p>
+            <p className="indent-8 ml-4">๖.๑ กรณีชำระเงินคืนเป็นเงินสดหรือเงินโอน หรือเช็คให้แก่ผู้บริโภคภายในสิบห้าวันนับแต่วันที่มีการบอกเลิกสัญญา</p>
+            <p className="indent-8 ml-4">๖.๒ กรณีชำระคืนผ่านบัตรเครดิตให้แก่ผู้บริโภคภายในสี่สิบห้าวันนับแต่วันที่มีการบอกเลิกสัญญาและให้ผู้ประกอบธุรกิจมีสิทธิหักค่าธรรมเนียมการใช้บัตรเครดิต (ถ้ามี) ได้</p>
+          </div>
+
+          {/* ===== SECTION 7 ===== */}
           <div className="mb-6">
-            <h3 className="font-bold mb-3">ข้อ 2. กำหนดวัน เดือน ปี และสถานที่ที่ต้องมอบรถยนต์</h3>
-            <p>
-              วันที่คาดว่าจะส่งมอบรถยนต์: <span className="font-semibold">
-                {reservation.expected_delivery_date ? 
-                  new Date(reservation.expected_delivery_date).toLocaleDateString('th-TH', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  }) : 'จะแจ้งให้ทราบภายหลัง'}
-              </span>
-            </p>
+            <p className="font-bold">ข้อ ๗. การบอกเลิกสัญญาของผู้ประกอบธุรกิจตามข้อ ๔ หรือข้อ ๕ ให้</p>
+            <p className="indent-8">ทำเป็นหนังสือบอกกล่าวให้ผู้บริโภคปฏิบัติตามสัญญาภายในระยะเวลาไม่น้อยกว่าเจ็ดวันนับแต่วันที่ผู้บริโภคได้รับหนังสือ และผู้บริโภคละเลยเสียไม่ปฏิบัติตามหนังสือบอกกล่าวนั้น ผู้ประกอบธุรกิจมีสิทธิบอกเลิก</p>
           </div>
 
-          {/* Section 3-7 Terms */}
-          <div className="mb-6 text-xs">
-            <h3 className="font-bold mb-2">ข้อ 3. ผู้บริโภคมีสิทธิบอกเลิกสัญญาเมื่อผู้ประกอบธุรกิจกระทำการอย่างใดอย่างหนึ่ง ดังต่อไปนี้</h3>
-            <p className="ml-4">3.1 ปรับเปลี่ยนราคารถยนต์สูงขึ้น</p>
-            <p className="ml-4">3.2 ไม่ส่งมอบรถยนต์ให้ผู้บริโภคภายในเวลากำหนด</p>
-            <p className="ml-4">3.3 ไม่ส่งมอบรถยนต์ตามยี่ห้อ รุ่น ปี สี และขนาดกำลังของเครื่องกำเนิดพลังงานตามที่กำหนดในสัญญา</p>
-            <p className="ml-4">3.4 ไม่ส่งมอบรถยนต์ที่มีรายการอุปกรณ์ตกแต่งเพิ่มเติมและของแถม หรือสิทธิประโยชน์ต่างๆ ตามที่กำหนดในสัญญา</p>
-            <p className="ml-4">3.5 ไม่ส่งมอบรถยนต์ในราคาสินเชื่อตามที่กำหนดในสัญญา</p>
+          {/* Closing statement */}
+          <p className="indent-8 mb-8">สัญญาสัญญาจองรถยนต์นี้มีข้อความถูกต้องตรงกัน คู่สัญญาได้อ่านและเข้าใจข้อความโดยละเอียดแล้ว จึงได้ลงลายมือชื่อ พร้อมทั้งประทับตรา (ถ้ามี) ไว้เป็นสำคัญต่อหน้าพยานและคู่สัญญา และเก็บไว้ฝ่ายละหนึ่งฉบับ</p>
 
-            <h3 className="font-bold mt-3 mb-2">ข้อ 4. ผู้ประกอบธุรกิจมีสิทธิบอกเลิกสัญญา</h3>
-            <p className="ml-4">เมื่อผู้บริโภคไม่เข้าไปรับรถยนต์ภายในกำหนดระยะเวลาและไม่แจ้งเหตุขัดข้องให้ทราบ</p>
+          {/* ===== SIGNATURES ===== */}
+          <div className="mt-8">
+            <div className="grid grid-cols-2 gap-x-12 gap-y-2">
+              {/* Row 1: Consumer & Business */}
+              <div className="text-center mb-10">
+                <p>(ลงชื่อ){dotLine('180px')}ผู้บริโภค</p>
+                <p>( {filledDotLine(reservation.customer_name, '180px')} )</p>
+              </div>
+              <div className="text-center mb-10">
+                <p>(ลงชื่อ){dotLine('180px')}</p>
+                <p>ผู้ประกอบธุรกิจ</p>
+                <p>( {dotLine('180px')} )</p>
+              </div>
 
-            <h3 className="font-bold mt-3 mb-2">ข้อ 5. การบอกเลิกสัญญากรณีสินเชื่อ</h3>
-            <p className="ml-4">หากผู้บริโภคต้องขอสินเชื่อเพื่อการซื้อรถยนต์ และผู้บริโภคไม่ได้รับอนุมัติสินเชื่อตามที่ขอภายในกำหนด คู่สัญญาฝ่ายใดฝ่ายหนึ่งมีสิทธิบอกเลิกสัญญา</p>
+              {/* Row 2: Sales Manager & Salesperson */}
+              <div className="text-center mb-10">
+                <p>(ลงชื่อ){dotLine('180px')}ผู้จัดการฝ่ายขาย</p>
+                <p>( {dotLine('180px')} )</p>
+              </div>
+              <div className="text-center mb-10">
+                <p>(ลงชื่อ){dotLine('180px')}พนักงานขาย/พนักงานผู้รับจอง</p>
+                <p>( {dotLine('180px')} )</p>
+              </div>
 
-            <h3 className="font-bold mt-3 mb-2">ข้อ 6. การคืนเงิน</h3>
-            <p className="ml-4">เมื่อมีการบอกเลิกสัญญาตามข้อ 3, 4 หรือ 5 ผู้ประกอบธุรกิจต้องคืนเงินจองให้แก่ผู้บริโภคภายใน 15 วันนับแต่วันที่มีการบอกเลิกสัญญา</p>
-
-            <h3 className="font-bold mt-3 mb-2">ข้อ 7. การบอกกล่าว</h3>
-            <p className="ml-4">การบอกเลิกสัญญาของผู้ประกอบธุรกิจตามข้อ 4 หรือข้อ 5 ให้ทำเป็นหนังสือบอกกล่าวให้ผู้บริโภคปฏิบัติตามสัญญาภายในระยะเวลาไม่น้อยกว่า 7 วัน</p>
+              {/* Row 3: Witnesses */}
+              <div className="text-center mb-6">
+                <p>(ลงชื่อ){dotLine('180px')}พยาน</p>
+                <p>( {dotLine('180px')} )</p>
+              </div>
+              <div className="text-center mb-6">
+                <p>(ลงชื่อ){dotLine('180px')}พยาน</p>
+                <p>( {dotLine('180px')} )</p>
+              </div>
+            </div>
           </div>
 
-          {/* Signatures */}
-          <div className="mt-12 pt-6 border-t border-gray-300">
-            <p className="text-center mb-8">
-              สัญญาจองรถยนต์นี้มีข้อความถูกต้องตรงกัน คู่สัญญาได้อ่านและเข้าใจข้อความโดยละเอียดแล้ว จึงได้ลงลายมือชื่อ พร้อมทั้งประทับตรา (ถ้ามี) ไว้เป็นสำคัญต่อหน้าพยานและคู่สัญญา และเก็บไว้ฝ่ายละหนึ่งฉบับ
-            </p>
+          {/* ===== PAGE BREAK - ATTACHMENT ===== */}
+          <div className="break-before-page mt-8 pt-8 border-t-2 border-gray-300 print:border-0">
+            <p className="text-center font-bold text-lg mb-4">เอกสารแนบท้ายสัญญาจองรถยนต์ใหม่</p>
+            <p className="text-center mb-2">เล่มที่ {dotLine('80px')} เลขที่ {filledDotLine(reservation.document_number, '120px')}</p>
+            <p className="text-center mb-4">ลงวันที่ {filledDotLine(`${createdDate.getDate()} ${thaiMonths[createdDate.getMonth()]} ${thaiYear}`, '200px')}</p>
 
-            <div className="grid grid-cols-2 gap-8 mt-8">
-              <div className="text-center">
-                <div className="mb-16">
-                  <p className="border-b border-dotted border-gray-400 pb-1 mb-1">ลงชื่อ ................................................................</p>
-                  <p className="font-semibold">( {reservation.customer_name} )</p>
-                  <p>ผู้บริโภค</p>
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="mb-16">
-                  <p className="border-b border-dotted border-gray-400 pb-1 mb-1">ลงชื่อ ................................................................</p>
-                  <p className="font-semibold">( ............................................................. )</p>
-                  <p>ผู้ประกอบธุรกิจ</p>
-                </div>
-              </div>
-            </div>
+            <p className="mb-1">ระหว่าง <span className="font-bold underline">{companyName}</span> {dotLine('200px')} ผู้ประกอบการ</p>
+            <p className="mb-4">กับ นาย/นาง/นางสาว/(อื่น ๆ) {filledDotLine(reservation.customer_name, '250px')} ผู้บริโภค</p>
 
-            <div className="grid grid-cols-2 gap-8 mt-4">
-              <div className="text-center">
-                <div className="mb-12">
-                  <p className="border-b border-dotted border-gray-400 pb-1 mb-1">ลงชื่อ ................................................................</p>
-                  <p>ผู้จัดการฝ่ายขาย</p>
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="mb-12">
-                  <p className="border-b border-dotted border-gray-400 pb-1 mb-1">ลงชื่อ ................................................................</p>
-                  <p>พนักงานขาย/พนักงานรับจอง</p>
-                </div>
-              </div>
-            </div>
+            <p className="font-bold mb-2">รายการอุปกรณ์ตกแต่งเพิ่มเติม ของแถม หรือ สิทธิประโยชน์อื่น ๆ (ถ้ามี)</p>
 
-            <div className="grid grid-cols-2 gap-8 mt-4">
-              <div className="text-center">
-                <p className="border-b border-dotted border-gray-400 pb-1 mb-1">ลงชื่อ ................................................................</p>
-                <p>พยาน</p>
+            <table className="w-full border-collapse border border-gray-800 mb-6">
+              <thead>
+                <tr>
+                  <th className="border border-gray-800 p-2 text-center w-12 bg-gray-50"></th>
+                  <th className="border border-gray-800 p-2 text-center bg-gray-50">รายการอุปกรณ์ตกแต่ง</th>
+                  <th className="border border-gray-800 p-2 text-center w-12 bg-gray-50"></th>
+                  <th className="border border-gray-800 p-2 text-center bg-gray-50">ของแถม</th>
+                  <th className="border border-gray-800 p-2 text-center bg-gray-50">สิทธิประโยชน์อื่น ๆ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 10 }).map((_, idx) => {
+                  const accessory = reservation.accessories?.[idx];
+                  const freebie = reservation.freebies?.[idx];
+                  const benefit = reservation.benefits?.[idx];
+                  return (
+                    <tr key={idx}>
+                      <td className="border border-gray-800 p-2 text-center">{idx + 1}</td>
+                      <td className="border border-gray-800 p-2">{accessory?.name || ''}</td>
+                      <td className="border border-gray-800 p-2 text-center">{idx + 1}</td>
+                      <td className="border border-gray-800 p-2">{freebie?.name || ''}</td>
+                      <td className="border border-gray-800 p-2">{benefit?.name || ''}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {/* Attachment Signatures */}
+            <div className="grid grid-cols-2 gap-x-12 gap-y-2 mt-8">
+              <div className="text-center mb-10">
+                <p>(ลงชื่อ){dotLine('180px')}ผู้บริโภค</p>
+                <p>( {filledDotLine(reservation.customer_name, '180px')} )</p>
               </div>
-              <div className="text-center">
-                <p className="border-b border-dotted border-gray-400 pb-1 mb-1">ลงชื่อ ................................................................</p>
-                <p>พยาน</p>
+              <div className="text-center mb-10">
+                <p>(ลงชื่อ){dotLine('180px')}</p>
+                <p>ผู้ประกอบธุรกิจ</p>
+                <p>( {dotLine('180px')} )</p>
+              </div>
+
+              <div className="text-center mb-10">
+                <p>(ลงชื่อ){dotLine('180px')}ผู้จัดการฝ่ายขาย</p>
+                <p>( {dotLine('180px')} )</p>
+              </div>
+              <div className="text-center mb-10">
+                <p>(ลงชื่อ){dotLine('180px')}พนักงานขาย/พนักงานผู้รับจอง</p>
+                <p>( {dotLine('180px')} )</p>
+              </div>
+
+              <div className="text-center mb-6">
+                <p>(ลงชื่อ){dotLine('180px')}พยาน</p>
+                <p>( {dotLine('180px')} )</p>
+              </div>
+              <div className="text-center mb-6">
+                <p>(ลงชื่อ){dotLine('180px')}พยาน</p>
+                <p>( {dotLine('180px')} )</p>
               </div>
             </div>
           </div>
@@ -378,14 +416,22 @@ export default function ReservationPrint() {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          .print-content {
-            font-size: 14px !important;
-            line-height: 1.6 !important;
-          }
           @page {
             size: A4;
             margin: 15mm;
           }
+          .break-before-page {
+            page-break-before: always;
+            border-top: none !important;
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+          }
+        }
+        .indent-8 {
+          text-indent: 2rem;
+        }
+        .indent-4 {
+          text-indent: 1rem;
         }
       `}</style>
     </>

@@ -190,6 +190,57 @@ const functions: FunctionItem[] = [
     perf: { responseTime: '<5s', concurrentUsers: '3-5', availability: '95%', dataVolume: 'ต่ำ', score: 2, level: 'low', notes: 'PDF Generation — ใช้งานน้อย' } },
 ];
 
+// Acceptance Scoring Data: finished status + defect counts per function
+const acceptanceData: Record<number, { finished: boolean; defects: { critical: number; major: number; minor: number } }> = {
+  1: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // สร้างสัญญาจอง
+  2: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // ยืนยันสัญญาจอง (OTP/Link)
+  3: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // ตรวจสอบการชำระเงิน
+  4: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // ตรวจสอบรายละเอียดใบจอง
+  5: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // พิจารณาอนุมัติ
+  6: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // พิมพ์/ลงนาม/ส่งลูกค้า
+  7: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // บันทึกขอยกเลิก/บอกเลิก
+  8: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // อนุมัติยกเลิกใบจอง
+  9: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // ชุดเอกสารการยกเลิกจอง
+  10: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master ยี่ห้อ
+  11: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master รุ่น (Model)
+  12: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master รุ่นย่อย
+  13: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master สี
+  14: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master ขนาดเครื่องยนต์
+  15: { finished: false, defects: { critical: 0, major: 0, minor: 0 } }, // จัดการ Master ประเภทเชื้อเพลิง
+  16: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master ราคาตั้ง
+  17: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master ของแถม
+  18: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master อุปกรณ์เสริม
+  19: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master สิทธิประโยชน์
+  20: { finished: false, defects: { critical: 0, major: 0, minor: 0 } }, // จัดการ Master คำนำหน้า
+  21: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // รายงานใบจองประจำเดือน
+  22: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // รายงานใบจองที่ยังไม่อนุมัติ
+  23: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // รายงานยกเลิกใบจอง
+  24: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // พิมพ์สัญญาจอง
+  25: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // พิมพ์ยกเลิกสัญญาจอง
+};
+
+const MAX_SCORE = 10;
+const DEFECT_WEIGHTS = { critical: 10, major: 5, minor: 2 };
+
+const calcAcceptanceTotal = (fnNo: number): number => {
+  const data = acceptanceData[fnNo];
+  if (!data || !data.finished) return 0;
+  const deduction = data.defects.critical * DEFECT_WEIGHTS.critical
+    + data.defects.major * DEFECT_WEIGHTS.major
+    + data.defects.minor * DEFECT_WEIGHTS.minor;
+  return Math.max(0, MAX_SCORE - deduction);
+};
+
+const acceptanceSorted = [...functions].sort((a, b) => {
+  const totalA = calcAcceptanceTotal(a.no);
+  const totalB = calcAcceptanceTotal(b.no);
+  return totalB - totalA || a.category.localeCompare(b.category);
+});
+
+const acceptanceGrandTotal = functions.reduce((sum, f) => sum + calcAcceptanceTotal(f.no), 0);
+const acceptanceMaxTotal = functions.length * MAX_SCORE;
+const acceptanceFinishedCount = functions.filter(f => acceptanceData[f.no]?.finished).length;
+
 const getRiskBadge = (level: RiskLevel) => {
   const config = riskConfig[level];
   return (

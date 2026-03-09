@@ -542,36 +542,71 @@ export default function FunctionOverviewPage() {
       XLSX.utils.book_append_sheet(wb, wsCat, categorySheetNames[cat] || cat);
     });
 
-    // Sheet: Acceptance Scoring
-    const acceptanceRows = acceptanceSorted.map((f, i) => {
+    // Sheet: Acceptance Scoring (AOA format with merged headers matching UI)
+    const accAoa: any[][] = [];
+    // Title row
+    accAoa.push(['Acceptance Scoring — ตารางให้คะแนนตอบรับ', '', '', '', '', '', '', '', '']);
+    accAoa.push([]);
+    // Scoring guide
+    accAoa.push(['📐 หลักการให้คะแนน Acceptance Scoring']);
+    accAoa.push(['Finish?', 'Yes = 1 (ฟังก์ชันพัฒนาเสร็จแล้ว) / No = 0 (ยังไม่เสร็จ → คะแนน = 0)']);
+    accAoa.push(['Defect', 'Critical = หัก 10 คะแนน (ระบบล่ม/เงินสูญหาย)']);
+    accAoa.push(['', 'Major = หัก 5 คะแนน (ฟีเจอร์ใช้ไม่ได้)']);
+    accAoa.push(['', 'Minor = หัก 2 คะแนน (บกพร่องเล็กน้อย)']);
+    accAoa.push(['สูตร', `Total = Max Score × Finish − (Critical×10 + Major×5 + Minor×2)  |  Max Score = ${MAX_SCORE}  |  Max Total = ${acceptanceMaxTotal}`]);
+    accAoa.push([]);
+    // Header row 1 (with merged Defect header)
+    accAoa.push(['ลำดับ', 'Category', 'Functional List', 'Max Score', 'Finish?\n(No=0 / Yes=1)', 'Defect', '', '', `Total\n(Max ${acceptanceMaxTotal})`]);
+    // Header row 2 (sub-headers for Defect)
+    accAoa.push(['', '', '', '', '', 'Critical (-10)', 'Major (-5)', 'Minor (-2)', '']);
+    // Data rows
+    acceptanceSorted.forEach((f, i) => {
       const acc = acceptanceData[f.no] || { finished: false, defects: { critical: 0, major: 0, minor: 0 } };
-      return {
-        'ลำดับ': i + 1,
-        'Category': f.category,
-        'Functional List': f.name,
-        'Max Score': MAX_SCORE,
-        'Finish? (0/1)': acc.finished ? 1 : 0,
-        'Defect Critical (-10)': acc.defects.critical || '',
-        'Defect Major (-5)': acc.defects.major || '',
-        'Defect Minor (-2)': acc.defects.minor || '',
-        'Total': calcAcceptanceTotal(f.no),
-      };
+      accAoa.push([
+        i + 1,
+        f.category,
+        f.name,
+        MAX_SCORE,
+        acc.finished ? 1 : 0,
+        acc.defects.critical || '',
+        acc.defects.major || '',
+        acc.defects.minor || '',
+        calcAcceptanceTotal(f.no),
+      ]);
     });
-    acceptanceRows.push({
-      'ลำดับ': '' as any,
-      'Category': '',
-      'Functional List': '--- รวมทั้งหมด ---',
-      'Max Score': acceptanceMaxTotal as any,
-      'Finish? (0/1)': acceptanceFinishedCount as any,
-      'Defect Critical (-10)': '' as any,
-      'Defect Major (-5)': '' as any,
-      'Defect Minor (-2)': '' as any,
-      'Total': acceptanceGrandTotal,
-    });
-    const wsAcceptance = XLSX.utils.json_to_sheet(acceptanceRows);
+    // Summary row
+    const totalDefectCritical = functions.reduce((s, f) => s + (acceptanceData[f.no]?.defects.critical || 0), 0);
+    const totalDefectMajor = functions.reduce((s, f) => s + (acceptanceData[f.no]?.defects.major || 0), 0);
+    const totalDefectMinor = functions.reduce((s, f) => s + (acceptanceData[f.no]?.defects.minor || 0), 0);
+    accAoa.push([
+      '',
+      '',
+      `รวมทั้งหมด (${acceptanceFinishedCount}/${functions.length} เสร็จ)`,
+      acceptanceMaxTotal,
+      acceptanceFinishedCount,
+      totalDefectCritical || '',
+      totalDefectMajor || '',
+      totalDefectMinor || '',
+      acceptanceGrandTotal,
+    ]);
+
+    const wsAcceptance = XLSX.utils.aoa_to_sheet(accAoa);
+    // Merge cells for title, Defect header, and header alignment
+    wsAcceptance['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },  // Title row merge
+      { s: { r: 2, c: 0 }, e: { r: 2, c: 8 } },  // Guide title merge
+      { s: { r: 9, c: 5 }, e: { r: 9, c: 7 } },  // "Defect" header merge across 3 cols
+      // Merge header row 1 & 2 for non-Defect columns
+      { s: { r: 9, c: 0 }, e: { r: 10, c: 0 } },  // ลำดับ
+      { s: { r: 9, c: 1 }, e: { r: 10, c: 1 } },  // Category
+      { s: { r: 9, c: 2 }, e: { r: 10, c: 2 } },  // Functional List
+      { s: { r: 9, c: 3 }, e: { r: 10, c: 3 } },  // Max Score
+      { s: { r: 9, c: 4 }, e: { r: 10, c: 4 } },  // Finish?
+      { s: { r: 9, c: 8 }, e: { r: 10, c: 8 } },  // Total
+    ];
     wsAcceptance['!cols'] = [
-      { wch: 6 }, { wch: 18 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
-      { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 10 },
+      { wch: 8 }, { wch: 20 }, { wch: 35 }, { wch: 12 }, { wch: 16 },
+      { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 12 },
     ];
     XLSX.utils.book_append_sheet(wb, wsAcceptance, 'Acceptance Score');
 

@@ -43,6 +43,17 @@ import {
 type RiskLevel = 'critical' | 'high' | 'medium' | 'low';
 type DevDifficulty = 'very_hard' | 'hard' | 'medium' | 'easy';
 type WeightLevel = 'complete' | 'minor' | 'major' | 'critical';
+type PerfLevel = 'critical' | 'high' | 'medium' | 'low' | 'minimal';
+
+interface PerfSpec {
+  responseTime: string;     // e.g. "<1s", "<2s"
+  concurrentUsers: string;  // e.g. "10-20"
+  availability: string;     // e.g. "99.9%"
+  dataVolume: string;       // e.g. "สูง", "ปานกลาง"
+  score: number;            // 1-5
+  level: PerfLevel;
+  notes: string;
+}
 
 interface FunctionItem {
   no: number;
@@ -55,12 +66,21 @@ interface FunctionItem {
   riskReason: string;
   icon: React.ElementType;
   devDifficulty: DevDifficulty;
-  devScore: number; // 1-5
+  devScore: number;
   devManDays: number;
   devNotes: string;
   weightLevel: WeightLevel;
-  weightScore: number; // 10, 7, 4, 1
+  weightScore: number;
+  perf: PerfSpec;
 }
+
+const perfLevelConfig: Record<PerfLevel, { label: string; color: string; bgColor: string; borderColor: string; emoji: string }> = {
+  critical: { label: 'วิกฤต', color: 'text-red-700', bgColor: 'bg-red-100', borderColor: 'border-red-300', emoji: '🔴' },
+  high: { label: 'สูง', color: 'text-orange-700', bgColor: 'bg-orange-100', borderColor: 'border-orange-300', emoji: '🟠' },
+  medium: { label: 'ปานกลาง', color: 'text-yellow-700', bgColor: 'bg-yellow-100', borderColor: 'border-yellow-300', emoji: '🟡' },
+  low: { label: 'ต่ำ', color: 'text-cyan-700', bgColor: 'bg-cyan-100', borderColor: 'border-cyan-300', emoji: '🔵' },
+  minimal: { label: 'น้อยมาก', color: 'text-emerald-700', bgColor: 'bg-emerald-100', borderColor: 'border-emerald-300', emoji: '🟢' },
+};
 
 const weightConfig: Record<WeightLevel, { label: string; score: number; color: string; bgColor: string; borderColor: string; emoji: string; description: string }> = {
   complete: { label: 'Complete', score: 10, color: 'text-emerald-700', bgColor: 'bg-emerald-100', borderColor: 'border-emerald-300', emoji: '✅', description: 'ไม่มีข้อผิดพลาด — ขาดไปแทบไม่กระทบการใช้งาน' },
@@ -86,63 +106,88 @@ const devConfig: Record<DevDifficulty, { label: string; color: string; bgColor: 
 const functions: FunctionItem[] = [
   // Workflow หลัก
   { no: 1, name: 'สร้างสัญญาจอง', category: 'Workflow หลัก', responsible: 'ที่ปรึกษาการขาย', description: 'เลือกสาขา/BU, กรอกข้อมูลลูกค้า, เลือกรถ/สี/ของแถม, สถานะ Draft', riskLevel: 'medium', riskScore: 3, riskReason: 'ข้อมูลผิดพลาดแก้ไขได้ก่อนยืนยัน', icon: FileText,
-    devDifficulty: 'hard', devScore: 4, devManDays: 3.0, devNotes: 'ฟอร์มซับซ้อน มี Cascade Dropdown (Model→SubModel→Color), คำนวณราคา, ค้นหาลูกค้า, ของแถม/อุปกรณ์', weightLevel: 'critical', weightScore: 1 },
-  { no: 2, name: 'ยืนยันสัญญาจอง (OTP/Link)', category: 'Workflow หลัก', responsible: 'ลูกค้า / ที่ปรึกษาการขาย', description: 'ส่ง OTP หรือ Link ให้ลูกค้ายืนยัน, ระบบ Stamp เวลา', riskLevel: 'high', riskScore: 4, riskReason: 'ผูกมัดทางกฎหมาย — ต้องมีหลักฐานยืนยันตัวตน', icon: UserCheck,
-    devDifficulty: 'very_hard', devScore: 5, devManDays: 2.0, devNotes: 'ต้องมี OTP Generation, SMS/Email Integration, Token Management, Expiry Logic, Retry/Lock mechanism', weightLevel: 'critical', weightScore: 1 },
-  { no: 3, name: 'ตรวจสอบการชำระเงิน', category: 'Workflow หลัก', responsible: 'แคชเชียร์', description: 'แนบ Slip, บันทึกช่องทางชำระ, ยืนยันรับเงินจอง, Stamp วันที่+เวลา', riskLevel: 'critical', riskScore: 5, riskReason: 'เกี่ยวข้องกับเงินโดยตรง — ผิดพลาดสูญเสียรายได้', icon: CreditCard,
-    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'File Upload (Slip), Role-based Access, Stamp Logic, Validation ช่องทางชำระ', weightLevel: 'critical', weightScore: 1 },
-  { no: 4, name: 'ตรวจสอบรายละเอียดใบจอง', category: 'Workflow หลัก', responsible: 'หัวหน้าทีมขาย', description: 'ตรวจสอบความถูกต้องรายละเอียดทั้งหมด, Lock Fields สำคัญ', riskLevel: 'medium', riskScore: 3, riskReason: 'จุดตรวจสอบก่อนอนุมัติ แก้ไขได้', icon: ClipboardCheck,
-    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Read-only view + Review action, Comment field, Status transition, Role check', weightLevel: 'major', weightScore: 4 },
-  { no: 5, name: 'พิจารณาอนุมัติ', category: 'Workflow หลัก', responsible: 'ผู้จัดการฝ่ายขาย', description: 'อนุมัติใบจอง หรือ ปฏิเสธ + Comment', riskLevel: 'high', riskScore: 4, riskReason: 'การตัดสินใจผูกมัดบริษัท ส่งผลต่อรายได้/margin', icon: Stamp,
-    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Approve/Reject action, Comment, Timestamp, Status transition logic', weightLevel: 'major', weightScore: 4 },
-  { no: 6, name: 'พิมพ์/ลงนาม/ส่งลูกค้า', category: 'Workflow หลัก', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF, ลงนามบนกระดาษ/e-Sign', riskLevel: 'low', riskScore: 2, riskReason: 'เป็นขั้นตอนท้าย ข้อมูลผ่านการยืนยันแล้ว', icon: Printer,
-    devDifficulty: 'hard', devScore: 4, devManDays: 2.0, devNotes: 'PDF Generation ตามแบบฟอร์มบริษัท, Layout ซับซ้อน, Print Preview, ต้อง Pixel-perfect', weightLevel: 'major', weightScore: 4 },
+    devDifficulty: 'hard', devScore: 4, devManDays: 3.0, devNotes: 'ฟอร์มซับซ้อน มี Cascade Dropdown, คำนวณราคา, ค้นหาลูกค้า', weightLevel: 'critical', weightScore: 1,
+    perf: { responseTime: '<2s', concurrentUsers: '10-20', availability: '99.5%', dataVolume: 'สูง', score: 4, level: 'high', notes: 'ฟอร์มหลักที่ใช้งานบ่อย ต้อง Load Cascade Data เร็ว' } },
+  { no: 2, name: 'ยืนยันสัญญาจอง (OTP/Link)', category: 'Workflow หลัก', responsible: 'ลูกค้า / ที่ปรึกษาการขาย', description: 'ส่ง OTP หรือ Link ให้ลูกค้ายืนยัน, ระบบ Stamp เวลา', riskLevel: 'high', riskScore: 4, riskReason: 'ผูกมัดทางกฎหมาย', icon: UserCheck,
+    devDifficulty: 'very_hard', devScore: 5, devManDays: 2.0, devNotes: 'OTP Generation, SMS/Email Integration, Token Management, Expiry Logic', weightLevel: 'critical', weightScore: 1,
+    perf: { responseTime: '<1s', concurrentUsers: '10-20', availability: '99.9%', dataVolume: 'ปานกลาง', score: 5, level: 'critical', notes: 'OTP ต้องส่งทันที ห้าม Delay — Real-time critical' } },
+  { no: 3, name: 'ตรวจสอบการชำระเงิน', category: 'Workflow หลัก', responsible: 'แคชเชียร์', description: 'แนบ Slip, บันทึกช่องทางชำระ, ยืนยันรับเงินจอง', riskLevel: 'critical', riskScore: 5, riskReason: 'เกี่ยวข้องกับเงินโดยตรง', icon: CreditCard,
+    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'File Upload (Slip), Role-based Access, Stamp Logic', weightLevel: 'critical', weightScore: 1,
+    perf: { responseTime: '<2s', concurrentUsers: '5-10', availability: '99.9%', dataVolume: 'ปานกลาง', score: 4, level: 'high', notes: 'File Upload ต้องไม่ช้า — ต้อง Reliable สูง เพราะเกี่ยวกับเงิน' } },
+  { no: 4, name: 'ตรวจสอบรายละเอียดใบจอง', category: 'Workflow หลัก', responsible: 'หัวหน้าทีมขาย', description: 'ตรวจสอบความถูกต้องรายละเอียดทั้งหมด', riskLevel: 'medium', riskScore: 3, riskReason: 'จุดตรวจสอบก่อนอนุมัติ', icon: ClipboardCheck,
+    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Read-only view + Review action, Comment field, Status transition', weightLevel: 'major', weightScore: 4,
+    perf: { responseTime: '<2s', concurrentUsers: '5-10', availability: '99%', dataVolume: 'ต่ำ', score: 3, level: 'medium', notes: 'Load ข้อมูลใบจอง 1 รายการ ไม่ซับซ้อน' } },
+  { no: 5, name: 'พิจารณาอนุมัติ', category: 'Workflow หลัก', responsible: 'ผู้จัดการฝ่ายขาย', description: 'อนุมัติใบจอง หรือ ปฏิเสธ + Comment', riskLevel: 'high', riskScore: 4, riskReason: 'ผูกมัดบริษัท ส่งผลต่อรายได้', icon: Stamp,
+    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Approve/Reject action, Comment, Timestamp', weightLevel: 'major', weightScore: 4,
+    perf: { responseTime: '<2s', concurrentUsers: '3-5', availability: '99%', dataVolume: 'ต่ำ', score: 3, level: 'medium', notes: 'ใช้งาน 1-2 คนพร้อมกัน แต่ต้อง Reliable' } },
+  { no: 6, name: 'พิมพ์/ลงนาม/ส่งลูกค้า', category: 'Workflow หลัก', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF, ลงนามบนกระดาษ/e-Sign', riskLevel: 'low', riskScore: 2, riskReason: 'ข้อมูลผ่านการยืนยันแล้ว', icon: Printer,
+    devDifficulty: 'hard', devScore: 4, devManDays: 2.0, devNotes: 'PDF Generation ตามแบบฟอร์ม, Layout ซับซ้อน, Pixel-perfect', weightLevel: 'major', weightScore: 4,
+    perf: { responseTime: '<5s', concurrentUsers: '5-10', availability: '95%', dataVolume: 'ต่ำ', score: 2, level: 'low', notes: 'PDF Generation ใช้เวลา — ยอมรับ Delay ได้' } },
 
   // Workflow ยกเลิก
-  { no: 7, name: 'บันทึกขอยกเลิก/บอกเลิก', category: 'Workflow ยกเลิก', responsible: 'ที่ปรึกษาการขาย', description: 'ทำคำร้องขอยกเลิก แนบหนังสือ/ไฟล์ เลือกเลขที่ใบจอง', riskLevel: 'high', riskScore: 4, riskReason: 'เกี่ยวข้องกับการคืนเงินและข้อพิพาททางกฎหมาย', icon: Ban,
-    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'Multi-step workflow, File upload, ค้นหาใบจอง, Validation เหตุผล, Status transition', weightLevel: 'major', weightScore: 4 },
-  { no: 8, name: 'อนุมัติยกเลิกใบจอง', category: 'Workflow ยกเลิก', responsible: 'ผู้จัดการฝ่ายขาย', description: 'พิจารณาอนุมัติยกเลิก', riskLevel: 'critical', riskScore: 5, riskReason: 'สูญเสียรายได้ทันที + อาจเกิดข้อพิพาทกับลูกค้า', icon: Gavel,
-    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Review + Approve/Reject, Status transition, คล้ายกับ F5 แต่เป็น Cancel flow', weightLevel: 'critical', weightScore: 1 },
+  { no: 7, name: 'บันทึกขอยกเลิก/บอกเลิก', category: 'Workflow ยกเลิก', responsible: 'ที่ปรึกษาการขาย', description: 'ทำคำร้องขอยกเลิก แนบหนังสือ/ไฟล์', riskLevel: 'high', riskScore: 4, riskReason: 'เกี่ยวข้องกับการคืนเงินและกฎหมาย', icon: Ban,
+    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'Multi-step workflow, File upload, ค้นหาใบจอง', weightLevel: 'major', weightScore: 4,
+    perf: { responseTime: '<2s', concurrentUsers: '3-5', availability: '99%', dataVolume: 'ต่ำ', score: 2, level: 'low', notes: 'เกิดไม่บ่อย ใช้งานน้อย' } },
+  { no: 8, name: 'อนุมัติยกเลิกใบจอง', category: 'Workflow ยกเลิก', responsible: 'ผู้จัดการฝ่ายขาย', description: 'พิจารณาอนุมัติยกเลิก', riskLevel: 'critical', riskScore: 5, riskReason: 'สูญเสียรายได้ทันที', icon: Gavel,
+    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Review + Approve/Reject, Status transition', weightLevel: 'critical', weightScore: 1,
+    perf: { responseTime: '<2s', concurrentUsers: '1-3', availability: '99%', dataVolume: 'ต่ำ', score: 2, level: 'low', notes: 'ใช้งานน้อย แต่ต้อง Reliable เมื่อใช้' } },
   { no: 9, name: 'ชุดเอกสารการยกเลิกจอง', category: 'Workflow ยกเลิก', responsible: 'แคชเชียร์', description: 'ออกชุดเอกสารยกเลิก + Attach Files', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารต้องถูกต้องตามกฎหมาย', icon: FolderArchive,
-    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'PDF Generation (Cancel Form), Layout เฉพาะ, รวมข้อมูลจากหลาย Section', weightLevel: 'major', weightScore: 4 },
+    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'PDF Generation (Cancel Form), Layout เฉพาะ', weightLevel: 'major', weightScore: 4,
+    perf: { responseTime: '<5s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'ต่ำ', score: 1, level: 'minimal', notes: 'PDF Generation ใช้เวลา + ใช้งานน้อยมาก' } },
 
   // Master Data
-  { no: 10, name: 'จัดการ Master ยี่ห้อ', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ยี่ห้อรถ', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน แก้ไขง่าย', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน, Dialog เพิ่ม/แก้ไข, ตาราง + Search', weightLevel: 'complete', weightScore: 10 },
-  { no: 11, name: 'จัดการ Master รุ่น (Model)', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD รุ่นรถ', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อการเลือกรถในใบจอง', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน เหมือน F10', weightLevel: 'minor', weightScore: 7 },
-  { no: 12, name: 'จัดการ Master รุ่นย่อย', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD รุ่นย่อย + ผูก Model', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อราคาและสเปค', icon: Database,
-    devDifficulty: 'medium', devScore: 2, devManDays: 0.5, devNotes: 'CRUD + Dropdown เลือก Model, Foreign key relationship', weightLevel: 'minor', weightScore: 7 },
+  { no: 10, name: 'จัดการ Master ยี่ห้อ', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ยี่ห้อรถ', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'complete', weightScore: 10,
+    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ใช้งานนานๆ ครั้ง ข้อมูลน้อย' } },
+  { no: 11, name: 'จัดการ Master รุ่น (Model)', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD รุ่นรถ', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อการเลือกรถ', icon: Database,
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'minor', weightScore: 7,
+    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master ไม่กี่สิบรายการ' } },
+  { no: 12, name: 'จัดการ Master รุ่นย่อย', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD รุ่นย่อย + ผูก Model', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อราคา', icon: Database,
+    devDifficulty: 'medium', devScore: 2, devManDays: 0.5, devNotes: 'CRUD + Dropdown เลือก Model', weightLevel: 'minor', weightScore: 7,
+    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master ผูก FK' } },
   { no: 13, name: 'จัดการ Master สี', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD สี + ผูก Model/Sub Model', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
-    devDifficulty: 'medium', devScore: 2, devManDays: 0.5, devNotes: 'CRUD + Color Picker + ผูก Model/SubModel', weightLevel: 'complete', weightScore: 10 },
+    devDifficulty: 'medium', devScore: 2, devManDays: 0.5, devNotes: 'CRUD + Color Picker + ผูก Model/SubModel', weightLevel: 'complete', weightScore: 10,
+    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
   { no: 14, name: 'จัดการ Master ขนาดเครื่องยนต์', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ขนาดเครื่อง', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'complete', weightScore: 10 },
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'complete', weightScore: 10,
+    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
   { no: 15, name: 'จัดการ Master ประเภทเชื้อเพลิง', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ประเภทเชื้อเพลิง', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'complete', weightScore: 10 },
-  { no: 16, name: 'จัดการ Master ราคาตั้ง', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ราคามาตรฐาน ผูก Model+Sub Model', riskLevel: 'high', riskScore: 4, riskReason: 'ส่งผลต่อราคาขายและ margin โดยตรง', icon: Database,
-    devDifficulty: 'medium', devScore: 3, devManDays: 0.5, devNotes: 'CRUD + Cascade Dropdown (Model→SubModel), Validation ราคา', weightLevel: 'major', weightScore: 4 },
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'complete', weightScore: 10,
+    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
+  { no: 16, name: 'จัดการ Master ราคาตั้ง', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ราคามาตรฐาน ผูก Model+Sub Model', riskLevel: 'high', riskScore: 4, riskReason: 'ส่งผลต่อราคาขาย', icon: Database,
+    devDifficulty: 'medium', devScore: 3, devManDays: 0.5, devNotes: 'CRUD + Cascade Dropdown, Validation ราคา', weightLevel: 'major', weightScore: 4,
+    perf: { responseTime: '<1s', concurrentUsers: '1-5', availability: '99%', dataVolume: 'ปานกลาง', score: 2, level: 'low', notes: 'ราคา Lookup ใช้ใน Reservation Form ต้องเร็ว' } },
   { no: 17, name: 'จัดการ Master ของแถม', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ของแถม + มูลค่า', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อต้นทุนทางอ้อม', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน + มูลค่า', weightLevel: 'minor', weightScore: 7 },
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน + มูลค่า', weightLevel: 'minor', weightScore: 7,
+    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
   { no: 18, name: 'จัดการ Master อุปกรณ์เสริม', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD อุปกรณ์เสริม + มูลค่า', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อต้นทุนทางอ้อม', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน + มูลค่า', weightLevel: 'minor', weightScore: 7 },
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน + มูลค่า', weightLevel: 'minor', weightScore: 7,
+    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
   { no: 19, name: 'จัดการ Master สิทธิประโยชน์', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD สิทธิประโยชน์ + มูลค่า', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อต้นทุนทางอ้อม', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน + มูลค่า', weightLevel: 'minor', weightScore: 7 },
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน + มูลค่า', weightLevel: 'minor', weightScore: 7,
+    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
   { no: 20, name: 'จัดการ Master คำนำหน้า', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD คำนำหน้าชื่อ', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'complete', weightScore: 10 },
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'complete', weightScore: 10,
+    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
 
   // Reports
-  { no: 21, name: 'รายงานใบจองประจำเดือน', category: 'Reports', responsible: 'ทุกบทบาท', description: 'สรุปใบจองตาม period, สถานะ, ยอดเงิน', riskLevel: 'medium', riskScore: 3, riskReason: 'ใช้ประกอบการตัดสินใจทางธุรกิจ', icon: BarChart3,
-    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Query Aggregation, Date Filter, Chart, Export Excel', weightLevel: 'minor', weightScore: 7 },
-  { no: 22, name: 'รายงานใบจองที่ยังไม่อนุมัติ', category: 'Reports', responsible: 'ผู้จัดการฝ่ายขาย', description: 'แสดงรายการค้างอนุมัติ เพื่อ follow up', riskLevel: 'medium', riskScore: 3, riskReason: 'ถ้าไม่ follow up อาจสูญเสียการขาย', icon: BarChart3,
-    devDifficulty: 'easy', devScore: 2, devManDays: 0.5, devNotes: 'Filter ตามสถานะ, ตาราง + Sorting', weightLevel: 'minor', weightScore: 7 },
-  { no: 23, name: 'รายงานยกเลิกใบจอง', category: 'Reports', responsible: 'ผู้จัดการฝ่ายขาย', description: 'สรุปรายการที่ถูกยกเลิก + เหตุผล', riskLevel: 'medium', riskScore: 3, riskReason: 'ใช้วิเคราะห์สาเหตุการยกเลิก', icon: BarChart3,
-    devDifficulty: 'easy', devScore: 2, devManDays: 0.5, devNotes: 'Filter + ตาราง, คล้าย F22', weightLevel: 'minor', weightScore: 7 },
+  { no: 21, name: 'รายงานใบจองประจำเดือน', category: 'Reports', responsible: 'ทุกบทบาท', description: 'สรุปใบจองตาม period, สถานะ, ยอดเงิน', riskLevel: 'medium', riskScore: 3, riskReason: 'ใช้ตัดสินใจทางธุรกิจ', icon: BarChart3,
+    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Query Aggregation, Date Filter, Chart, Export Excel', weightLevel: 'minor', weightScore: 7,
+    perf: { responseTime: '<3s', concurrentUsers: '10-20', availability: '99%', dataVolume: 'สูง', score: 3, level: 'medium', notes: 'Query Aggregation หลายพันรายการ ใช้เวลา' } },
+  { no: 22, name: 'รายงานใบจองที่ยังไม่อนุมัติ', category: 'Reports', responsible: 'ผู้จัดการฝ่ายขาย', description: 'แสดงรายการค้างอนุมัติ', riskLevel: 'medium', riskScore: 3, riskReason: 'ถ้าไม่ follow up อาจสูญเสียการขาย', icon: BarChart3,
+    devDifficulty: 'easy', devScore: 2, devManDays: 0.5, devNotes: 'Filter ตามสถานะ, ตาราง + Sorting', weightLevel: 'minor', weightScore: 7,
+    perf: { responseTime: '<2s', concurrentUsers: '5-10', availability: '99%', dataVolume: 'ปานกลาง', score: 2, level: 'low', notes: 'Filter ง่าย ข้อมูลไม่มาก' } },
+  { no: 23, name: 'รายงานยกเลิกใบจอง', category: 'Reports', responsible: 'ผู้จัดการฝ่ายขาย', description: 'สรุปรายการที่ถูกยกเลิก + เหตุผล', riskLevel: 'medium', riskScore: 3, riskReason: 'ใช้วิเคราะห์สาเหตุ', icon: BarChart3,
+    devDifficulty: 'easy', devScore: 2, devManDays: 0.5, devNotes: 'Filter + ตาราง, คล้าย F22', weightLevel: 'minor', weightScore: 7,
+    perf: { responseTime: '<2s', concurrentUsers: '5-10', availability: '99%', dataVolume: 'ปานกลาง', score: 2, level: 'low', notes: 'คล้าย F22' } },
 
   // Forms
-  { no: 24, name: 'พิมพ์สัญญาจอง', category: 'เอกสาร/ฟอร์ม', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF สัญญาจองตามแบบฟอร์มบริษัท', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารที่มีผลทางกฎหมาย', icon: FileOutput,
-    devDifficulty: 'hard', devScore: 4, devManDays: 2.0, devNotes: 'PDF Layout ตามแบบฟอร์มจริง, Pixel-perfect, หลายหน้า, รองรับหลายบริษัท', weightLevel: 'major', weightScore: 4 },
-  { no: 25, name: 'พิมพ์ยกเลิกสัญญาจอง', category: 'เอกสาร/ฟอร์ม', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF หนังสือบอกเลิก/ยกเลิกสัญญา', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารที่มีผลทางกฎหมาย', icon: FileOutput,
-    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'PDF Layout เฉพาะ Cancel Form, คล้าย F24 แต่แบบฟอร์มต่าง', weightLevel: 'major', weightScore: 4 },
+  { no: 24, name: 'พิมพ์สัญญาจอง', category: 'เอกสาร/ฟอร์ม', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF สัญญาจองตามแบบฟอร์ม', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารที่มีผลทางกฎหมาย', icon: FileOutput,
+    devDifficulty: 'hard', devScore: 4, devManDays: 2.0, devNotes: 'PDF Layout ตามแบบฟอร์มจริง, Pixel-perfect', weightLevel: 'major', weightScore: 4,
+    perf: { responseTime: '<5s', concurrentUsers: '5-10', availability: '95%', dataVolume: 'ต่ำ', score: 2, level: 'low', notes: 'PDF Generation ใช้เวลา — ยอมรับ Delay ได้' } },
+  { no: 25, name: 'พิมพ์ยกเลิกสัญญาจอง', category: 'เอกสาร/ฟอร์ม', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF หนังสือบอกเลิก/ยกเลิก', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารที่มีผลทางกฎหมาย', icon: FileOutput,
+    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'PDF Layout เฉพาะ Cancel Form', weightLevel: 'major', weightScore: 4,
+    perf: { responseTime: '<5s', concurrentUsers: '3-5', availability: '95%', dataVolume: 'ต่ำ', score: 2, level: 'low', notes: 'PDF Generation — ใช้งานน้อย' } },
 ];
 
 const getRiskBadge = (level: RiskLevel) => {
@@ -184,23 +229,32 @@ const getWeightBar = (score: number) => {
   );
 };
 
-const getRiskBar = (score: number, maxScore = 5) => {
+const getPerfBadge = (level: PerfLevel) => {
+  const config = perfLevelConfig[level];
+  return (
+    <Badge className={`${config.bgColor} ${config.color} ${config.borderColor} border`}>
+      {config.emoji} {config.label}
+    </Badge>
+  );
+};
+
+const getPerfBar = (score: number) => {
   const colors: Record<number, string> = {
-    1: 'bg-green-500',
-    2: 'bg-yellow-500',
-    3: 'bg-yellow-600',
+    1: 'bg-emerald-500',
+    2: 'bg-cyan-500',
+    3: 'bg-yellow-500',
     4: 'bg-orange-500',
     5: 'bg-red-500',
   };
   return (
-    <div className="flex items-center gap-2 min-w-[100px]">
+    <div className="flex items-center gap-2 min-w-[80px]">
       <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${colors[score] || 'bg-muted-foreground'}`}
-          style={{ width: `${(score / maxScore) * 100}%` }}
+          style={{ width: `${(score / 5) * 100}%` }}
         />
       </div>
-      <span className="text-xs font-bold text-muted-foreground w-6 text-right">{score}/{maxScore}</span>
+      <span className="text-xs font-bold text-muted-foreground w-6 text-right">{score}/5</span>
     </div>
   );
 };
@@ -259,10 +313,13 @@ export default function FunctionOverviewPage() {
       avgDev: +(fns.reduce((s, f) => s + f.devScore, 0) / fns.length).toFixed(1),
       avgWeight: +(fns.reduce((s, f) => s + f.weightScore, 0) / fns.length).toFixed(1),
       totalWeight: fns.reduce((s, f) => s + f.weightScore, 0),
+      avgPerf: +(fns.reduce((s, f) => s + f.perf.score, 0) / fns.length).toFixed(1),
       totalDays: +fns.reduce((s, f) => s + f.devManDays, 0).toFixed(1),
       count: fns.length,
     };
   });
+
+  const avgPerf = (functions.reduce((sum, f) => sum + f.perf.score, 0) / functions.length).toFixed(1);
 
   // Score Map data: sorted by weight score ascending (critical first)
   const scoreMapData = functions
@@ -282,16 +339,22 @@ export default function FunctionOverviewPage() {
       'Category': f.category,
       'Weight Level': weightConfig[f.weightLevel].label,
       'Weight Score (Max 10)': f.weightScore,
-      'Responsible': f.responsible,
+      'Perf Level': perfLevelConfig[f.perf.level].label,
+      'Perf Score (1-5)': f.perf.score,
+      'Response Time': f.perf.responseTime,
+      'Concurrent Users': f.perf.concurrentUsers,
+      'Availability': f.perf.availability,
+      'Data Volume': f.perf.dataVolume,
       'Dev Difficulty': devConfig[f.devDifficulty].label,
       'Dev Score': f.devScore,
       'Man-Days': f.devManDays,
-      'Dev Notes': f.devNotes,
+      'Perf Notes': f.perf.notes,
     }));
     const ws0 = XLSX.utils.json_to_sheet(scoreMapSheet);
     ws0['!cols'] = [
       { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 12 }, { wch: 16 },
-      { wch: 22 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 50 },
+      { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 12 },
+      { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 50 },
     ];
 
     // Sheet 2: Function Details
@@ -301,17 +364,25 @@ export default function FunctionOverviewPage() {
       'Category': f.category,
       'Weight Level': weightConfig[f.weightLevel].label,
       'Weight Score': f.weightScore,
+      'Perf Level': perfLevelConfig[f.perf.level].label,
+      'Perf Score': f.perf.score,
+      'Response Time': f.perf.responseTime,
+      'Concurrent Users': f.perf.concurrentUsers,
+      'Availability': f.perf.availability,
+      'Data Volume': f.perf.dataVolume,
       'Responsible': f.responsible,
       'Description': f.description,
       'Dev Difficulty': devConfig[f.devDifficulty].label,
       'Dev Score (1-5)': f.devScore,
       'Man-Days': f.devManDays,
       'Dev Notes': f.devNotes,
+      'Perf Notes': f.perf.notes,
     }));
     const ws1 = XLSX.utils.json_to_sheet(detailData);
     ws1['!cols'] = [
-      { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 12 }, { wch: 14 },
-      { wch: 22 }, { wch: 50 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
+      { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 12 }, { wch: 12 },
+      { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 12 },
+      { wch: 22 }, { wch: 50 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 }, { wch: 50 },
     ];
 
     // Sheet 3: Summary by Category
@@ -320,6 +391,7 @@ export default function FunctionOverviewPage() {
       'จำนวน Function': c.count,
       'Avg Weight Score': c.avgWeight,
       'Total Weight Score': c.totalWeight,
+      'Avg Perf Score': c.avgPerf,
       'Avg Dev Score': c.avgDev,
       'Total Man-Days': c.totalDays,
     }));
@@ -328,11 +400,12 @@ export default function FunctionOverviewPage() {
       'จำนวน Function': functions.length,
       'Avg Weight Score': +avgWeight,
       'Total Weight Score': totalWeight,
+      'Avg Perf Score': +avgPerf,
       'Avg Dev Score': +avgDev,
       'Total Man-Days': totalManDays,
     });
     const ws2 = XLSX.utils.json_to_sheet(summaryData);
-    ws2['!cols'] = [{ wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 16 }];
+    ws2['!cols'] = [{ wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 16 }];
 
     // Sheet 4: Distribution
     const distData = [
@@ -375,35 +448,45 @@ export default function FunctionOverviewPage() {
         'Function Name': f.name,
         'Weight Level': weightConfig[f.weightLevel].label,
         'Weight Score': f.weightScore,
+        'Perf Level': perfLevelConfig[f.perf.level].label,
+        'Perf Score': f.perf.score,
+        'Response Time': f.perf.responseTime,
+        'Concurrent Users': f.perf.concurrentUsers,
+        'Availability': f.perf.availability,
         'Responsible': f.responsible,
-        'Description': f.description,
         'Dev Difficulty': devConfig[f.devDifficulty].label,
         'Dev Score (1-5)': f.devScore,
         'Man-Days': f.devManDays,
-        'Dev Notes': f.devNotes,
+        'Perf Notes': f.perf.notes,
       }));
 
       // Add summary row
       const catAvgWeight = +(catFns.reduce((s, f) => s + f.weightScore, 0) / catFns.length).toFixed(1);
       const catTotalWeight = catFns.reduce((s, f) => s + f.weightScore, 0);
+      const catAvgPerf = +(catFns.reduce((s, f) => s + f.perf.score, 0) / catFns.length).toFixed(1);
       rows.push({
         'ลำดับ': '' as any,
         'F.No': '' as any,
         'Function Name': '--- สรุป ---',
         'Weight Level': '',
         'Weight Score': catAvgWeight as any,
+        'Perf Level': '',
+        'Perf Score': catAvgPerf as any,
+        'Response Time': '',
+        'Concurrent Users': '',
+        'Availability': '',
         'Responsible': '',
-        'Description': `จำนวน ${catFns.length} Functions`,
         'Dev Difficulty': '',
         'Dev Score (1-5)': catAvgDev as any,
         'Man-Days': catTotalDays,
-        'Dev Notes': `Avg Weight: ${catAvgWeight} | Total Weight: ${catTotalWeight} | Avg Dev: ${catAvgDev} | Total: ${catTotalDays} Man-Days`,
+        'Perf Notes': `Weight: ${catAvgWeight} avg (${catTotalWeight} total) | Perf: ${catAvgPerf} avg | Dev: ${catAvgDev} avg | ${catTotalDays} Man-Days`,
       });
 
       const wsCat = XLSX.utils.json_to_sheet(rows);
       wsCat['!cols'] = [
         { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 12 }, { wch: 12 },
-        { wch: 22 }, { wch: 45 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
+        { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 12 },
+        { wch: 22 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
       ];
       XLSX.utils.book_append_sheet(wb, wsCat, categorySheetNames[cat] || cat);
     });
@@ -702,6 +785,41 @@ export default function FunctionOverviewPage() {
           </CardContent>
         </Card>
 
+        {/* Performance Spec Legend */}
+        <Card className="border-2 border-teal-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Gauge className="w-4 h-4 text-teal-500" />
+              เกณฑ์ Performance Spec (1-5) — หลักการให้คะแนน
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
+              {([['critical', 5, 'Response <1s | 20+ Users | 99.9% SLA | Volume สูง'], ['high', 4, 'Response <2s | 10-20 Users | 99.5% SLA | Volume ปานกลาง-สูง'], ['medium', 3, 'Response <3s | 5-10 Users | 99% SLA | Volume ปานกลาง'], ['low', 2, 'Response <5s | 3-5 Users | 95% SLA | Volume ต่ำ'], ['minimal', 1, 'Response >5s OK | 1-3 Users | 90% SLA | Volume น้อย']] as [PerfLevel, number, string][]).map(([level, sc, desc]) => {
+                const cfg = perfLevelConfig[level];
+                return (
+                  <div key={level} className={`p-3 rounded-lg ${cfg.bgColor} border ${cfg.borderColor}`}>
+                    <p className={`text-sm font-semibold ${cfg.color}`}>{cfg.emoji} {cfg.label} ({sc}/5)</p>
+                    <p className={`text-[10px] ${cfg.color} opacity-80 mt-1`}>{desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="bg-muted/30 rounded-lg p-4">
+              <p className="text-xs font-semibold text-foreground mb-2">📐 หลักการให้คะแนน Performance</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-muted-foreground">
+                <div><p className="font-medium text-foreground mb-1">⏱️ Response Time</p><p>ความเร็วที่ระบบต้องตอบสนอง เช่น OTP ต้อง &lt;1s, PDF ยอมรับ &lt;5s</p></div>
+                <div><p className="font-medium text-foreground mb-1">👥 Concurrent Users</p><p>จำนวนผู้ใช้พร้อมกัน เช่น Master Data 1-3 คน, Reports 10-20 คน</p></div>
+                <div><p className="font-medium text-foreground mb-1">🔒 Availability (SLA)</p><p>ความพร้อมใช้งาน — ชำระเงิน 99.9%, Master Data 95%</p></div>
+                <div><p className="font-medium text-foreground mb-1">📊 Data Volume</p><p>ปริมาณข้อมูล — Reports สูง (หลายพันรายการ), Master Data น้อย</p></div>
+              </div>
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground text-right">
+              Avg Performance Score: <span className="font-bold">{avgPerf}/5</span>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Score Map Table - All Functions ranked by Weight Score */}
         <Card className="border-2 border-amber-300/50">
           <CardHeader>
@@ -720,11 +838,12 @@ export default function FunctionOverviewPage() {
                     <TableHead className="w-10">F.No</TableHead>
                     <TableHead>Function</TableHead>
                     <TableHead>หมวด</TableHead>
-                    <TableHead className="text-center">Weight Level</TableHead>
-                    <TableHead className="w-[120px]">Weight Score</TableHead>
-                    <TableHead className="text-center">ความยาก Dev</TableHead>
+                    <TableHead className="text-center">Weight</TableHead>
+                    <TableHead className="w-[110px]">Weight Score</TableHead>
+                    <TableHead className="text-center">Perf</TableHead>
+                    <TableHead className="w-[90px]">Perf Score</TableHead>
+                    <TableHead className="text-center">Dev</TableHead>
                     <TableHead className="text-center">Man-Days</TableHead>
-                    <TableHead className="hidden xl:table-cell">ผู้รับผิดชอบ</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -749,12 +868,17 @@ export default function FunctionOverviewPage() {
                           {getWeightBar(fn.weightScore)}
                         </TableCell>
                         <TableCell className="text-center">
+                          {getPerfBadge(fn.perf.level)}
+                        </TableCell>
+                        <TableCell>
+                          {getPerfBar(fn.perf.score)}
+                        </TableCell>
+                        <TableCell className="text-center">
                           {getDevBadge(fn.devDifficulty)}
                         </TableCell>
                         <TableCell className="text-center">
                           <span className="font-bold text-sm text-blue-700">{fn.devManDays}</span>
                         </TableCell>
-                        <TableCell className="hidden xl:table-cell text-xs text-muted-foreground">{fn.responsible}</TableCell>
                       </TableRow>
                     );
                   })}

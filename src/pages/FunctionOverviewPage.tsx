@@ -542,6 +542,39 @@ export default function FunctionOverviewPage() {
       XLSX.utils.book_append_sheet(wb, wsCat, categorySheetNames[cat] || cat);
     });
 
+    // Sheet: Acceptance Scoring
+    const acceptanceRows = acceptanceSorted.map((f, i) => {
+      const acc = acceptanceData[f.no] || { finished: false, defects: { critical: 0, major: 0, minor: 0 } };
+      return {
+        'ลำดับ': i + 1,
+        'Category': f.category,
+        'Functional List': f.name,
+        'Max Score': MAX_SCORE,
+        'Finish? (0/1)': acc.finished ? 1 : 0,
+        'Defect Critical (-10)': acc.defects.critical || '',
+        'Defect Major (-5)': acc.defects.major || '',
+        'Defect Minor (-2)': acc.defects.minor || '',
+        'Total': calcAcceptanceTotal(f.no),
+      };
+    });
+    acceptanceRows.push({
+      'ลำดับ': '' as any,
+      'Category': '',
+      'Functional List': '--- รวมทั้งหมด ---',
+      'Max Score': acceptanceMaxTotal as any,
+      'Finish? (0/1)': acceptanceFinishedCount as any,
+      'Defect Critical (-10)': '' as any,
+      'Defect Major (-5)': '' as any,
+      'Defect Minor (-2)': '' as any,
+      'Total': acceptanceGrandTotal,
+    });
+    const wsAcceptance = XLSX.utils.json_to_sheet(acceptanceRows);
+    wsAcceptance['!cols'] = [
+      { wch: 6 }, { wch: 18 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
+      { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 10 },
+    ];
+    XLSX.utils.book_append_sheet(wb, wsAcceptance, 'Acceptance Score');
+
     XLSX.writeFile(wb, 'FunctionOverview_ScoreMap.xlsx');
   };
 

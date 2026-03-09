@@ -161,7 +161,7 @@
   }
 
   .status-cancelled {
-    @apply !bg-rose-700 !text-white !border-rose-800;
+    @apply !bg-rose-700 !text-white !border !border-rose-700;
   }
 
   .workflow-step {

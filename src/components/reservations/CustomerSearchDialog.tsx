@@ -113,9 +113,7 @@ export function CustomerSearchDialog({
   // Search with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchTerm.trim()) {
-        handleSearch(searchTerm);
-      }
+      handleSearch(searchTerm);
     }, 300);
 
     return () => clearTimeout(timer);

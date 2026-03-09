@@ -299,6 +299,54 @@ export default function FunctionOverviewPage() {
     XLSX.utils.book_append_sheet(wb, ws1, 'Function Details');
     XLSX.utils.book_append_sheet(wb, ws2, 'Summary by Category');
     XLSX.utils.book_append_sheet(wb, ws3, 'Distribution');
+
+    // Sheet 5-9: แยกตามกลุ่ม Function
+    const categorySheetNames: Record<string, string> = {
+      'Workflow หลัก': 'WF หลัก',
+      'Workflow ยกเลิก': 'WF ยกเลิก',
+      'Master Data': 'Master Data',
+      'Reports': 'Reports',
+      'เอกสาร/ฟอร์ม': 'เอกสาร-ฟอร์ม',
+    };
+
+    categories.forEach(cat => {
+      const catFns = functions.filter(f => f.category === cat);
+      const catTotalDays = catFns.reduce((s, f) => s + f.devManDays, 0);
+      const catAvgDev = +(catFns.reduce((s, f) => s + f.devScore, 0) / catFns.length).toFixed(1);
+
+      const rows = catFns.map((f, i) => ({
+        'ลำดับ': i + 1,
+        'F.No': f.no,
+        'Function Name': f.name,
+        'Responsible': f.responsible,
+        'Description': f.description,
+        'Dev Difficulty': devConfig[f.devDifficulty].label,
+        'Dev Score (1-5)': f.devScore,
+        'Man-Days': f.devManDays,
+        'Dev Notes': f.devNotes,
+      }));
+
+      // Add summary row
+      rows.push({
+        'ลำดับ': '' as any,
+        'F.No': '' as any,
+        'Function Name': '--- สรุป ---',
+        'Responsible': '',
+        'Description': `จำนวน ${catFns.length} Functions`,
+        'Dev Difficulty': '',
+        'Dev Score (1-5)': catAvgDev as any,
+        'Man-Days': catTotalDays,
+        'Dev Notes': `Avg Dev Score: ${catAvgDev} | Total: ${catTotalDays} Man-Days`,
+      });
+
+      const wsCat = XLSX.utils.json_to_sheet(rows);
+      wsCat['!cols'] = [
+        { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 22 }, { wch: 45 },
+        { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
+      ];
+      XLSX.utils.book_append_sheet(wb, wsCat, categorySheetNames[cat] || cat);
+    });
+
     XLSX.writeFile(wb, 'FunctionOverview_ScoreMap.xlsx');
   };
 

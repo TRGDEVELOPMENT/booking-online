@@ -374,6 +374,8 @@ export default function FunctionOverviewPage() {
         'ลำดับ': i + 1,
         'F.No': f.no,
         'Function Name': f.name,
+        'Weight Level': weightConfig[f.weightLevel].label,
+        'Weight Score': f.weightScore,
         'Responsible': f.responsible,
         'Description': f.description,
         'Dev Difficulty': devConfig[f.devDifficulty].label,
@@ -383,22 +385,26 @@ export default function FunctionOverviewPage() {
       }));
 
       // Add summary row
+      const catAvgWeight = +(catFns.reduce((s, f) => s + f.weightScore, 0) / catFns.length).toFixed(1);
+      const catTotalWeight = catFns.reduce((s, f) => s + f.weightScore, 0);
       rows.push({
         'ลำดับ': '' as any,
         'F.No': '' as any,
         'Function Name': '--- สรุป ---',
+        'Weight Level': '',
+        'Weight Score': catAvgWeight as any,
         'Responsible': '',
         'Description': `จำนวน ${catFns.length} Functions`,
         'Dev Difficulty': '',
         'Dev Score (1-5)': catAvgDev as any,
         'Man-Days': catTotalDays,
-        'Dev Notes': `Avg Dev Score: ${catAvgDev} | Total: ${catTotalDays} Man-Days`,
+        'Dev Notes': `Avg Weight: ${catAvgWeight} | Total Weight: ${catTotalWeight} | Avg Dev: ${catAvgDev} | Total: ${catTotalDays} Man-Days`,
       });
 
       const wsCat = XLSX.utils.json_to_sheet(rows);
       wsCat['!cols'] = [
-        { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 22 }, { wch: 45 },
-        { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
+        { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 12 }, { wch: 12 },
+        { wch: 22 }, { wch: 45 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
       ];
       XLSX.utils.book_append_sheet(wb, wsCat, categorySheetNames[cat] || cat);
     });

@@ -838,11 +838,12 @@ export default function FunctionOverviewPage() {
                     <TableHead className="w-10">F.No</TableHead>
                     <TableHead>Function</TableHead>
                     <TableHead>หมวด</TableHead>
-                    <TableHead className="text-center">Weight Level</TableHead>
-                    <TableHead className="w-[120px]">Weight Score</TableHead>
-                    <TableHead className="text-center">ความยาก Dev</TableHead>
+                    <TableHead className="text-center">Weight</TableHead>
+                    <TableHead className="w-[110px]">Weight Score</TableHead>
+                    <TableHead className="text-center">Perf</TableHead>
+                    <TableHead className="w-[90px]">Perf Score</TableHead>
+                    <TableHead className="text-center">Dev</TableHead>
                     <TableHead className="text-center">Man-Days</TableHead>
-                    <TableHead className="hidden xl:table-cell">ผู้รับผิดชอบ</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -867,12 +868,17 @@ export default function FunctionOverviewPage() {
                           {getWeightBar(fn.weightScore)}
                         </TableCell>
                         <TableCell className="text-center">
+                          {getPerfBadge(fn.perf.level)}
+                        </TableCell>
+                        <TableCell>
+                          {getPerfBar(fn.perf.score)}
+                        </TableCell>
+                        <TableCell className="text-center">
                           {getDevBadge(fn.devDifficulty)}
                         </TableCell>
                         <TableCell className="text-center">
                           <span className="font-bold text-sm text-blue-700">{fn.devManDays}</span>
                         </TableCell>
-                        <TableCell className="hidden xl:table-cell text-xs text-muted-foreground">{fn.responsible}</TableCell>
                       </TableRow>
                     );
                   })}

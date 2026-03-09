@@ -732,9 +732,8 @@ export default function FunctionOverviewPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30">
-                    <TableHead>หมวดหมู่</TableHead>
+                     <TableHead>หมวดหมู่</TableHead>
                     <TableHead className="text-center">จำนวน Function</TableHead>
-                    <TableHead className="text-center">ความเสี่ยงเฉลี่ย</TableHead>
                     <TableHead className="text-center">ความยาก Dev เฉลี่ย</TableHead>
                     <TableHead className="text-center">Man-Days รวม</TableHead>
                   </TableRow>

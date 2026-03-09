@@ -297,7 +297,7 @@ const ReservationCancelPage = () => {
                     {reservation.status === "cancelled" ? (
                       <Badge variant="destructive">ยกเลิกแล้ว</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-green-600 border-green-600">อนุมัติแล้ว</Badge>
+                      <Badge variant="outline" className="text-green-600 border-green-600">อนุมัติใบจองแล้ว</Badge>
                     )}
                   </TableCell>
                   <TableCell>

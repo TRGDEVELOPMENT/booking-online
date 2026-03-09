@@ -391,7 +391,18 @@ export type Database = {
           buyer_id_card: string | null
           buyer_name: string | null
           buyer_phone: string | null
+          cancel_approval_remark: string | null
+          cancel_approval_status: string | null
+          cancel_approved_at: string | null
+          cancel_approved_by: string | null
           cancel_reason: string | null
+          cancel_request_status: string | null
+          cancel_requested_at: string | null
+          cancel_requested_by: string | null
+          cancel_review_remark: string | null
+          cancel_review_status: string | null
+          cancel_reviewed_at: string | null
+          cancel_reviewed_by: string | null
           color: string | null
           company_id: string
           confirmation_method: string | null
@@ -440,7 +451,18 @@ export type Database = {
           buyer_id_card?: string | null
           buyer_name?: string | null
           buyer_phone?: string | null
+          cancel_approval_remark?: string | null
+          cancel_approval_status?: string | null
+          cancel_approved_at?: string | null
+          cancel_approved_by?: string | null
           cancel_reason?: string | null
+          cancel_request_status?: string | null
+          cancel_requested_at?: string | null
+          cancel_requested_by?: string | null
+          cancel_review_remark?: string | null
+          cancel_review_status?: string | null
+          cancel_reviewed_at?: string | null
+          cancel_reviewed_by?: string | null
           color?: string | null
           company_id: string
           confirmation_method?: string | null
@@ -489,7 +511,18 @@ export type Database = {
           buyer_id_card?: string | null
           buyer_name?: string | null
           buyer_phone?: string | null
+          cancel_approval_remark?: string | null
+          cancel_approval_status?: string | null
+          cancel_approved_at?: string | null
+          cancel_approved_by?: string | null
           cancel_reason?: string | null
+          cancel_request_status?: string | null
+          cancel_requested_at?: string | null
+          cancel_requested_by?: string | null
+          cancel_review_remark?: string | null
+          cancel_review_status?: string | null
+          cancel_reviewed_at?: string | null
+          cancel_reviewed_by?: string | null
           color?: string | null
           company_id?: string
           confirmation_method?: string | null

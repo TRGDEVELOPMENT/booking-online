@@ -52,9 +52,14 @@ export function CustomerSearchDialog({
   const [hasSearched, setHasSearched] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  // Reset state when dialog opens/closes
+  // Reset state when dialog opens/closes and load all customers on open
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      setSearchTerm('');
+      setHasSearched(false);
+      // Load all customers when dialog opens
+      handleSearch('');
+    } else {
       setSearchTerm('');
       setSearchResults([]);
       setHasSearched(false);

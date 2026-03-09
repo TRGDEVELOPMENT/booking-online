@@ -286,11 +286,6 @@ export default function FunctionOverviewPage() {
 
     // Sheet 4: Distribution
     const distData = [
-      { 'ประเภท': 'Risk - Critical', 'จำนวน': criticalCount },
-      { 'ประเภท': 'Risk - High', 'จำนวน': highCount },
-      { 'ประเภท': 'Risk - Medium', 'จำนวน': mediumCount },
-      { 'ประเภท': 'Risk - Low', 'จำนวน': lowCount },
-      { 'ประเภท': '', 'จำนวน': '' },
       { 'ประเภท': 'Dev - ยากมาก', 'จำนวน': veryHardCount },
       { 'ประเภท': 'Dev - ยาก', 'จำนวน': hardCount },
       { 'ประเภท': 'Dev - ปานกลาง', 'จำนวน': devMediumCount },

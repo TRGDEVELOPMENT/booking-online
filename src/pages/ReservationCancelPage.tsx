@@ -65,7 +65,7 @@ const ReservationCancelPage = () => {
         .select("*")
         .eq("company_id", selectedCompany)
         .eq("approval_status", "approved")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }) as any;
 
       if (error) throw error;
 
@@ -134,16 +134,17 @@ const ReservationCancelPage = () => {
       const { error } = await supabase
         .from("reservations")
         .update({
-          status: "cancelled",
+          cancel_request_status: "requested",
+          cancel_requested_at: new Date().toISOString(),
           cancel_reason: cancelReason,
-        })
+        } as any)
         .eq("id", selectedReservation.id);
 
       if (error) throw error;
 
       toast({
-        title: "ยกเลิกใบจองสำเร็จ",
-        description: `ใบจองเลขที่ ${selectedReservation.document_number} ถูกยกเลิกแล้ว`,
+        title: "บันทึกขอยกเลิกสำเร็จ",
+        description: `ใบจองเลขที่ ${selectedReservation.document_number} อยู่ระหว่างรอการอนุมัติยกเลิก`,
       });
 
       setIsCancelDialogOpen(false);
@@ -153,7 +154,7 @@ const ReservationCancelPage = () => {
       console.error("Error cancelling reservation:", error);
       toast({
         title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถยกเลิกใบจองได้",
+        description: "ไม่สามารถบันทึกขอยกเลิกใบจองได้",
         variant: "destructive",
       });
     } finally {
@@ -296,22 +297,37 @@ const ReservationCancelPage = () => {
                   <TableCell className="text-center">
                     {reservation.status === "cancelled" ? (
                       <Badge variant="destructive">ยกเลิกแล้ว</Badge>
+                    ) : (reservation as any).cancel_request_status === "requested" ? (
+                      <Badge className="bg-orange-500 text-white border-orange-500">อยู่ระหว่างยกเลิกใบจอง</Badge>
                     ) : (
                       <Badge variant="outline" className="text-green-600 border-green-600">อนุมัติใบจองแล้ว</Badge>
                     )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => navigate(`/reservations/${reservation.id}/print`)}
-                        title="ดูรายละเอียด"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      {reservation.status !== "cancelled" && (
+                      {/* If cancel is in progress or cancelled, navigate to cancel detail */}
+                      {(reservation as any).cancel_request_status === "requested" || reservation.status === "cancelled" ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => navigate(`/reservations/${reservation.id}/cancel-detail`)}
+                          title="ดูรายละเอียดการยกเลิก"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => navigate(`/reservations/${reservation.id}/print`)}
+                          title="ดูรายละเอียด"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {reservation.status !== "cancelled" && !(reservation as any).cancel_request_status && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -441,7 +457,7 @@ const ReservationCancelPage = () => {
               ) : (
                 <>
                   <Ban className="h-4 w-4 mr-2" />
-                  ยืนยันการยกเลิก
+                  บันทึกขอยกเลิก
                 </>
               )}
             </AlertDialogAction>

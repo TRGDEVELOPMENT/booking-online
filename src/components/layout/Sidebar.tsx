@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   FileText, 
   List,
+  ClipboardList,
   Ban,
   FilePlus2, 
   Users, 

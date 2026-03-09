@@ -590,8 +590,8 @@ export default function FunctionOverviewPage() {
                 <RadarChart data={categoryStats}>
                   <PolarGrid />
                   <PolarAngleAxis dataKey="name" tick={{ fontSize: 10 }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 5]} tick={{ fontSize: 9 }} />
-                  <Radar name="ความเสี่ยง" dataKey="avgRisk" stroke="#ea580c" fill="#ea580c" fillOpacity={0.3} />
+                  <PolarRadiusAxis angle={30} domain={[0, 10]} tick={{ fontSize: 9 }} />
+                  <Radar name="Avg Weight" dataKey="avgWeight" stroke="#d97706" fill="#d97706" fillOpacity={0.3} />
                   <Radar name="ความยาก Dev" dataKey="avgDev" stroke="#7c3aed" fill="#7c3aed" fillOpacity={0.3} />
                   <Tooltip />
                   <Legend wrapperStyle={{ fontSize: 11 }} />

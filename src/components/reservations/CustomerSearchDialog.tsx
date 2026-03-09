@@ -68,7 +68,7 @@ export function CustomerSearchDialog({
 
   // Debounced search
   const handleSearch = useCallback(async (term: string) => {
-    if (!term.trim() || !companyId) {
+    if (!companyId) {
       setSearchResults([]);
       setHasSearched(false);
       return;

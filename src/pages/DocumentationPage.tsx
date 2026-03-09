@@ -36,8 +36,8 @@ export default function DocumentationPage() {
             Car Reservation System
           </h2>
           <div className="inline-block bg-muted rounded-lg p-6 text-left">
-            <p className="text-sm text-muted-foreground">วันที่จัดทำ: 23 มกราคม 2569</p>
-            <p className="text-sm text-muted-foreground">เวอร์ชัน: 1.0</p>
+            <p className="text-sm text-muted-foreground">วันที่จัดทำ: 9 มีนาคม 2569</p>
+            <p className="text-sm text-muted-foreground">เวอร์ชัน: 2.0</p>
             <p className="text-sm text-muted-foreground">สร้างโดย: Lovable AI</p>
           </div>
         </div>

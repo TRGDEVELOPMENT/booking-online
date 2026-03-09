@@ -667,12 +667,41 @@ export default function FunctionOverviewPage() {
           </CardContent>
         </Card>
 
-        {/* Score Map Table - All Functions ranked by Total Score */}
+        {/* Weight Score Legend */}
+        <Card className="border-2 border-amber-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <ShieldAlert className="w-4 h-4 text-amber-500" />
+              เกณฑ์ Weight Score (Max 10 ต่อ Function)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {(['critical', 'major', 'minor', 'complete'] as WeightLevel[]).map(level => {
+                const cfg = weightConfig[level];
+                return (
+                  <div key={level} className={`flex items-center gap-3 p-3 rounded-lg ${cfg.bgColor} border ${cfg.borderColor}`}>
+                    <span className="text-2xl">{cfg.emoji}</span>
+                    <div>
+                      <p className={`text-sm font-semibold ${cfg.color}`}>{cfg.label} ({cfg.score}/10)</p>
+                      <p className={`text-xs ${cfg.color} opacity-80`}>{cfg.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground text-right">
+              Total Weight: <span className="font-bold">{totalWeight}/{maxTotalWeight}</span> ({((totalWeight / maxTotalWeight) * 100).toFixed(0)}%) | Avg: <span className="font-bold">{avgWeight}/10</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Score Map Table - All Functions ranked by Weight Score */}
         <Card className="border-2 border-amber-300/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Zap className="w-5 h-5 text-amber-500" />
-              Score Map — Function ทั้งหมด จัดเรียงตาม Total Score (Risk + Dev)
+              Score Map — Function ทั้งหมด จัดเรียงตาม Weight Score (Critical → Complete)
               <Badge variant="outline" className="ml-2 text-amber-700 border-amber-400">{functions.length} Functions</Badge>
             </CardTitle>
           </CardHeader>
@@ -685,21 +714,17 @@ export default function FunctionOverviewPage() {
                     <TableHead className="w-10">F.No</TableHead>
                     <TableHead>Function</TableHead>
                     <TableHead>หมวด</TableHead>
-                    <TableHead className="text-center">Dev Score</TableHead>
+                    <TableHead className="text-center">Weight Level</TableHead>
+                    <TableHead className="w-[120px]">Weight Score</TableHead>
                     <TableHead className="text-center">ความยาก Dev</TableHead>
                     <TableHead className="text-center">Man-Days</TableHead>
-                    <TableHead className="hidden lg:table-cell">ผู้รับผิดชอบ</TableHead>
-                    <TableHead className="hidden xl:table-cell">หมายเหตุ Dev</TableHead>
+                    <TableHead className="hidden xl:table-cell">ผู้รับผิดชอบ</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {scoreMapData.map((fn, idx) => {
                     const FnIcon = fn.icon;
-                    const priorityColor = fn.priority === 'วิกฤต' ? 'bg-red-100 text-red-700 border-red-300'
-                      : fn.priority === 'สูง' ? 'bg-orange-100 text-orange-700 border-orange-300'
-                      : fn.priority === 'ปานกลาง' ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
-                      : 'bg-green-100 text-green-700 border-green-300';
-                    const rowBg = fn.totalScore >= 8 ? 'bg-red-50/40' : fn.totalScore >= 6 ? 'bg-orange-50/30' : '';
+                    const rowBg = fn.weightScore <= 1 ? 'bg-red-50/40' : fn.weightScore <= 4 ? 'bg-orange-50/30' : fn.weightScore <= 7 ? 'bg-blue-50/20' : '';
                     return (
                       <TableRow key={fn.no} className={rowBg}>
                         <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
@@ -712,7 +737,10 @@ export default function FunctionOverviewPage() {
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">{fn.category}</TableCell>
                         <TableCell className="text-center">
-                          <span className="font-bold text-violet-600">{fn.devScore}</span>
+                          {getWeightBadge(fn.weightLevel)}
+                        </TableCell>
+                        <TableCell>
+                          {getWeightBar(fn.weightScore)}
                         </TableCell>
                         <TableCell className="text-center">
                           {getDevBadge(fn.devDifficulty)}
@@ -720,10 +748,7 @@ export default function FunctionOverviewPage() {
                         <TableCell className="text-center">
                           <span className="font-bold text-sm text-blue-700">{fn.devManDays}</span>
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">{fn.responsible}</TableCell>
-                        <TableCell className="hidden xl:table-cell">
-                          <p className="text-xs text-muted-foreground line-clamp-2">{fn.devNotes}</p>
-                        </TableCell>
+                        <TableCell className="hidden xl:table-cell text-xs text-muted-foreground">{fn.responsible}</TableCell>
                       </TableRow>
                     );
                   })}

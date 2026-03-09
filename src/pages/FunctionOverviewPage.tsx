@@ -239,21 +239,15 @@ export default function FunctionOverviewPage() {
       'Function Name': f.name,
       'Category': f.category,
       'Responsible': f.responsible,
-      'Risk Level': riskConfig[f.riskLevel].label,
-      'Risk Score': f.riskScore,
       'Dev Difficulty': devConfig[f.devDifficulty].label,
       'Dev Score': f.devScore,
-      'Total Score': f.totalScore,
-      'Priority': f.priority,
       'Man-Days': f.devManDays,
-      'Risk Reason': f.riskReason,
       'Dev Notes': f.devNotes,
     }));
     const ws0 = XLSX.utils.json_to_sheet(scoreMapSheet);
     ws0['!cols'] = [
       { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 22 },
-      { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 12 },
-      { wch: 10 }, { wch: 10 }, { wch: 40 }, { wch: 50 },
+      { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 50 },
     ];
 
     // Sheet 2: Function Details
@@ -263,9 +257,6 @@ export default function FunctionOverviewPage() {
       'Category': f.category,
       'Responsible': f.responsible,
       'Description': f.description,
-      'Risk Level': riskConfig[f.riskLevel].label,
-      'Risk Score (1-5)': f.riskScore,
-      'Risk Reason': f.riskReason,
       'Dev Difficulty': devConfig[f.devDifficulty].label,
       'Dev Score (1-5)': f.devScore,
       'Man-Days': f.devManDays,
@@ -274,7 +265,6 @@ export default function FunctionOverviewPage() {
     const ws1 = XLSX.utils.json_to_sheet(detailData);
     ws1['!cols'] = [
       { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 22 }, { wch: 50 },
-      { wch: 12 }, { wch: 14 }, { wch: 40 },
       { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
     ];
 
@@ -282,14 +272,12 @@ export default function FunctionOverviewPage() {
     const summaryData = categoryStats.map(c => ({
       'Category': c.name,
       'จำนวน Function': c.count,
-      'Avg Risk Score': c.avgRisk,
       'Avg Dev Score': c.avgDev,
       'Total Man-Days': c.totalDays,
     }));
     summaryData.push({
       'Category': 'รวมทั้งหมด',
       'จำนวน Function': functions.length,
-      'Avg Risk Score': +avgRisk,
       'Avg Dev Score': +avgDev,
       'Total Man-Days': totalManDays,
     });
@@ -298,11 +286,6 @@ export default function FunctionOverviewPage() {
 
     // Sheet 4: Distribution
     const distData = [
-      { 'ประเภท': 'Risk - Critical', 'จำนวน': criticalCount },
-      { 'ประเภท': 'Risk - High', 'จำนวน': highCount },
-      { 'ประเภท': 'Risk - Medium', 'จำนวน': mediumCount },
-      { 'ประเภท': 'Risk - Low', 'จำนวน': lowCount },
-      { 'ประเภท': '', 'จำนวน': '' },
       { 'ประเภท': 'Dev - ยากมาก', 'จำนวน': veryHardCount },
       { 'ประเภท': 'Dev - ยาก', 'จำนวน': hardCount },
       { 'ประเภท': 'Dev - ปานกลาง', 'จำนวน': devMediumCount },
@@ -593,12 +576,11 @@ export default function FunctionOverviewPage() {
                     <TableHead className="w-10">F.No</TableHead>
                     <TableHead>Function</TableHead>
                     <TableHead>หมวด</TableHead>
-                    <TableHead className="text-center">Risk Score</TableHead>
                     <TableHead className="text-center">Dev Score</TableHead>
-                    <TableHead className="text-center">Total</TableHead>
-                    <TableHead className="text-center">Priority</TableHead>
+                    <TableHead className="text-center">ความยาก Dev</TableHead>
                     <TableHead className="text-center">Man-Days</TableHead>
                     <TableHead className="hidden lg:table-cell">ผู้รับผิดชอบ</TableHead>
+                    <TableHead className="hidden xl:table-cell">หมายเหตุ Dev</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -621,22 +603,18 @@ export default function FunctionOverviewPage() {
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">{fn.category}</TableCell>
                         <TableCell className="text-center">
-                          <span className="font-bold text-orange-600">{fn.riskScore}</span>
-                        </TableCell>
-                        <TableCell className="text-center">
                           <span className="font-bold text-violet-600">{fn.devScore}</span>
                         </TableCell>
                         <TableCell className="text-center">
-                          <span className="font-extrabold text-lg">{fn.totalScore}</span>
-                          <span className="text-[10px] text-muted-foreground">/10</span>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge className={`${priorityColor} border`}>{fn.priority}</Badge>
+                          {getDevBadge(fn.devDifficulty)}
                         </TableCell>
                         <TableCell className="text-center">
                           <span className="font-bold text-sm text-blue-700">{fn.devManDays}</span>
                         </TableCell>
                         <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">{fn.responsible}</TableCell>
+                        <TableCell className="hidden xl:table-cell">
+                          <p className="text-xs text-muted-foreground line-clamp-2">{fn.devNotes}</p>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -675,10 +653,8 @@ export default function FunctionOverviewPage() {
                         <TableHead className="w-10">#</TableHead>
                         <TableHead>Function</TableHead>
                         <TableHead className="hidden md:table-cell">ผู้รับผิดชอบ</TableHead>
-                        <TableHead className="text-center">ความเสี่ยง</TableHead>
-                        <TableHead className="w-[110px]">Risk</TableHead>
                         <TableHead className="text-center">ความยาก Dev</TableHead>
-                        <TableHead className="w-[110px]">Dev</TableHead>
+                        <TableHead className="w-[110px]">Dev Score</TableHead>
                         <TableHead className="text-center w-20">Man-Days</TableHead>
                         <TableHead className="hidden xl:table-cell">หมายเหตุ Dev</TableHead>
                       </TableRow>
@@ -705,12 +681,6 @@ export default function FunctionOverviewPage() {
                             </TableCell>
                             <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                               {fn.responsible}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {getRiskBadge(fn.riskLevel)}
-                            </TableCell>
-                            <TableCell>
-                              {getRiskBar(fn.riskScore)}
                             </TableCell>
                             <TableCell className="text-center">
                               {getDevBadge(fn.devDifficulty)}
@@ -745,9 +715,8 @@ export default function FunctionOverviewPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30">
-                    <TableHead>หมวดหมู่</TableHead>
+                     <TableHead>หมวดหมู่</TableHead>
                     <TableHead className="text-center">จำนวน Function</TableHead>
-                    <TableHead className="text-center">ความเสี่ยงเฉลี่ย</TableHead>
                     <TableHead className="text-center">ความยาก Dev เฉลี่ย</TableHead>
                     <TableHead className="text-center">Man-Days รวม</TableHead>
                   </TableRow>
@@ -755,11 +724,8 @@ export default function FunctionOverviewPage() {
                 <TableBody>
                   {categoryStats.map(cs => (
                     <TableRow key={cs.name}>
-                      <TableCell className="font-medium">{cs.name}</TableCell>
+                     <TableCell className="font-medium">{cs.name}</TableCell>
                       <TableCell className="text-center">{cs.count}</TableCell>
-                      <TableCell className="text-center">
-                        <span className="text-orange-600 font-semibold">{cs.avgRisk}/5</span>
-                      </TableCell>
                       <TableCell className="text-center">
                         <span className="text-violet-600 font-semibold">{cs.avgDev}/5</span>
                       </TableCell>
@@ -768,10 +734,9 @@ export default function FunctionOverviewPage() {
                       </TableCell>
                     </TableRow>
                   ))}
-                  <TableRow className="bg-muted/50 font-bold">
+                   <TableRow className="bg-muted/50 font-bold">
                     <TableCell>รวมทั้งหมด</TableCell>
                     <TableCell className="text-center">{functions.length}</TableCell>
-                    <TableCell className="text-center text-orange-600">{avgRisk}/5</TableCell>
                     <TableCell className="text-center text-violet-600">{avgDev}/5</TableCell>
                     <TableCell className="text-center text-blue-700 text-lg">{totalManDays} วัน</TableCell>
                   </TableRow>

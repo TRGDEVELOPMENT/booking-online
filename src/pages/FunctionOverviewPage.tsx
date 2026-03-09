@@ -751,10 +751,9 @@ export default function FunctionOverviewPage() {
                       </TableCell>
                     </TableRow>
                   ))}
-                  <TableRow className="bg-muted/50 font-bold">
+                   <TableRow className="bg-muted/50 font-bold">
                     <TableCell>รวมทั้งหมด</TableCell>
                     <TableCell className="text-center">{functions.length}</TableCell>
-                    <TableCell className="text-center text-orange-600">{avgRisk}/5</TableCell>
                     <TableCell className="text-center text-violet-600">{avgDev}/5</TableCell>
                     <TableCell className="text-center text-blue-700 text-lg">{totalManDays} วัน</TableCell>
                   </TableRow>

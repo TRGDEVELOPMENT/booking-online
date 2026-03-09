@@ -3,6 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+} from 'recharts';
+import {
   Table,
   TableBody,
   TableCell,
@@ -165,6 +168,96 @@ export default function FunctionOverviewPage() {
             <CardContent className="p-4 text-center">
               <p className="text-3xl font-bold text-green-600">{lowCount}</p>
               <p className="text-xs text-muted-foreground mt-1">ต่ำ</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Pie Chart - Risk Distribution */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">การกระจายความเสี่ยง (Pie Chart)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'สูงมาก (5/5)', value: criticalCount, color: '#dc2626' },
+                      { name: 'สูง (4/5)', value: highCount, color: '#ea580c' },
+                      { name: 'ปานกลาง (2-3/5)', value: mediumCount, color: '#ca8a04' },
+                      { name: 'ต่ำ (1/5)', value: lowCount, color: '#16a34a' },
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={4}
+                    dataKey="value"
+                    label={({ name, value }) => `${name}: ${value}`}
+                  >
+                    {[
+                      { color: '#dc2626' },
+                      { color: '#ea580c' },
+                      { color: '#ca8a04' },
+                      { color: '#16a34a' },
+                    ].map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Bar Chart - Risk by Category */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">คะแนนความเสี่ยงเฉลี่ยตามหมวด (Bar Chart)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart
+                  data={[
+                    {
+                      name: 'Workflow หลัก',
+                      avg: +(functions.filter(f => f.category === 'Workflow หลัก').reduce((s, f) => s + f.riskScore, 0) / functions.filter(f => f.category === 'Workflow หลัก').length).toFixed(1),
+                      count: functions.filter(f => f.category === 'Workflow หลัก').length,
+                    },
+                    {
+                      name: 'Workflow ยกเลิก',
+                      avg: +(functions.filter(f => f.category === 'Workflow ยกเลิก').reduce((s, f) => s + f.riskScore, 0) / functions.filter(f => f.category === 'Workflow ยกเลิก').length).toFixed(1),
+                      count: functions.filter(f => f.category === 'Workflow ยกเลิก').length,
+                    },
+                    {
+                      name: 'Master Data',
+                      avg: +(functions.filter(f => f.category === 'Master Data').reduce((s, f) => s + f.riskScore, 0) / functions.filter(f => f.category === 'Master Data').length).toFixed(1),
+                      count: functions.filter(f => f.category === 'Master Data').length,
+                    },
+                    {
+                      name: 'Reports',
+                      avg: +(functions.filter(f => f.category === 'Reports').reduce((s, f) => s + f.riskScore, 0) / functions.filter(f => f.category === 'Reports').length).toFixed(1),
+                      count: functions.filter(f => f.category === 'Reports').length,
+                    },
+                    {
+                      name: 'เอกสาร/ฟอร์ม',
+                      avg: +(functions.filter(f => f.category === 'เอกสาร/ฟอร์ม').reduce((s, f) => s + f.riskScore, 0) / functions.filter(f => f.category === 'เอกสาร/ฟอร์ม').length).toFixed(1),
+                      count: functions.filter(f => f.category === 'เอกสาร/ฟอร์ม').length,
+                    },
+                  ]}
+                  margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis domain={[0, 5]} tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(value: number, name: string) => [value, name === 'avg' ? 'ค่าเฉลี่ย' : 'จำนวน']} />
+                  <Legend formatter={(value) => value === 'avg' ? 'ความเสี่ยงเฉลี่ย' : 'จำนวน Function'} />
+                  <Bar dataKey="avg" fill="#ea580c" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>

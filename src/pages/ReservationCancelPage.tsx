@@ -305,16 +305,29 @@ const ReservationCancelPage = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => navigate(`/reservations/${reservation.id}/print`)}
-                        title="ดูรายละเอียด"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      {reservation.status !== "cancelled" && (
+                      {/* If cancel is in progress or cancelled, navigate to cancel detail */}
+                      {(reservation as any).cancel_request_status === "requested" || reservation.status === "cancelled" ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => navigate(`/reservations/${reservation.id}/cancel-detail`)}
+                          title="ดูรายละเอียดการยกเลิก"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => navigate(`/reservations/${reservation.id}/print`)}
+                          title="ดูรายละเอียด"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {reservation.status !== "cancelled" && !(reservation as any).cancel_request_status && (
                         <Button
                           variant="ghost"
                           size="icon"

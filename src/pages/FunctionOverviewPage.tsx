@@ -426,17 +426,23 @@ export default function FunctionOverviewPage() {
 
       <div className="p-6 space-y-6 max-w-7xl mx-auto">
         {/* Summary Cards Row 1 - Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card className="border-l-4 border-l-foreground">
             <CardContent className="p-4 text-center">
               <p className="text-3xl font-bold text-foreground">{functions.length}</p>
               <p className="text-xs text-muted-foreground mt-1">Function ทั้งหมด</p>
             </CardContent>
           </Card>
-          <Card className="border-l-4 border-l-orange-500">
+          <Card className="border-l-4 border-l-amber-500">
             <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-orange-600">{avgRisk}</p>
-              <p className="text-xs text-muted-foreground mt-1">ค่าเฉลี่ยความเสี่ยง</p>
+              <p className="text-3xl font-bold text-amber-600">{avgWeight}</p>
+              <p className="text-xs text-muted-foreground mt-1">Avg Weight Score /10</p>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-amber-700">
+            <CardContent className="p-4 text-center">
+              <p className="text-3xl font-bold text-amber-700">{totalWeight}<span className="text-lg">/{maxTotalWeight}</span></p>
+              <p className="text-xs text-muted-foreground mt-1">Total Weight Score</p>
             </CardContent>
           </Card>
           <Card className="border-l-4 border-l-violet-500">
@@ -453,31 +459,31 @@ export default function FunctionOverviewPage() {
           </Card>
         </div>
 
-        {/* Summary Cards Row 2 - Risk + Dev Difficulty breakdown */}
+        {/* Summary Cards Row 2 - Weight + Dev Difficulty breakdown */}
         <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
-          {/* Risk */}
+          {/* Weight */}
           <Card className="border-t-2 border-t-red-500">
             <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-red-600">{criticalCount}</p>
-              <p className="text-[10px] text-muted-foreground">เสี่ยงสูงมาก</p>
+              <p className="text-2xl font-bold text-red-600">{wCriticalCount}</p>
+              <p className="text-[10px] text-muted-foreground">🔴 Critical (1)</p>
             </CardContent>
           </Card>
           <Card className="border-t-2 border-t-orange-500">
             <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-orange-600">{highCount}</p>
-              <p className="text-[10px] text-muted-foreground">เสี่ยงสูง</p>
+              <p className="text-2xl font-bold text-orange-600">{wMajorCount}</p>
+              <p className="text-[10px] text-muted-foreground">🟠 Major (4)</p>
             </CardContent>
           </Card>
-          <Card className="border-t-2 border-t-yellow-500">
+          <Card className="border-t-2 border-t-blue-500">
             <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-yellow-600">{mediumCount}</p>
-              <p className="text-[10px] text-muted-foreground">เสี่ยงปานกลาง</p>
+              <p className="text-2xl font-bold text-blue-600">{wMinorCount}</p>
+              <p className="text-[10px] text-muted-foreground">🔵 Minor (7)</p>
             </CardContent>
           </Card>
-          <Card className="border-t-2 border-t-green-500">
+          <Card className="border-t-2 border-t-emerald-500">
             <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-green-600">{lowCount}</p>
-              <p className="text-[10px] text-muted-foreground">เสี่ยงต่ำ</p>
+              <p className="text-2xl font-bold text-emerald-600">{wCompleteCount}</p>
+              <p className="text-[10px] text-muted-foreground">✅ Complete (10)</p>
             </CardContent>
           </Card>
           {/* Dev */}

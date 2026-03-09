@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { companies, branches } from '@/data/mockData';
 import type { DatabaseReservation } from '@/types/database-reservation';
-import bizrLogo from '@/assets/bizr-logo.jpg';
+import bizrLogo from '@/assets/bizpk-logo.png';
 
 export default function ReservationPrint() {
   const { id } = useParams<{ id: string }>();

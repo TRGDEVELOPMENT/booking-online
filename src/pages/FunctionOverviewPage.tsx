@@ -190,6 +190,57 @@ const functions: FunctionItem[] = [
     perf: { responseTime: '<5s', concurrentUsers: '3-5', availability: '95%', dataVolume: 'ต่ำ', score: 2, level: 'low', notes: 'PDF Generation — ใช้งานน้อย' } },
 ];
 
+// Acceptance Scoring Data: finished status + defect counts per function
+const acceptanceData: Record<number, { finished: boolean; defects: { critical: number; major: number; minor: number } }> = {
+  1: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // สร้างสัญญาจอง
+  2: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // ยืนยันสัญญาจอง (OTP/Link)
+  3: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // ตรวจสอบการชำระเงิน
+  4: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // ตรวจสอบรายละเอียดใบจอง
+  5: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // พิจารณาอนุมัติ
+  6: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // พิมพ์/ลงนาม/ส่งลูกค้า
+  7: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // บันทึกขอยกเลิก/บอกเลิก
+  8: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // อนุมัติยกเลิกใบจอง
+  9: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // ชุดเอกสารการยกเลิกจอง
+  10: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master ยี่ห้อ
+  11: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master รุ่น (Model)
+  12: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master รุ่นย่อย
+  13: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master สี
+  14: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master ขนาดเครื่องยนต์
+  15: { finished: false, defects: { critical: 0, major: 0, minor: 0 } }, // จัดการ Master ประเภทเชื้อเพลิง
+  16: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master ราคาตั้ง
+  17: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master ของแถม
+  18: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master อุปกรณ์เสริม
+  19: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master สิทธิประโยชน์
+  20: { finished: false, defects: { critical: 0, major: 0, minor: 0 } }, // จัดการ Master คำนำหน้า
+  21: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // รายงานใบจองประจำเดือน
+  22: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // รายงานใบจองที่ยังไม่อนุมัติ
+  23: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // รายงานยกเลิกใบจอง
+  24: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // พิมพ์สัญญาจอง
+  25: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // พิมพ์ยกเลิกสัญญาจอง
+};
+
+const MAX_SCORE = 10;
+const DEFECT_WEIGHTS = { critical: 10, major: 5, minor: 2 };
+
+const calcAcceptanceTotal = (fnNo: number): number => {
+  const data = acceptanceData[fnNo];
+  if (!data || !data.finished) return 0;
+  const deduction = data.defects.critical * DEFECT_WEIGHTS.critical
+    + data.defects.major * DEFECT_WEIGHTS.major
+    + data.defects.minor * DEFECT_WEIGHTS.minor;
+  return Math.max(0, MAX_SCORE - deduction);
+};
+
+const acceptanceSorted = [...functions].sort((a, b) => {
+  const totalA = calcAcceptanceTotal(a.no);
+  const totalB = calcAcceptanceTotal(b.no);
+  return totalB - totalA || a.category.localeCompare(b.category);
+});
+
+const acceptanceGrandTotal = functions.reduce((sum, f) => sum + calcAcceptanceTotal(f.no), 0);
+const acceptanceMaxTotal = functions.length * MAX_SCORE;
+const acceptanceFinishedCount = functions.filter(f => acceptanceData[f.no]?.finished).length;
+
 const getRiskBadge = (level: RiskLevel) => {
   const config = riskConfig[level];
   return (
@@ -490,6 +541,39 @@ export default function FunctionOverviewPage() {
       ];
       XLSX.utils.book_append_sheet(wb, wsCat, categorySheetNames[cat] || cat);
     });
+
+    // Sheet: Acceptance Scoring
+    const acceptanceRows = acceptanceSorted.map((f, i) => {
+      const acc = acceptanceData[f.no] || { finished: false, defects: { critical: 0, major: 0, minor: 0 } };
+      return {
+        'ลำดับ': i + 1,
+        'Category': f.category,
+        'Functional List': f.name,
+        'Max Score': MAX_SCORE,
+        'Finish? (0/1)': acc.finished ? 1 : 0,
+        'Defect Critical (-10)': acc.defects.critical || '',
+        'Defect Major (-5)': acc.defects.major || '',
+        'Defect Minor (-2)': acc.defects.minor || '',
+        'Total': calcAcceptanceTotal(f.no),
+      };
+    });
+    acceptanceRows.push({
+      'ลำดับ': '' as any,
+      'Category': '',
+      'Functional List': '--- รวมทั้งหมด ---',
+      'Max Score': acceptanceMaxTotal as any,
+      'Finish? (0/1)': acceptanceFinishedCount as any,
+      'Defect Critical (-10)': '' as any,
+      'Defect Major (-5)': '' as any,
+      'Defect Minor (-2)': '' as any,
+      'Total': acceptanceGrandTotal,
+    });
+    const wsAcceptance = XLSX.utils.json_to_sheet(acceptanceRows);
+    wsAcceptance['!cols'] = [
+      { wch: 6 }, { wch: 18 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
+      { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 10 },
+    ];
+    XLSX.utils.book_append_sheet(wb, wsAcceptance, 'Acceptance Score');
 
     XLSX.writeFile(wb, 'FunctionOverview_ScoreMap.xlsx');
   };
@@ -816,6 +900,127 @@ export default function FunctionOverviewPage() {
             </div>
             <div className="mt-3 text-xs text-muted-foreground text-right">
               Avg Performance Score: <span className="font-bold">{avgPerf}/5</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Acceptance Scoring Table */}
+        <Card className="border-2 border-green-300/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CheckCircle2 className="w-5 h-5 text-green-600" />
+              Acceptance Scoring — ตารางให้คะแนนตอบรับ (Finish + Defect)
+              <Badge variant="outline" className="ml-2 text-green-700 border-green-400">
+                {acceptanceGrandTotal}/{acceptanceMaxTotal} คะแนน
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {/* Scoring Guide */}
+            <div className="mx-6 mb-4 p-4 rounded-lg bg-muted/30 border">
+              <p className="text-sm font-semibold text-foreground mb-3">📐 หลักการให้คะแนน Acceptance Scoring</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                  <p className="font-semibold text-blue-700 mb-1">✅ Finish? (เสร็จสิ้น)</p>
+                  <p className="text-blue-600">Yes = 1 (ฟังก์ชันพัฒนาเสร็จแล้ว)</p>
+                  <p className="text-blue-600">No = 0 (ยังไม่เสร็จ → คะแนน = 0)</p>
+                </div>
+                <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                  <p className="font-semibold text-red-700 mb-1">🐛 Defect (ข้อบกพร่อง)</p>
+                  <div className="space-y-1 text-red-600">
+                    <p><span className="font-bold text-red-700">Critical</span> = หัก 10 คะแนน (ระบบล่ม/เงินสูญหาย)</p>
+                    <p><span className="font-bold text-orange-700">Major</span> = หัก 5 คะแนน (ฟีเจอร์ใช้ไม่ได้)</p>
+                    <p><span className="font-bold text-yellow-700">Minor</span> = หัก 2 คะแนน (บกพร่องเล็กน้อย)</p>
+                  </div>
+                </div>
+                <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                  <p className="font-semibold text-emerald-700 mb-1">📊 สูตรคำนวณ Total</p>
+                  <p className="text-emerald-600 font-mono text-[11px]">Total = Max Score × Finish</p>
+                  <p className="text-emerald-600 font-mono text-[11px]">− (Critical×10 + Major×5 + Minor×2)</p>
+                  <p className="text-emerald-600 mt-1">Max Score = {MAX_SCORE} ต่อ Function</p>
+                  <p className="text-emerald-600">Max Total = {acceptanceMaxTotal} ({functions.length} × {MAX_SCORE})</p>
+                </div>
+              </div>
+            </div>
+            {/* Table */}
+            <div className="border rounded-lg overflow-hidden mx-6 mb-6">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-green-50/50">
+                    <TableHead rowSpan={2} className="w-10 border-r align-middle text-center">ลำดับ</TableHead>
+                    <TableHead rowSpan={2} className="border-r align-middle">Category</TableHead>
+                    <TableHead rowSpan={2} className="border-r align-middle">Functional List</TableHead>
+                    <TableHead rowSpan={2} className="w-16 border-r align-middle text-center">Max<br/>Score</TableHead>
+                    <TableHead rowSpan={2} className="w-16 border-r align-middle text-center">Finish?<br/><span className="text-[10px] text-muted-foreground">No=0 / Yes=1</span></TableHead>
+                    <TableHead colSpan={3} className="text-center border-r bg-red-50/60">Defect</TableHead>
+                    <TableHead rowSpan={2} className="w-20 align-middle text-center font-bold">Total<br/><span className="text-[10px] text-muted-foreground">(Max {acceptanceMaxTotal})</span></TableHead>
+                  </TableRow>
+                  <TableRow className="bg-red-50/40">
+                    <TableHead className="text-center w-16 text-red-700 font-bold">Critical<br/><span className="text-[10px]">10</span></TableHead>
+                    <TableHead className="text-center w-16 text-orange-700 font-bold">Major<br/><span className="text-[10px]">5</span></TableHead>
+                    <TableHead className="text-center w-16 border-r text-yellow-700 font-bold">Minor<br/><span className="text-[10px]">2</span></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {acceptanceSorted.map((fn, idx) => {
+                    const acc = acceptanceData[fn.no] || { finished: false, defects: { critical: 0, major: 0, minor: 0 } };
+                    const total = calcAcceptanceTotal(fn.no);
+                    const rowBg = !acc.finished ? 'bg-gray-100/50' : total < 5 ? 'bg-red-50/30' : total < 8 ? 'bg-yellow-50/30' : '';
+                    return (
+                      <TableRow key={fn.no} className={rowBg}>
+                        <TableCell className="text-center font-bold text-muted-foreground border-r">{idx + 1}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground border-r">{fn.category}</TableCell>
+                        <TableCell className="border-r">
+                          <div className="flex items-center gap-2">
+                            <fn.icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <span className="font-medium text-sm">{fn.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center border-r font-semibold">{MAX_SCORE}</TableCell>
+                        <TableCell className="text-center border-r">
+                          {acc.finished ? (
+                            <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-300">1</Badge>
+                          ) : (
+                            <Badge className="bg-gray-200 text-gray-600 border border-gray-300">0</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {acc.defects.critical > 0 ? (
+                            <span className="font-bold text-red-700">{acc.defects.critical}</span>
+                          ) : <span className="text-muted-foreground">-</span>}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {acc.defects.major > 0 ? (
+                            <span className="font-bold text-orange-700">{acc.defects.major}</span>
+                          ) : <span className="text-muted-foreground">-</span>}
+                        </TableCell>
+                        <TableCell className="text-center border-r">
+                          {acc.defects.minor > 0 ? (
+                            <span className="font-bold text-yellow-700">{acc.defects.minor}</span>
+                          ) : <span className="text-muted-foreground">-</span>}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className={`font-bold text-lg ${total >= 8 ? 'text-emerald-700' : total >= 5 ? 'text-yellow-700' : total > 0 ? 'text-red-700' : 'text-gray-400'}`}>
+                            {total}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {/* Summary Row */}
+                  <TableRow className="bg-muted/50 font-bold border-t-2">
+                    <TableCell colSpan={3} className="text-right border-r">รวมทั้งหมด ({acceptanceFinishedCount}/{functions.length} เสร็จ)</TableCell>
+                    <TableCell className="text-center border-r">{acceptanceMaxTotal}</TableCell>
+                    <TableCell className="text-center border-r">{acceptanceFinishedCount}</TableCell>
+                    <TableCell className="text-center">{functions.reduce((s, f) => s + (acceptanceData[f.no]?.defects.critical || 0), 0) || '-'}</TableCell>
+                    <TableCell className="text-center">{functions.reduce((s, f) => s + (acceptanceData[f.no]?.defects.major || 0), 0) || '-'}</TableCell>
+                    <TableCell className="text-center border-r">{functions.reduce((s, f) => s + (acceptanceData[f.no]?.defects.minor || 0), 0) || '-'}</TableCell>
+                    <TableCell className="text-center">
+                      <span className="text-xl font-bold text-emerald-700">{acceptanceGrandTotal}</span>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
           </CardContent>
         </Card>

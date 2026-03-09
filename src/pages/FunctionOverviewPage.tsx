@@ -1,9 +1,9 @@
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from 'recharts';
 import {
   Table,
@@ -31,9 +31,14 @@ import {
   Database,
   BarChart3,
   FileOutput,
+  Code2,
+  Clock,
+  Zap,
+  Gauge,
 } from 'lucide-react';
 
 type RiskLevel = 'critical' | 'high' | 'medium' | 'low';
+type DevDifficulty = 'very_hard' | 'hard' | 'medium' | 'easy';
 
 interface FunctionItem {
   no: number;
@@ -45,6 +50,10 @@ interface FunctionItem {
   riskScore: number;
   riskReason: string;
   icon: React.ElementType;
+  devDifficulty: DevDifficulty;
+  devScore: number; // 1-5
+  devManDays: number;
+  devNotes: string;
 }
 
 const riskConfig: Record<RiskLevel, { label: string; color: string; bgColor: string; borderColor: string }> = {
@@ -54,41 +63,73 @@ const riskConfig: Record<RiskLevel, { label: string; color: string; bgColor: str
   low: { label: 'ต่ำ', color: 'text-green-700', bgColor: 'bg-green-100', borderColor: 'border-green-300' },
 };
 
+const devConfig: Record<DevDifficulty, { label: string; color: string; bgColor: string; borderColor: string; emoji: string }> = {
+  very_hard: { label: 'ยากมาก', color: 'text-purple-700', bgColor: 'bg-purple-100', borderColor: 'border-purple-300', emoji: '🔴' },
+  hard: { label: 'ยาก', color: 'text-blue-700', bgColor: 'bg-blue-100', borderColor: 'border-blue-300', emoji: '🟠' },
+  medium: { label: 'ปานกลาง', color: 'text-cyan-700', bgColor: 'bg-cyan-100', borderColor: 'border-cyan-300', emoji: '🟡' },
+  easy: { label: 'ง่าย', color: 'text-emerald-700', bgColor: 'bg-emerald-100', borderColor: 'border-emerald-300', emoji: '🟢' },
+};
+
 const functions: FunctionItem[] = [
   // Workflow หลัก
-  { no: 1, name: 'สร้างสัญญาจอง', category: 'Workflow หลัก', responsible: 'ที่ปรึกษาการขาย', description: 'เลือกสาขา/BU, กรอกข้อมูลลูกค้า, เลือกรถ/สี/ของแถม, สถานะ Draft', riskLevel: 'medium', riskScore: 3, riskReason: 'ข้อมูลผิดพลาดแก้ไขได้ก่อนยืนยัน', icon: FileText },
-  { no: 2, name: 'ยืนยันสัญญาจอง (OTP/Link)', category: 'Workflow หลัก', responsible: 'ลูกค้า / ที่ปรึกษาการขาย', description: 'ส่ง OTP หรือ Link ให้ลูกค้ายืนยัน, ระบบ Stamp เวลา', riskLevel: 'high', riskScore: 4, riskReason: 'ผูกมัดทางกฎหมาย — ต้องมีหลักฐานยืนยันตัวตน', icon: UserCheck },
-  { no: 3, name: 'ตรวจสอบการชำระเงิน', category: 'Workflow หลัก', responsible: 'แคชเชียร์', description: 'แนบ Slip, บันทึกช่องทางชำระ, ยืนยันรับเงินจอง, Stamp วันที่+เวลา', riskLevel: 'critical', riskScore: 5, riskReason: 'เกี่ยวข้องกับเงินโดยตรง — ผิดพลาดสูญเสียรายได้', icon: CreditCard },
-  { no: 4, name: 'ตรวจสอบรายละเอียดใบจอง', category: 'Workflow หลัก', responsible: 'หัวหน้าทีมขาย', description: 'ตรวจสอบความถูกต้องรายละเอียดทั้งหมด, Lock Fields สำคัญ', riskLevel: 'medium', riskScore: 3, riskReason: 'จุดตรวจสอบก่อนอนุมัติ แก้ไขได้', icon: ClipboardCheck },
-  { no: 5, name: 'พิจารณาอนุมัติ', category: 'Workflow หลัก', responsible: 'ผู้จัดการฝ่ายขาย', description: 'อนุมัติใบจอง หรือ ปฏิเสธ + Comment', riskLevel: 'high', riskScore: 4, riskReason: 'การตัดสินใจผูกมัดบริษัท ส่งผลต่อรายได้/margin', icon: Stamp },
-  { no: 6, name: 'พิมพ์/ลงนาม/ส่งลูกค้า', category: 'Workflow หลัก', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF, ลงนามบนกระดาษ/e-Sign', riskLevel: 'low', riskScore: 2, riskReason: 'เป็นขั้นตอนท้าย ข้อมูลผ่านการยืนยันแล้ว', icon: Printer },
+  { no: 1, name: 'สร้างสัญญาจอง', category: 'Workflow หลัก', responsible: 'ที่ปรึกษาการขาย', description: 'เลือกสาขา/BU, กรอกข้อมูลลูกค้า, เลือกรถ/สี/ของแถม, สถานะ Draft', riskLevel: 'medium', riskScore: 3, riskReason: 'ข้อมูลผิดพลาดแก้ไขได้ก่อนยืนยัน', icon: FileText,
+    devDifficulty: 'hard', devScore: 4, devManDays: 3.0, devNotes: 'ฟอร์มซับซ้อน มี Cascade Dropdown (Model→SubModel→Color), คำนวณราคา, ค้นหาลูกค้า, ของแถม/อุปกรณ์' },
+  { no: 2, name: 'ยืนยันสัญญาจอง (OTP/Link)', category: 'Workflow หลัก', responsible: 'ลูกค้า / ที่ปรึกษาการขาย', description: 'ส่ง OTP หรือ Link ให้ลูกค้ายืนยัน, ระบบ Stamp เวลา', riskLevel: 'high', riskScore: 4, riskReason: 'ผูกมัดทางกฎหมาย — ต้องมีหลักฐานยืนยันตัวตน', icon: UserCheck,
+    devDifficulty: 'very_hard', devScore: 5, devManDays: 2.0, devNotes: 'ต้องมี OTP Generation, SMS/Email Integration, Token Management, Expiry Logic, Retry/Lock mechanism' },
+  { no: 3, name: 'ตรวจสอบการชำระเงิน', category: 'Workflow หลัก', responsible: 'แคชเชียร์', description: 'แนบ Slip, บันทึกช่องทางชำระ, ยืนยันรับเงินจอง, Stamp วันที่+เวลา', riskLevel: 'critical', riskScore: 5, riskReason: 'เกี่ยวข้องกับเงินโดยตรง — ผิดพลาดสูญเสียรายได้', icon: CreditCard,
+    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'File Upload (Slip), Role-based Access, Stamp Logic, Validation ช่องทางชำระ' },
+  { no: 4, name: 'ตรวจสอบรายละเอียดใบจอง', category: 'Workflow หลัก', responsible: 'หัวหน้าทีมขาย', description: 'ตรวจสอบความถูกต้องรายละเอียดทั้งหมด, Lock Fields สำคัญ', riskLevel: 'medium', riskScore: 3, riskReason: 'จุดตรวจสอบก่อนอนุมัติ แก้ไขได้', icon: ClipboardCheck,
+    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Read-only view + Review action, Comment field, Status transition, Role check' },
+  { no: 5, name: 'พิจารณาอนุมัติ', category: 'Workflow หลัก', responsible: 'ผู้จัดการฝ่ายขาย', description: 'อนุมัติใบจอง หรือ ปฏิเสธ + Comment', riskLevel: 'high', riskScore: 4, riskReason: 'การตัดสินใจผูกมัดบริษัท ส่งผลต่อรายได้/margin', icon: Stamp,
+    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Approve/Reject action, Comment, Timestamp, Status transition logic' },
+  { no: 6, name: 'พิมพ์/ลงนาม/ส่งลูกค้า', category: 'Workflow หลัก', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF, ลงนามบนกระดาษ/e-Sign', riskLevel: 'low', riskScore: 2, riskReason: 'เป็นขั้นตอนท้าย ข้อมูลผ่านการยืนยันแล้ว', icon: Printer,
+    devDifficulty: 'hard', devScore: 4, devManDays: 2.0, devNotes: 'PDF Generation ตามแบบฟอร์มบริษัท, Layout ซับซ้อน, Print Preview, ต้อง Pixel-perfect' },
 
   // Workflow ยกเลิก
-  { no: 7, name: 'บันทึกขอยกเลิก/บอกเลิก', category: 'Workflow ยกเลิก', responsible: 'ที่ปรึกษาการขาย', description: 'ทำคำร้องขอยกเลิก แนบหนังสือ/ไฟล์ เลือกเลขที่ใบจอง', riskLevel: 'high', riskScore: 4, riskReason: 'เกี่ยวข้องกับการคืนเงินและข้อพิพาททางกฎหมาย', icon: Ban },
-  { no: 8, name: 'อนุมัติยกเลิกใบจอง', category: 'Workflow ยกเลิก', responsible: 'ผู้จัดการฝ่ายขาย', description: 'พิจารณาอนุมัติยกเลิก', riskLevel: 'critical', riskScore: 5, riskReason: 'สูญเสียรายได้ทันที + อาจเกิดข้อพิพาทกับลูกค้า', icon: Gavel },
-  { no: 9, name: 'ชุดเอกสารการยกเลิกจอง', category: 'Workflow ยกเลิก', responsible: 'แคชเชียร์', description: 'ออกชุดเอกสารยกเลิก + Attach Files', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารต้องถูกต้องตามกฎหมาย', icon: FolderArchive },
+  { no: 7, name: 'บันทึกขอยกเลิก/บอกเลิก', category: 'Workflow ยกเลิก', responsible: 'ที่ปรึกษาการขาย', description: 'ทำคำร้องขอยกเลิก แนบหนังสือ/ไฟล์ เลือกเลขที่ใบจอง', riskLevel: 'high', riskScore: 4, riskReason: 'เกี่ยวข้องกับการคืนเงินและข้อพิพาททางกฎหมาย', icon: Ban,
+    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'Multi-step workflow, File upload, ค้นหาใบจอง, Validation เหตุผล, Status transition' },
+  { no: 8, name: 'อนุมัติยกเลิกใบจอง', category: 'Workflow ยกเลิก', responsible: 'ผู้จัดการฝ่ายขาย', description: 'พิจารณาอนุมัติยกเลิก', riskLevel: 'critical', riskScore: 5, riskReason: 'สูญเสียรายได้ทันที + อาจเกิดข้อพิพาทกับลูกค้า', icon: Gavel,
+    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Review + Approve/Reject, Status transition, คล้ายกับ F5 แต่เป็น Cancel flow' },
+  { no: 9, name: 'ชุดเอกสารการยกเลิกจอง', category: 'Workflow ยกเลิก', responsible: 'แคชเชียร์', description: 'ออกชุดเอกสารยกเลิก + Attach Files', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารต้องถูกต้องตามกฎหมาย', icon: FolderArchive,
+    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'PDF Generation (Cancel Form), Layout เฉพาะ, รวมข้อมูลจากหลาย Section' },
 
   // Master Data
-  { no: 10, name: 'จัดการ Master ยี่ห้อ', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ยี่ห้อรถ', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน แก้ไขง่าย', icon: Database },
-  { no: 11, name: 'จัดการ Master รุ่น (Model)', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD รุ่นรถ', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อการเลือกรถในใบจอง', icon: Database },
-  { no: 12, name: 'จัดการ Master รุ่นย่อย', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD รุ่นย่อย + ผูก Model', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อราคาและสเปค', icon: Database },
-  { no: 13, name: 'จัดการ Master สี', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD สี + ผูก Model/Sub Model', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database },
-  { no: 14, name: 'จัดการ Master ขนาดเครื่องยนต์', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ขนาดเครื่อง', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database },
-  { no: 15, name: 'จัดการ Master ประเภทเชื้อเพลิง', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ประเภทเชื้อเพลิง', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database },
-  { no: 16, name: 'จัดการ Master ราคาตั้ง', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ราคามาตรฐาน ผูก Model+Sub Model', riskLevel: 'high', riskScore: 4, riskReason: 'ส่งผลต่อราคาขายและ margin โดยตรง', icon: Database },
-  { no: 17, name: 'จัดการ Master ของแถม', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ของแถม + มูลค่า', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อต้นทุนทางอ้อม', icon: Database },
-  { no: 18, name: 'จัดการ Master อุปกรณ์เสริม', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD อุปกรณ์เสริม + มูลค่า', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อต้นทุนทางอ้อม', icon: Database },
-  { no: 19, name: 'จัดการ Master สิทธิประโยชน์', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD สิทธิประโยชน์ + มูลค่า', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อต้นทุนทางอ้อม', icon: Database },
-  { no: 20, name: 'จัดการ Master คำนำหน้า', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD คำนำหน้าชื่อ', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database },
+  { no: 10, name: 'จัดการ Master ยี่ห้อ', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ยี่ห้อรถ', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน แก้ไขง่าย', icon: Database,
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน, Dialog เพิ่ม/แก้ไข, ตาราง + Search' },
+  { no: 11, name: 'จัดการ Master รุ่น (Model)', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD รุ่นรถ', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อการเลือกรถในใบจอง', icon: Database,
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน เหมือน F10' },
+  { no: 12, name: 'จัดการ Master รุ่นย่อย', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD รุ่นย่อย + ผูก Model', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อราคาและสเปค', icon: Database,
+    devDifficulty: 'medium', devScore: 2, devManDays: 0.5, devNotes: 'CRUD + Dropdown เลือก Model, Foreign key relationship' },
+  { no: 13, name: 'จัดการ Master สี', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD สี + ผูก Model/Sub Model', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
+    devDifficulty: 'medium', devScore: 2, devManDays: 0.5, devNotes: 'CRUD + Color Picker + ผูก Model/SubModel' },
+  { no: 14, name: 'จัดการ Master ขนาดเครื่องยนต์', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ขนาดเครื่อง', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน' },
+  { no: 15, name: 'จัดการ Master ประเภทเชื้อเพลิง', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ประเภทเชื้อเพลิง', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน' },
+  { no: 16, name: 'จัดการ Master ราคาตั้ง', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ราคามาตรฐาน ผูก Model+Sub Model', riskLevel: 'high', riskScore: 4, riskReason: 'ส่งผลต่อราคาขายและ margin โดยตรง', icon: Database,
+    devDifficulty: 'medium', devScore: 3, devManDays: 0.5, devNotes: 'CRUD + Cascade Dropdown (Model→SubModel), Validation ราคา' },
+  { no: 17, name: 'จัดการ Master ของแถม', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ของแถม + มูลค่า', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อต้นทุนทางอ้อม', icon: Database,
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน + มูลค่า' },
+  { no: 18, name: 'จัดการ Master อุปกรณ์เสริม', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD อุปกรณ์เสริม + มูลค่า', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อต้นทุนทางอ้อม', icon: Database,
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน + มูลค่า' },
+  { no: 19, name: 'จัดการ Master สิทธิประโยชน์', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD สิทธิประโยชน์ + มูลค่า', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อต้นทุนทางอ้อม', icon: Database,
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน + มูลค่า' },
+  { no: 20, name: 'จัดการ Master คำนำหน้า', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD คำนำหน้าชื่อ', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
+    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน' },
 
   // Reports
-  { no: 21, name: 'รายงานใบจองประจำเดือน', category: 'Reports', responsible: 'ทุกบทบาท', description: 'สรุปใบจองตาม period, สถานะ, ยอดเงิน', riskLevel: 'medium', riskScore: 3, riskReason: 'ใช้ประกอบการตัดสินใจทางธุรกิจ', icon: BarChart3 },
-  { no: 22, name: 'รายงานใบจองที่ยังไม่อนุมัติ', category: 'Reports', responsible: 'ผู้จัดการฝ่ายขาย', description: 'แสดงรายการค้างอนุมัติ เพื่อ follow up', riskLevel: 'medium', riskScore: 3, riskReason: 'ถ้าไม่ follow up อาจสูญเสียการขาย', icon: BarChart3 },
-  { no: 23, name: 'รายงานยกเลิกใบจอง', category: 'Reports', responsible: 'ผู้จัดการฝ่ายขาย', description: 'สรุปรายการที่ถูกยกเลิก + เหตุผล', riskLevel: 'medium', riskScore: 3, riskReason: 'ใช้วิเคราะห์สาเหตุการยกเลิก', icon: BarChart3 },
+  { no: 21, name: 'รายงานใบจองประจำเดือน', category: 'Reports', responsible: 'ทุกบทบาท', description: 'สรุปใบจองตาม period, สถานะ, ยอดเงิน', riskLevel: 'medium', riskScore: 3, riskReason: 'ใช้ประกอบการตัดสินใจทางธุรกิจ', icon: BarChart3,
+    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Query Aggregation, Date Filter, Chart, Export Excel' },
+  { no: 22, name: 'รายงานใบจองที่ยังไม่อนุมัติ', category: 'Reports', responsible: 'ผู้จัดการฝ่ายขาย', description: 'แสดงรายการค้างอนุมัติ เพื่อ follow up', riskLevel: 'medium', riskScore: 3, riskReason: 'ถ้าไม่ follow up อาจสูญเสียการขาย', icon: BarChart3,
+    devDifficulty: 'easy', devScore: 2, devManDays: 0.5, devNotes: 'Filter ตามสถานะ, ตาราง + Sorting' },
+  { no: 23, name: 'รายงานยกเลิกใบจอง', category: 'Reports', responsible: 'ผู้จัดการฝ่ายขาย', description: 'สรุปรายการที่ถูกยกเลิก + เหตุผล', riskLevel: 'medium', riskScore: 3, riskReason: 'ใช้วิเคราะห์สาเหตุการยกเลิก', icon: BarChart3,
+    devDifficulty: 'easy', devScore: 2, devManDays: 0.5, devNotes: 'Filter + ตาราง, คล้าย F22' },
 
   // Forms
-  { no: 24, name: 'พิมพ์สัญญาจอง', category: 'เอกสาร/ฟอร์ม', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF สัญญาจองตามแบบฟอร์มบริษัท', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารที่มีผลทางกฎหมาย', icon: FileOutput },
-  { no: 25, name: 'พิมพ์ยกเลิกสัญญาจอง', category: 'เอกสาร/ฟอร์ม', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF หนังสือบอกเลิก/ยกเลิกสัญญา', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารที่มีผลทางกฎหมาย', icon: FileOutput },
+  { no: 24, name: 'พิมพ์สัญญาจอง', category: 'เอกสาร/ฟอร์ม', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF สัญญาจองตามแบบฟอร์มบริษัท', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารที่มีผลทางกฎหมาย', icon: FileOutput,
+    devDifficulty: 'hard', devScore: 4, devManDays: 2.0, devNotes: 'PDF Layout ตามแบบฟอร์มจริง, Pixel-perfect, หลายหน้า, รองรับหลายบริษัท' },
+  { no: 25, name: 'พิมพ์ยกเลิกสัญญาจอง', category: 'เอกสาร/ฟอร์ม', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF หนังสือบอกเลิก/ยกเลิกสัญญา', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารที่มีผลทางกฎหมาย', icon: FileOutput,
+    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'PDF Layout เฉพาะ Cancel Form, คล้าย F24 แต่แบบฟอร์มต่าง' },
 ];
 
 const getRiskBadge = (level: RiskLevel) => {
@@ -100,7 +141,16 @@ const getRiskBadge = (level: RiskLevel) => {
   );
 };
 
-const getRiskBar = (score: number) => {
+const getDevBadge = (level: DevDifficulty) => {
+  const config = devConfig[level];
+  return (
+    <Badge className={`${config.bgColor} ${config.color} ${config.borderColor} border`}>
+      {config.emoji} {config.label}
+    </Badge>
+  );
+};
+
+const getRiskBar = (score: number, maxScore = 5) => {
   const colors: Record<number, string> = {
     1: 'bg-green-500',
     2: 'bg-yellow-500',
@@ -109,7 +159,28 @@ const getRiskBar = (score: number) => {
     5: 'bg-red-500',
   };
   return (
-    <div className="flex items-center gap-2 min-w-[120px]">
+    <div className="flex items-center gap-2 min-w-[100px]">
+      <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${colors[score] || 'bg-muted-foreground'}`}
+          style={{ width: `${(score / maxScore) * 100}%` }}
+        />
+      </div>
+      <span className="text-xs font-bold text-muted-foreground w-6 text-right">{score}/{maxScore}</span>
+    </div>
+  );
+};
+
+const getDevBar = (score: number) => {
+  const colors: Record<number, string> = {
+    1: 'bg-emerald-500',
+    2: 'bg-cyan-500',
+    3: 'bg-blue-500',
+    4: 'bg-violet-500',
+    5: 'bg-purple-600',
+  };
+  return (
+    <div className="flex items-center gap-2 min-w-[100px]">
       <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${colors[score] || 'bg-muted-foreground'}`}
@@ -130,80 +201,139 @@ export default function FunctionOverviewPage() {
   const lowCount = functions.filter(f => f.riskLevel === 'low').length;
   const avgRisk = (functions.reduce((sum, f) => sum + f.riskScore, 0) / functions.length).toFixed(1);
 
+  const veryHardCount = functions.filter(f => f.devDifficulty === 'very_hard').length;
+  const hardCount = functions.filter(f => f.devDifficulty === 'hard').length;
+  const devMediumCount = functions.filter(f => f.devDifficulty === 'medium').length;
+  const easyCount = functions.filter(f => f.devDifficulty === 'easy').length;
+  const avgDev = (functions.reduce((sum, f) => sum + f.devScore, 0) / functions.length).toFixed(1);
+  const totalManDays = functions.reduce((sum, f) => sum + f.devManDays, 0);
+
+  const categoryStats = categories.map(cat => {
+    const fns = functions.filter(f => f.category === cat);
+    return {
+      name: cat,
+      avgRisk: +(fns.reduce((s, f) => s + f.riskScore, 0) / fns.length).toFixed(1),
+      avgDev: +(fns.reduce((s, f) => s + f.devScore, 0) / fns.length).toFixed(1),
+      totalDays: +fns.reduce((s, f) => s + f.devManDays, 0).toFixed(1),
+      count: fns.length,
+    };
+  });
+
   return (
     <div className="space-y-6">
       <Header
         title="Function Overview"
-        subtitle="ภาพรวม Function ทั้งหมดของระบบพร้อมน้ำหนักความเสี่ยงทาง Business"
+        subtitle="ภาพรวม Function ทั้งหมด — ความเสี่ยงทาง Business + ความยากในการพัฒนา"
       />
 
       <div className="p-6 space-y-6 max-w-7xl mx-auto">
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {/* Summary Cards Row 1 - Overview */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="border-l-4 border-l-foreground">
             <CardContent className="p-4 text-center">
               <p className="text-3xl font-bold text-foreground">{functions.length}</p>
               <p className="text-xs text-muted-foreground mt-1">Function ทั้งหมด</p>
             </CardContent>
           </Card>
-          <Card className="border-l-4 border-l-red-500">
-            <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-red-600">{criticalCount}</p>
-              <p className="text-xs text-muted-foreground mt-1">ความเสี่ยงสูงมาก</p>
-            </CardContent>
-          </Card>
           <Card className="border-l-4 border-l-orange-500">
             <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-orange-600">{highCount}</p>
-              <p className="text-xs text-muted-foreground mt-1">ความเสี่ยงสูง</p>
+              <p className="text-3xl font-bold text-orange-600">{avgRisk}</p>
+              <p className="text-xs text-muted-foreground mt-1">ค่าเฉลี่ยความเสี่ยง</p>
             </CardContent>
           </Card>
-          <Card className="border-l-4 border-l-yellow-500">
+          <Card className="border-l-4 border-l-violet-500">
             <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-yellow-600">{mediumCount}</p>
-              <p className="text-xs text-muted-foreground mt-1">ปานกลาง</p>
+              <p className="text-3xl font-bold text-violet-600">{avgDev}</p>
+              <p className="text-xs text-muted-foreground mt-1">ค่าเฉลี่ยความยาก Dev</p>
             </CardContent>
           </Card>
-          <Card className="border-l-4 border-l-green-500">
+          <Card className="border-l-4 border-l-blue-500">
             <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-green-600">{lowCount}</p>
-              <p className="text-xs text-muted-foreground mt-1">ต่ำ</p>
+              <p className="text-3xl font-bold text-blue-600">{totalManDays}</p>
+              <p className="text-xs text-muted-foreground mt-1">รวม Man-Days</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Summary Cards Row 2 - Risk + Dev Difficulty breakdown */}
+        <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
+          {/* Risk */}
+          <Card className="border-t-2 border-t-red-500">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-red-600">{criticalCount}</p>
+              <p className="text-[10px] text-muted-foreground">เสี่ยงสูงมาก</p>
+            </CardContent>
+          </Card>
+          <Card className="border-t-2 border-t-orange-500">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-orange-600">{highCount}</p>
+              <p className="text-[10px] text-muted-foreground">เสี่ยงสูง</p>
+            </CardContent>
+          </Card>
+          <Card className="border-t-2 border-t-yellow-500">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-yellow-600">{mediumCount}</p>
+              <p className="text-[10px] text-muted-foreground">เสี่ยงปานกลาง</p>
+            </CardContent>
+          </Card>
+          <Card className="border-t-2 border-t-green-500">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-green-600">{lowCount}</p>
+              <p className="text-[10px] text-muted-foreground">เสี่ยงต่ำ</p>
+            </CardContent>
+          </Card>
+          {/* Dev */}
+          <Card className="border-t-2 border-t-purple-600">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-purple-600">{veryHardCount}</p>
+              <p className="text-[10px] text-muted-foreground">Dev ยากมาก</p>
+            </CardContent>
+          </Card>
+          <Card className="border-t-2 border-t-violet-500">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-violet-600">{hardCount}</p>
+              <p className="text-[10px] text-muted-foreground">Dev ยาก</p>
+            </CardContent>
+          </Card>
+          <Card className="border-t-2 border-t-cyan-500">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-cyan-600">{devMediumCount}</p>
+              <p className="text-[10px] text-muted-foreground">Dev ปานกลาง</p>
+            </CardContent>
+          </Card>
+          <Card className="border-t-2 border-t-emerald-500">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-emerald-600">{easyCount}</p>
+              <p className="text-[10px] text-muted-foreground">Dev ง่าย</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Pie Chart - Risk Distribution */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">การกระจายความเสี่ยง (Pie Chart)</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-orange-500" />
+                การกระจายความเสี่ยง
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
                   <Pie
                     data={[
-                      { name: 'สูงมาก (5/5)', value: criticalCount, color: '#dc2626' },
-                      { name: 'สูง (4/5)', value: highCount, color: '#ea580c' },
-                      { name: 'ปานกลาง (2-3/5)', value: mediumCount, color: '#ca8a04' },
-                      { name: 'ต่ำ (1/5)', value: lowCount, color: '#16a34a' },
+                      { name: 'สูงมาก', value: criticalCount },
+                      { name: 'สูง', value: highCount },
+                      { name: 'ปานกลาง', value: mediumCount },
+                      { name: 'ต่ำ', value: lowCount },
                     ]}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={4}
-                    dataKey="value"
+                    cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={4} dataKey="value"
                     label={({ name, value }) => `${name}: ${value}`}
                   >
-                    {[
-                      { color: '#dc2626' },
-                      { color: '#ea580c' },
-                      { color: '#ca8a04' },
-                      { color: '#16a34a' },
-                    ].map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    {['#dc2626', '#ea580c', '#ca8a04', '#16a34a'].map((color, i) => (
+                      <Cell key={i} fill={color} />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -212,92 +342,127 @@ export default function FunctionOverviewPage() {
             </CardContent>
           </Card>
 
-          {/* Bar Chart - Risk by Category */}
+          {/* Pie Chart - Dev Difficulty Distribution */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">คะแนนความเสี่ยงเฉลี่ยตามหมวด (Bar Chart)</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-violet-500" />
+                การกระจายความยาก Dev
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart
-                  data={[
-                    {
-                      name: 'Workflow หลัก',
-                      avg: +(functions.filter(f => f.category === 'Workflow หลัก').reduce((s, f) => s + f.riskScore, 0) / functions.filter(f => f.category === 'Workflow หลัก').length).toFixed(1),
-                      count: functions.filter(f => f.category === 'Workflow หลัก').length,
-                    },
-                    {
-                      name: 'Workflow ยกเลิก',
-                      avg: +(functions.filter(f => f.category === 'Workflow ยกเลิก').reduce((s, f) => s + f.riskScore, 0) / functions.filter(f => f.category === 'Workflow ยกเลิก').length).toFixed(1),
-                      count: functions.filter(f => f.category === 'Workflow ยกเลิก').length,
-                    },
-                    {
-                      name: 'Master Data',
-                      avg: +(functions.filter(f => f.category === 'Master Data').reduce((s, f) => s + f.riskScore, 0) / functions.filter(f => f.category === 'Master Data').length).toFixed(1),
-                      count: functions.filter(f => f.category === 'Master Data').length,
-                    },
-                    {
-                      name: 'Reports',
-                      avg: +(functions.filter(f => f.category === 'Reports').reduce((s, f) => s + f.riskScore, 0) / functions.filter(f => f.category === 'Reports').length).toFixed(1),
-                      count: functions.filter(f => f.category === 'Reports').length,
-                    },
-                    {
-                      name: 'เอกสาร/ฟอร์ม',
-                      avg: +(functions.filter(f => f.category === 'เอกสาร/ฟอร์ม').reduce((s, f) => s + f.riskScore, 0) / functions.filter(f => f.category === 'เอกสาร/ฟอร์ม').length).toFixed(1),
-                      count: functions.filter(f => f.category === 'เอกสาร/ฟอร์ม').length,
-                    },
-                  ]}
-                  margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                  <YAxis domain={[0, 5]} tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(value: number, name: string) => [value, name === 'avg' ? 'ค่าเฉลี่ย' : 'จำนวน']} />
-                  <Legend formatter={(value) => value === 'avg' ? 'ความเสี่ยงเฉลี่ย' : 'จำนวน Function'} />
-                  <Bar dataKey="avg" fill="#ea580c" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                </BarChart>
+              <ResponsiveContainer width="100%" height={240}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'ยากมาก', value: veryHardCount },
+                      { name: 'ยาก', value: hardCount },
+                      { name: 'ปานกลาง', value: devMediumCount },
+                      { name: 'ง่าย', value: easyCount },
+                    ]}
+                    cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={4} dataKey="value"
+                    label={({ name, value }) => `${name}: ${value}`}
+                  >
+                    {['#9333ea', '#7c3aed', '#06b6d4', '#10b981'].map((color, i) => (
+                      <Cell key={i} fill={color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Radar Chart - Category comparison */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Gauge className="w-4 h-4 text-blue-500" />
+                เปรียบเทียบตามหมวด
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={240}>
+                <RadarChart data={categoryStats}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="name" tick={{ fontSize: 10 }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 5]} tick={{ fontSize: 9 }} />
+                  <Radar name="ความเสี่ยง" dataKey="avgRisk" stroke="#ea580c" fill="#ea580c" fillOpacity={0.3} />
+                  <Radar name="ความยาก Dev" dataKey="avgDev" stroke="#7c3aed" fill="#7c3aed" fillOpacity={0.3} />
+                  <Tooltip />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                </RadarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>
 
-        {/* Risk Score Overview */}
+        {/* Bar Chart - Man-Days by Category */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ShieldAlert className="w-5 h-5 text-orange-500" />
-              ค่าเฉลี่ยความเสี่ยง: {avgRisk} / 5.0
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Clock className="w-4 h-4 text-blue-500" />
+              Man-Days ตามหมวด (รวม {totalManDays} วัน)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={categoryStats} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip formatter={(value: number, name: string) => {
+                  const labels: Record<string, string> = { totalDays: 'Man-Days', avgRisk: 'ความเสี่ยง', avgDev: 'ความยาก Dev', count: 'จำนวน' };
+                  return [value, labels[name] || name];
+                }} />
+                <Legend formatter={(value) => {
+                  const labels: Record<string, string> = { totalDays: 'Man-Days', avgRisk: 'ความเสี่ยงเฉลี่ย', avgDev: 'ความยาก Dev เฉลี่ย', count: 'จำนวน Function' };
+                  return labels[value] || value;
+                }} />
+                <Bar dataKey="totalDays" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="avgRisk" fill="#ea580c" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="avgDev" fill="#7c3aed" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Dev Difficulty Legend */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Code2 className="w-4 h-4 text-violet-500" />
+              เกณฑ์ความยากในการพัฒนา
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 border border-red-200">
-                <ShieldAlert className="w-8 h-8 text-red-500" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-purple-50 border border-purple-200">
+                <Zap className="w-7 h-7 text-purple-600" />
                 <div>
-                  <p className="text-sm font-semibold text-red-700">สูงมาก (5/5)</p>
-                  <p className="text-xs text-red-600">เกี่ยวข้องกับเงินโดยตรง สูญเสียรายได้/ข้อพิพาท</p>
+                  <p className="text-sm font-semibold text-purple-700">🔴 ยากมาก (5/5)</p>
+                  <p className="text-xs text-purple-600">ต้อง Integrate ระบบภายนอก, Logic ซับซ้อน, Security สูง</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-orange-50 border border-orange-200">
-                <AlertTriangle className="w-8 h-8 text-orange-500" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                <Code2 className="w-7 h-7 text-blue-600" />
                 <div>
-                  <p className="text-sm font-semibold text-orange-700">สูง (4/5)</p>
-                  <p className="text-xs text-orange-600">ผูกมัดทางกฎหมาย ส่งผลต่อ margin</p>
+                  <p className="text-sm font-semibold text-blue-700">🟠 ยาก (4/5)</p>
+                  <p className="text-xs text-blue-600">ฟอร์มซับซ้อน, PDF Generation, Multi-step workflow</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200">
-                <Shield className="w-8 h-8 text-yellow-600" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-cyan-50 border border-cyan-200">
+                <Gauge className="w-7 h-7 text-cyan-600" />
                 <div>
-                  <p className="text-sm font-semibold text-yellow-700">ปานกลาง (2-3/5)</p>
-                  <p className="text-xs text-yellow-600">ส่งผลต่อความถูกต้องของข้อมูล</p>
+                  <p className="text-sm font-semibold text-cyan-700">🟡 ปานกลาง (2-3/5)</p>
+                  <p className="text-xs text-cyan-600">Workflow มาตรฐาน, Dropdown ผูก FK, Query + Filter</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-green-50 border border-green-200">
-                <ShieldCheck className="w-8 h-8 text-green-500" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                <CheckCircle2 className="w-7 h-7 text-emerald-600" />
                 <div>
-                  <p className="text-sm font-semibold text-green-700">ต่ำ (1/5)</p>
-                  <p className="text-xs text-green-600">ข้อมูลพื้นฐาน แก้ไขง่าย ไม่กระทบ Transaction</p>
+                  <p className="text-sm font-semibold text-emerald-700">🟢 ง่าย (1/5)</p>
+                  <p className="text-xs text-emerald-600">CRUD มาตรฐาน, ตาราง + Dialog, ไม่มี Logic พิเศษ</p>
                 </div>
               </div>
             </div>
@@ -313,6 +478,7 @@ export default function FunctionOverviewPage() {
             : category === 'Reports' ? BarChart3
             : FileOutput;
           const CategoryIcon = categoryIcon;
+          const catDays = categoryFunctions.reduce((s, f) => s + f.devManDays, 0);
 
           return (
             <Card key={category}>
@@ -321,6 +487,7 @@ export default function FunctionOverviewPage() {
                   <CategoryIcon className="w-5 h-5 text-primary" />
                   {category}
                   <Badge variant="secondary" className="ml-2">{categoryFunctions.length} Functions</Badge>
+                  <Badge variant="outline" className="ml-1 text-blue-600 border-blue-300">{catDays} Man-Days</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -328,12 +495,15 @@ export default function FunctionOverviewPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted/30">
-                        <TableHead className="w-12">#</TableHead>
+                        <TableHead className="w-10">#</TableHead>
                         <TableHead>Function</TableHead>
                         <TableHead className="hidden md:table-cell">ผู้รับผิดชอบ</TableHead>
-                        <TableHead className="hidden lg:table-cell">รายละเอียด</TableHead>
                         <TableHead className="text-center">ความเสี่ยง</TableHead>
-                        <TableHead className="w-[160px]">คะแนน</TableHead>
+                        <TableHead className="w-[110px]">Risk</TableHead>
+                        <TableHead className="text-center">ความยาก Dev</TableHead>
+                        <TableHead className="w-[110px]">Dev</TableHead>
+                        <TableHead className="text-center w-20">Man-Days</TableHead>
+                        <TableHead className="hidden xl:table-cell">หมายเหตุ Dev</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -341,6 +511,8 @@ export default function FunctionOverviewPage() {
                         const FnIcon = fn.icon;
                         return (
                           <TableRow key={fn.no} className={
+                            fn.devDifficulty === 'very_hard' ? 'bg-purple-50/40' :
+                            fn.devDifficulty === 'hard' ? 'bg-blue-50/30' :
                             fn.riskLevel === 'critical' ? 'bg-red-50/50' :
                             fn.riskLevel === 'high' ? 'bg-orange-50/30' : ''
                           }>
@@ -357,15 +529,23 @@ export default function FunctionOverviewPage() {
                             <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                               {fn.responsible}
                             </TableCell>
-                            <TableCell className="hidden lg:table-cell">
-                              <p className="text-xs text-muted-foreground line-clamp-2">{fn.description}</p>
-                              <p className="text-xs text-orange-600 mt-0.5 italic">{fn.riskReason}</p>
-                            </TableCell>
                             <TableCell className="text-center">
                               {getRiskBadge(fn.riskLevel)}
                             </TableCell>
                             <TableCell>
                               {getRiskBar(fn.riskScore)}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {getDevBadge(fn.devDifficulty)}
+                            </TableCell>
+                            <TableCell>
+                              {getDevBar(fn.devScore)}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <span className="font-bold text-sm text-blue-700">{fn.devManDays}</span>
+                            </TableCell>
+                            <TableCell className="hidden xl:table-cell">
+                              <p className="text-xs text-muted-foreground line-clamp-2">{fn.devNotes}</p>
                             </TableCell>
                           </TableRow>
                         );
@@ -377,6 +557,52 @@ export default function FunctionOverviewPage() {
             </Card>
           );
         })}
+
+        {/* Total Summary */}
+        <Card className="border-2 border-primary/30">
+          <CardHeader>
+            <CardTitle className="text-base">📊 สรุปการประเมินรวม</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30">
+                    <TableHead>หมวดหมู่</TableHead>
+                    <TableHead className="text-center">จำนวน Function</TableHead>
+                    <TableHead className="text-center">ความเสี่ยงเฉลี่ย</TableHead>
+                    <TableHead className="text-center">ความยาก Dev เฉลี่ย</TableHead>
+                    <TableHead className="text-center">Man-Days รวม</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {categoryStats.map(cs => (
+                    <TableRow key={cs.name}>
+                      <TableCell className="font-medium">{cs.name}</TableCell>
+                      <TableCell className="text-center">{cs.count}</TableCell>
+                      <TableCell className="text-center">
+                        <span className="text-orange-600 font-semibold">{cs.avgRisk}/5</span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className="text-violet-600 font-semibold">{cs.avgDev}/5</span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className="text-blue-700 font-bold">{cs.totalDays} วัน</span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="bg-muted/50 font-bold">
+                    <TableCell>รวมทั้งหมด</TableCell>
+                    <TableCell className="text-center">{functions.length}</TableCell>
+                    <TableCell className="text-center text-orange-600">{avgRisk}/5</TableCell>
+                    <TableCell className="text-center text-violet-600">{avgDev}/5</TableCell>
+                    <TableCell className="text-center text-blue-700 text-lg">{totalManDays} วัน</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

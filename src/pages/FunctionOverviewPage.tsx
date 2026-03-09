@@ -785,6 +785,41 @@ export default function FunctionOverviewPage() {
           </CardContent>
         </Card>
 
+        {/* Performance Spec Legend */}
+        <Card className="border-2 border-teal-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Gauge className="w-4 h-4 text-teal-500" />
+              เกณฑ์ Performance Spec (1-5) — หลักการให้คะแนน
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
+              {([['critical', 5, 'Response <1s | 20+ Users | 99.9% SLA | Volume สูง'], ['high', 4, 'Response <2s | 10-20 Users | 99.5% SLA | Volume ปานกลาง-สูง'], ['medium', 3, 'Response <3s | 5-10 Users | 99% SLA | Volume ปานกลาง'], ['low', 2, 'Response <5s | 3-5 Users | 95% SLA | Volume ต่ำ'], ['minimal', 1, 'Response >5s OK | 1-3 Users | 90% SLA | Volume น้อย']] as [PerfLevel, number, string][]).map(([level, sc, desc]) => {
+                const cfg = perfLevelConfig[level];
+                return (
+                  <div key={level} className={`p-3 rounded-lg ${cfg.bgColor} border ${cfg.borderColor}`}>
+                    <p className={`text-sm font-semibold ${cfg.color}`}>{cfg.emoji} {cfg.label} ({sc}/5)</p>
+                    <p className={`text-[10px] ${cfg.color} opacity-80 mt-1`}>{desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="bg-muted/30 rounded-lg p-4">
+              <p className="text-xs font-semibold text-foreground mb-2">📐 หลักการให้คะแนน Performance</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-muted-foreground">
+                <div><p className="font-medium text-foreground mb-1">⏱️ Response Time</p><p>ความเร็วที่ระบบต้องตอบสนอง เช่น OTP ต้อง &lt;1s, PDF ยอมรับ &lt;5s</p></div>
+                <div><p className="font-medium text-foreground mb-1">👥 Concurrent Users</p><p>จำนวนผู้ใช้พร้อมกัน เช่น Master Data 1-3 คน, Reports 10-20 คน</p></div>
+                <div><p className="font-medium text-foreground mb-1">🔒 Availability (SLA)</p><p>ความพร้อมใช้งาน — ชำระเงิน 99.9%, Master Data 95%</p></div>
+                <div><p className="font-medium text-foreground mb-1">📊 Data Volume</p><p>ปริมาณข้อมูล — Reports สูง (หลายพันรายการ), Master Data น้อย</p></div>
+              </div>
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground text-right">
+              Avg Performance Score: <span className="font-bold">{avgPerf}/5</span>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Score Map Table - All Functions ranked by Weight Score */}
         <Card className="border-2 border-amber-300/50">
           <CardHeader>

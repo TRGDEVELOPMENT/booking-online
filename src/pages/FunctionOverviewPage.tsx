@@ -448,35 +448,45 @@ export default function FunctionOverviewPage() {
         'Function Name': f.name,
         'Weight Level': weightConfig[f.weightLevel].label,
         'Weight Score': f.weightScore,
+        'Perf Level': perfLevelConfig[f.perf.level].label,
+        'Perf Score': f.perf.score,
+        'Response Time': f.perf.responseTime,
+        'Concurrent Users': f.perf.concurrentUsers,
+        'Availability': f.perf.availability,
         'Responsible': f.responsible,
-        'Description': f.description,
         'Dev Difficulty': devConfig[f.devDifficulty].label,
         'Dev Score (1-5)': f.devScore,
         'Man-Days': f.devManDays,
-        'Dev Notes': f.devNotes,
+        'Perf Notes': f.perf.notes,
       }));
 
       // Add summary row
       const catAvgWeight = +(catFns.reduce((s, f) => s + f.weightScore, 0) / catFns.length).toFixed(1);
       const catTotalWeight = catFns.reduce((s, f) => s + f.weightScore, 0);
+      const catAvgPerf = +(catFns.reduce((s, f) => s + f.perf.score, 0) / catFns.length).toFixed(1);
       rows.push({
         'ลำดับ': '' as any,
         'F.No': '' as any,
         'Function Name': '--- สรุป ---',
         'Weight Level': '',
         'Weight Score': catAvgWeight as any,
+        'Perf Level': '',
+        'Perf Score': catAvgPerf as any,
+        'Response Time': '',
+        'Concurrent Users': '',
+        'Availability': '',
         'Responsible': '',
-        'Description': `จำนวน ${catFns.length} Functions`,
         'Dev Difficulty': '',
         'Dev Score (1-5)': catAvgDev as any,
         'Man-Days': catTotalDays,
-        'Dev Notes': `Avg Weight: ${catAvgWeight} | Total Weight: ${catTotalWeight} | Avg Dev: ${catAvgDev} | Total: ${catTotalDays} Man-Days`,
+        'Perf Notes': `Weight: ${catAvgWeight} avg (${catTotalWeight} total) | Perf: ${catAvgPerf} avg | Dev: ${catAvgDev} avg | ${catTotalDays} Man-Days`,
       });
 
       const wsCat = XLSX.utils.json_to_sheet(rows);
       wsCat['!cols'] = [
         { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 12 }, { wch: 12 },
-        { wch: 22 }, { wch: 45 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
+        { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 12 },
+        { wch: 22 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
       ];
       XLSX.utils.book_append_sheet(wb, wsCat, categorySheetNames[cat] || cat);
     });

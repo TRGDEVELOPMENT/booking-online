@@ -299,6 +299,8 @@ export default function FunctionOverviewPage() {
       'No.': f.no,
       'Function Name': f.name,
       'Category': f.category,
+      'Weight Level': weightConfig[f.weightLevel].label,
+      'Weight Score': f.weightScore,
       'Responsible': f.responsible,
       'Description': f.description,
       'Dev Difficulty': devConfig[f.devDifficulty].label,
@@ -308,8 +310,9 @@ export default function FunctionOverviewPage() {
     }));
     const ws1 = XLSX.utils.json_to_sheet(detailData);
     ws1['!cols'] = [
-      { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 22 }, { wch: 50 },
-      { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
+      { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 12 }, { wch: 14 },
+      { wch: 22 }, { wch: 50 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
+    ];
     ];
 
     // Sheet 3: Summary by Category

@@ -851,6 +851,8 @@ export default function FunctionOverviewPage() {
                   <TableRow className="bg-muted/30">
                      <TableHead>หมวดหมู่</TableHead>
                     <TableHead className="text-center">จำนวน Function</TableHead>
+                    <TableHead className="text-center">Avg Weight Score</TableHead>
+                    <TableHead className="text-center">Total Weight</TableHead>
                     <TableHead className="text-center">ความยาก Dev เฉลี่ย</TableHead>
                     <TableHead className="text-center">Man-Days รวม</TableHead>
                   </TableRow>
@@ -860,6 +862,12 @@ export default function FunctionOverviewPage() {
                     <TableRow key={cs.name}>
                      <TableCell className="font-medium">{cs.name}</TableCell>
                       <TableCell className="text-center">{cs.count}</TableCell>
+                      <TableCell className="text-center">
+                        <span className="text-amber-600 font-semibold">{cs.avgWeight}/10</span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className="text-amber-700 font-bold">{cs.totalWeight}/{cs.count * 10}</span>
+                      </TableCell>
                       <TableCell className="text-center">
                         <span className="text-violet-600 font-semibold">{cs.avgDev}/5</span>
                       </TableCell>
@@ -871,6 +879,8 @@ export default function FunctionOverviewPage() {
                    <TableRow className="bg-muted/50 font-bold">
                     <TableCell>รวมทั้งหมด</TableCell>
                     <TableCell className="text-center">{functions.length}</TableCell>
+                    <TableCell className="text-center text-amber-600">{avgWeight}/10</TableCell>
+                    <TableCell className="text-center text-amber-700">{totalWeight}/{maxTotalWeight}</TableCell>
                     <TableCell className="text-center text-violet-600">{avgDev}/5</TableCell>
                     <TableCell className="text-center text-blue-700 text-lg">{totalManDays} วัน</TableCell>
                   </TableRow>

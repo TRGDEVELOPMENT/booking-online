@@ -272,14 +272,12 @@ export default function FunctionOverviewPage() {
     const summaryData = categoryStats.map(c => ({
       'Category': c.name,
       'จำนวน Function': c.count,
-      'Avg Risk Score': c.avgRisk,
       'Avg Dev Score': c.avgDev,
       'Total Man-Days': c.totalDays,
     }));
     summaryData.push({
       'Category': 'รวมทั้งหมด',
       'จำนวน Function': functions.length,
-      'Avg Risk Score': +avgRisk,
       'Avg Dev Score': +avgDev,
       'Total Man-Days': totalManDays,
     });

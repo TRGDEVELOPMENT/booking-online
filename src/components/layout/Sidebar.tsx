@@ -64,7 +64,11 @@ interface MenuItem {
   subItems?: SubItem[];
 }
 
-const menuItems: MenuItem[] = [
+const isPublished = window.location.hostname === 'booking-online.lovable.app';
+
+const devMenuIds = ['function-overview', 'test-cases', 'documentation', 'api-spec'];
+
+const allMenuItems: MenuItem[] = [
   { 
     id: 'dashboard', 
     label: 'แดชบอร์ด', 
@@ -247,7 +251,7 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-1">
-            {menuItems.map(item => {
+            {allMenuItems.filter(item => !isPublished || !devMenuIds.includes(item.id)).map(item => {
               const Icon = item.icon;
               const filteredSubItems = filterSubItemsByRole(item.subItems);
               const hasSubItems = filteredSubItems.length > 0;

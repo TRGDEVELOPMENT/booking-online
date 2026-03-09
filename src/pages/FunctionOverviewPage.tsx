@@ -319,27 +319,36 @@ export default function FunctionOverviewPage() {
     const summaryData = categoryStats.map(c => ({
       'Category': c.name,
       'จำนวน Function': c.count,
+      'Avg Weight Score': c.avgWeight,
+      'Total Weight Score': c.totalWeight,
       'Avg Dev Score': c.avgDev,
       'Total Man-Days': c.totalDays,
     }));
     summaryData.push({
       'Category': 'รวมทั้งหมด',
       'จำนวน Function': functions.length,
+      'Avg Weight Score': +avgWeight,
+      'Total Weight Score': totalWeight,
       'Avg Dev Score': +avgDev,
       'Total Man-Days': totalManDays,
     });
     const ws2 = XLSX.utils.json_to_sheet(summaryData);
-    ws2['!cols'] = [{ wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }];
+    ws2['!cols'] = [{ wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 16 }];
 
     // Sheet 4: Distribution
     const distData = [
+      { 'ประเภท': 'Weight - Critical (1)', 'จำนวน': wCriticalCount },
+      { 'ประเภท': 'Weight - Major (4)', 'จำนวน': wMajorCount },
+      { 'ประเภท': 'Weight - Minor (7)', 'จำนวน': wMinorCount },
+      { 'ประเภท': 'Weight - Complete (10)', 'จำนวน': wCompleteCount },
+      { 'ประเภท': '', 'จำนวน': '' as any },
       { 'ประเภท': 'Dev - ยากมาก', 'จำนวน': veryHardCount },
       { 'ประเภท': 'Dev - ยาก', 'จำนวน': hardCount },
       { 'ประเภท': 'Dev - ปานกลาง', 'จำนวน': devMediumCount },
       { 'ประเภท': 'Dev - ง่าย', 'จำนวน': easyCount },
     ];
     const ws3 = XLSX.utils.json_to_sheet(distData);
-    ws3['!cols'] = [{ wch: 20 }, { wch: 10 }];
+    ws3['!cols'] = [{ wch: 24 }, { wch: 10 }];
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws0, 'Score Map');

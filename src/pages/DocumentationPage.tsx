@@ -36,8 +36,8 @@ export default function DocumentationPage() {
             Car Reservation System
           </h2>
           <div className="inline-block bg-muted rounded-lg p-6 text-left">
-            <p className="text-sm text-muted-foreground">วันที่จัดทำ: 23 มกราคม 2569</p>
-            <p className="text-sm text-muted-foreground">เวอร์ชัน: 1.0</p>
+            <p className="text-sm text-muted-foreground">วันที่จัดทำ: 9 มีนาคม 2569</p>
+            <p className="text-sm text-muted-foreground">เวอร์ชัน: 2.0</p>
             <p className="text-sm text-muted-foreground">สร้างโดย: Lovable AI</p>
           </div>
         </div>
@@ -59,17 +59,18 @@ export default function DocumentationPage() {
         <section className="mb-12 print:page-break-after">
           <h2 className="text-2xl font-bold mb-6 border-b pb-2">1. สรุปจำนวน Screen ทั้งหมด</h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <StatBox title="Authentication" count={1} color="bg-blue-100 text-blue-800" />
             <StatBox title="Dashboard" count={1} color="bg-green-100 text-green-800" />
-            <StatBox title="ใบจองรถยนต์" count={6} color="bg-purple-100 text-purple-800" />
-            <StatBox title="รายงาน" count={4} color="bg-orange-100 text-orange-800" />
+            <StatBox title="ใบจองรถยนต์" count={8} color="bg-purple-100 text-purple-800" />
+            <StatBox title="รายงาน" count={3} color="bg-orange-100 text-orange-800" />
             <StatBox title="ตั้งค่าระบบ" count={13} color="bg-pink-100 text-pink-800" />
+            <StatBox title="เอกสาร/เครื่องมือ" count={4} color="bg-cyan-100 text-cyan-800" />
             <StatBox title="Error Page" count={1} color="bg-gray-100 text-gray-800" />
           </div>
 
           <div className="bg-primary/10 rounded-lg p-6 text-center">
-            <p className="text-3xl font-bold text-primary">26 Screens</p>
+            <p className="text-3xl font-bold text-primary">31 Screens</p>
             <p className="text-muted-foreground">จำนวน Screen ทั้งหมด</p>
           </div>
 
@@ -87,18 +88,23 @@ export default function DocumentationPage() {
               <tbody>
                 <tr><td className="border p-2">1</td><td className="border p-2">Auth</td><td className="border p-2">Login</td><td className="border p-2 font-mono text-xs">/login</td></tr>
                 <tr><td className="border p-2">2</td><td className="border p-2">Dashboard</td><td className="border p-2">Dashboard</td><td className="border p-2 font-mono text-xs">/</td></tr>
-                <tr><td className="border p-2">3</td><td className="border p-2" rowSpan={6}>ใบจอง</td><td className="border p-2">รายการใบจอง</td><td className="border p-2 font-mono text-xs">/reservations</td></tr>
+                <tr><td className="border p-2">3</td><td className="border p-2" rowSpan={8}>ใบจอง</td><td className="border p-2">รายการใบจอง</td><td className="border p-2 font-mono text-xs">/reservations</td></tr>
                 <tr><td className="border p-2">4</td><td className="border p-2">สร้างใบจองใหม่</td><td className="border p-2 font-mono text-xs">/reservations/create</td></tr>
                 <tr><td className="border p-2">5</td><td className="border p-2">แก้ไขใบจอง</td><td className="border p-2 font-mono text-xs">/reservations/:id/edit</td></tr>
                 <tr><td className="border p-2">6</td><td className="border p-2">พิมพ์ใบจอง</td><td className="border p-2 font-mono text-xs">/reservations/:id/print</td></tr>
                 <tr><td className="border p-2">7</td><td className="border p-2">ยกเลิกใบจอง</td><td className="border p-2 font-mono text-xs">/reservations/cancel</td></tr>
-                <tr><td className="border p-2">8</td><td className="border p-2">รอรับชำระเงิน</td><td className="border p-2 font-mono text-xs">/reservations/pending-payment</td></tr>
-                <tr><td className="border p-2">9</td><td className="border p-2" rowSpan={4}>รายงาน</td><td className="border p-2">รายงานประจำเดือน</td><td className="border p-2 font-mono text-xs">/reports/monthly</td></tr>
-                <tr><td className="border p-2">10</td><td className="border p-2">รอการอนุมัติ</td><td className="border p-2 font-mono text-xs">/reports/pending-approval</td></tr>
-                <tr><td className="border p-2">11</td><td className="border p-2">ใบจองที่ยกเลิก</td><td className="border p-2 font-mono text-xs">/reports/cancelled</td></tr>
-                <tr><td className="border p-2">12</td><td className="border p-2">Default Report</td><td className="border p-2 font-mono text-xs">/reports</td></tr>
-                <tr><td className="border p-2">13-25</td><td className="border p-2">ตั้งค่า</td><td className="border p-2">Master Data (13 หน้า)</td><td className="border p-2 font-mono text-xs">/settings/*</td></tr>
-                <tr><td className="border p-2">26</td><td className="border p-2">Error</td><td className="border p-2">404 Not Found</td><td className="border p-2 font-mono text-xs">*</td></tr>
+                <tr><td className="border p-2">8</td><td className="border p-2">รายละเอียดยกเลิก</td><td className="border p-2 font-mono text-xs">/reservations/:id/cancel-detail</td></tr>
+                <tr><td className="border p-2">9</td><td className="border p-2">พิมพ์ใบยกเลิก</td><td className="border p-2 font-mono text-xs">/reservations/:id/cancel-print</td></tr>
+                <tr><td className="border p-2">10</td><td className="border p-2">รอรับชำระเงิน</td><td className="border p-2 font-mono text-xs">/reservations/pending-payment</td></tr>
+                <tr><td className="border p-2">11</td><td className="border p-2" rowSpan={3}>รายงาน</td><td className="border p-2">รายงานประจำเดือน</td><td className="border p-2 font-mono text-xs">/reports/monthly</td></tr>
+                <tr><td className="border p-2">12</td><td className="border p-2">รอการอนุมัติ</td><td className="border p-2 font-mono text-xs">/reports/pending-approval</td></tr>
+                <tr><td className="border p-2">13</td><td className="border p-2">ใบจองที่ยกเลิก</td><td className="border p-2 font-mono text-xs">/reports/cancelled</td></tr>
+                <tr><td className="border p-2">14-26</td><td className="border p-2">ตั้งค่า</td><td className="border p-2">Master Data (13 หน้า)</td><td className="border p-2 font-mono text-xs">/settings/*</td></tr>
+                <tr><td className="border p-2">27</td><td className="border p-2" rowSpan={4}>เอกสาร/เครื่องมือ</td><td className="border p-2">เอกสารโครงการ</td><td className="border p-2 font-mono text-xs">/docs</td></tr>
+                <tr><td className="border p-2">28</td><td className="border p-2">API Specification</td><td className="border p-2 font-mono text-xs">/api-spec</td></tr>
+                <tr><td className="border p-2">29</td><td className="border p-2">ภาพรวมฟังก์ชัน</td><td className="border p-2 font-mono text-xs">/function-overview</td></tr>
+                <tr><td className="border p-2">30</td><td className="border p-2">Test Cases</td><td className="border p-2 font-mono text-xs">/test-cases</td></tr>
+                <tr><td className="border p-2">31</td><td className="border p-2">Error</td><td className="border p-2">404 Not Found</td><td className="border p-2 font-mono text-xs">*</td></tr>
               </tbody>
             </table>
           </div>
@@ -333,24 +339,24 @@ export default function DocumentationPage() {
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <div className="bg-blue-50 rounded-lg p-6">
               <h4 className="font-semibold text-blue-800 mb-2">🎨 Frontend</h4>
-              <p className="text-3xl font-bold text-blue-600">4.75 วัน</p>
+              <p className="text-3xl font-bold text-blue-600">10.0 วัน</p>
               <p className="text-sm text-blue-600">Lovable AI</p>
             </div>
             <div className="bg-green-50 rounded-lg p-6">
               <h4 className="font-semibold text-green-800 mb-2">⚙️ Backend</h4>
-              <p className="text-3xl font-bold text-green-600">9.0 วัน</p>
+              <p className="text-3xl font-bold text-green-600">14.0 วัน</p>
               <p className="text-sm text-green-600">Dev + Cursor AI</p>
             </div>
             <div className="bg-purple-50 rounded-lg p-6">
               <h4 className="font-semibold text-purple-800 mb-2">🔗 Integration</h4>
-              <p className="text-3xl font-bold text-purple-600">2.5 วัน</p>
+              <p className="text-3xl font-bold text-purple-600">5.5 วัน</p>
               <p className="text-sm text-purple-600">Testing & Bug Fix</p>
             </div>
           </div>
 
           <div className="bg-accent rounded-lg p-8 text-center mb-8">
-            <p className="text-4xl font-bold text-accent-foreground">16.25 Man-Days</p>
-            <p className="text-accent-foreground/70">รวมทั้งหมด (~3.5 สัปดาห์)</p>
+            <p className="text-4xl font-bold text-accent-foreground">29.5 Man-Days</p>
+            <p className="text-accent-foreground/70">รวมทั้งหมด (~6 สัปดาห์) — ประเมินจาก 25 ฟังก์ชัน</p>
           </div>
 
           <div className="overflow-x-auto">
@@ -366,18 +372,18 @@ export default function DocumentationPage() {
               <tbody>
                 <tr>
                   <td className="border p-2">เขียน Code เองทั้งหมด</td>
-                  <td className="border p-2 text-right">~50 วัน</td>
-                  <td className="border p-2 text-right">~2.5 เดือน</td>
+                  <td className="border p-2 text-right">~75 วัน</td>
+                  <td className="border p-2 text-right">~3.5 เดือน</td>
                 </tr>
                 <tr className="bg-green-50 font-semibold">
                   <td className="border p-2">Lovable + Cursor AI</td>
-                  <td className="border p-2 text-right">~16 วัน</td>
-                  <td className="border p-2 text-right">~3.5 สัปดาห์</td>
+                  <td className="border p-2 text-right">~29.5 วัน</td>
+                  <td className="border p-2 text-right">~6 สัปดาห์</td>
                 </tr>
                 <tr className="bg-primary/10">
                   <td className="border p-2 font-semibold">ประหยัดได้</td>
-                  <td className="border p-2 text-right font-semibold">~34 วัน</td>
-                  <td className="border p-2 text-right font-semibold text-primary">68%</td>
+                  <td className="border p-2 text-right font-semibold">~45.5 วัน</td>
+                  <td className="border p-2 text-right font-semibold text-primary">61%</td>
                 </tr>
               </tbody>
             </table>

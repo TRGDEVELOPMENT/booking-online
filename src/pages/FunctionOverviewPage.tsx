@@ -280,6 +280,8 @@ export default function FunctionOverviewPage() {
       'F.No': f.no,
       'Function Name': f.name,
       'Category': f.category,
+      'Weight Level': weightConfig[f.weightLevel].label,
+      'Weight Score (Max 10)': f.weightScore,
       'Responsible': f.responsible,
       'Dev Difficulty': devConfig[f.devDifficulty].label,
       'Dev Score': f.devScore,
@@ -288,8 +290,8 @@ export default function FunctionOverviewPage() {
     }));
     const ws0 = XLSX.utils.json_to_sheet(scoreMapSheet);
     ws0['!cols'] = [
-      { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 22 },
-      { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 50 },
+      { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 12 }, { wch: 16 },
+      { wch: 22 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 50 },
     ];
 
     // Sheet 2: Function Details

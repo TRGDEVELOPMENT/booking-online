@@ -575,7 +575,78 @@ export default function FunctionOverviewPage() {
           </CardContent>
         </Card>
 
-        {/* Function Tables by Category */}
+        {/* Score Map Table - All Functions ranked by Total Score */}
+        <Card className="border-2 border-amber-300/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Zap className="w-5 h-5 text-amber-500" />
+              Score Map — Function ทั้งหมด จัดเรียงตาม Total Score (Risk + Dev)
+              <Badge variant="outline" className="ml-2 text-amber-700 border-amber-400">{functions.length} Functions</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="border rounded-lg overflow-hidden mx-6 mb-6">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-amber-50/50">
+                    <TableHead className="w-10">ลำดับ</TableHead>
+                    <TableHead className="w-10">F.No</TableHead>
+                    <TableHead>Function</TableHead>
+                    <TableHead>หมวด</TableHead>
+                    <TableHead className="text-center">Risk Score</TableHead>
+                    <TableHead className="text-center">Dev Score</TableHead>
+                    <TableHead className="text-center">Total</TableHead>
+                    <TableHead className="text-center">Priority</TableHead>
+                    <TableHead className="text-center">Man-Days</TableHead>
+                    <TableHead className="hidden lg:table-cell">ผู้รับผิดชอบ</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {scoreMapData.map((fn, idx) => {
+                    const FnIcon = fn.icon;
+                    const priorityColor = fn.priority === 'วิกฤต' ? 'bg-red-100 text-red-700 border-red-300'
+                      : fn.priority === 'สูง' ? 'bg-orange-100 text-orange-700 border-orange-300'
+                      : fn.priority === 'ปานกลาง' ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
+                      : 'bg-green-100 text-green-700 border-green-300';
+                    const rowBg = fn.totalScore >= 8 ? 'bg-red-50/40' : fn.totalScore >= 6 ? 'bg-orange-50/30' : '';
+                    return (
+                      <TableRow key={fn.no} className={rowBg}>
+                        <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
+                        <TableCell className="text-muted-foreground">{fn.no}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <FnIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <span className="font-medium text-sm">{fn.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{fn.category}</TableCell>
+                        <TableCell className="text-center">
+                          <span className="font-bold text-orange-600">{fn.riskScore}</span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className="font-bold text-violet-600">{fn.devScore}</span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className="font-extrabold text-lg">{fn.totalScore}</span>
+                          <span className="text-[10px] text-muted-foreground">/10</span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge className={`${priorityColor} border`}>{fn.priority}</Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className="font-bold text-sm text-blue-700">{fn.devManDays}</span>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">{fn.responsible}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+
         {categories.map((category) => {
           const categoryFunctions = functions.filter(f => f.category === category);
           const categoryIcon = category === 'Workflow หลัก' ? FileText

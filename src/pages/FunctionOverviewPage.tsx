@@ -620,22 +620,18 @@ export default function FunctionOverviewPage() {
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">{fn.category}</TableCell>
                         <TableCell className="text-center">
-                          <span className="font-bold text-orange-600">{fn.riskScore}</span>
-                        </TableCell>
-                        <TableCell className="text-center">
                           <span className="font-bold text-violet-600">{fn.devScore}</span>
                         </TableCell>
                         <TableCell className="text-center">
-                          <span className="font-extrabold text-lg">{fn.totalScore}</span>
-                          <span className="text-[10px] text-muted-foreground">/10</span>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge className={`${priorityColor} border`}>{fn.priority}</Badge>
+                          {getDevBadge(fn.devDifficulty)}
                         </TableCell>
                         <TableCell className="text-center">
                           <span className="font-bold text-sm text-blue-700">{fn.devManDays}</span>
                         </TableCell>
                         <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">{fn.responsible}</TableCell>
+                        <TableCell className="hidden xl:table-cell">
+                          <p className="text-xs text-muted-foreground line-clamp-2">{fn.devNotes}</p>
+                        </TableCell>
                       </TableRow>
                     );
                   })}

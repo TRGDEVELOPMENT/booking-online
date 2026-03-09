@@ -65,7 +65,7 @@ const ReservationCancelPage = () => {
         .select("*")
         .eq("company_id", selectedCompany)
         .eq("approval_status", "approved")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }) as any;
 
       if (error) throw error;
 

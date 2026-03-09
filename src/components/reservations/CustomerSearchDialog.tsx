@@ -52,9 +52,14 @@ export function CustomerSearchDialog({
   const [hasSearched, setHasSearched] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  // Reset state when dialog opens/closes
+  // Reset state when dialog opens/closes and load all customers on open
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      setSearchTerm('');
+      setHasSearched(false);
+      // Load all customers when dialog opens
+      handleSearch('');
+    } else {
       setSearchTerm('');
       setSearchResults([]);
       setHasSearched(false);
@@ -63,7 +68,7 @@ export function CustomerSearchDialog({
 
   // Debounced search
   const handleSearch = useCallback(async (term: string) => {
-    if (!term.trim() || !companyId) {
+    if (!companyId) {
       setSearchResults([]);
       setHasSearched(false);
       return;
@@ -78,9 +83,12 @@ export function CustomerSearchDialog({
         .select('*, surnames(id, description)')
         .eq('company_id', companyId)
         .eq('status', 'active')
-        .or(`tax_id.ilike.%${term}%,first_name.ilike.%${term}%,last_name.ilike.%${term}%`)
         .order('customer_id', { ascending: true })
-        .limit(20);
+        .limit(50);
+
+      if (term.trim()) {
+        query = query.or(`tax_id.ilike.%${term}%,first_name.ilike.%${term}%,last_name.ilike.%${term}%`);
+      }
 
       if (customerType) {
         query = query.eq('customer_type', customerType);
@@ -105,9 +113,7 @@ export function CustomerSearchDialog({
   // Search with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchTerm.trim()) {
-        handleSearch(searchTerm);
-      }
+      handleSearch(searchTerm);
     }, 300);
 
     return () => clearTimeout(timer);

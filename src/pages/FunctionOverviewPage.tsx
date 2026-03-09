@@ -741,11 +741,8 @@ export default function FunctionOverviewPage() {
                 <TableBody>
                   {categoryStats.map(cs => (
                     <TableRow key={cs.name}>
-                      <TableCell className="font-medium">{cs.name}</TableCell>
+                     <TableCell className="font-medium">{cs.name}</TableCell>
                       <TableCell className="text-center">{cs.count}</TableCell>
-                      <TableCell className="text-center">
-                        <span className="text-orange-600 font-semibold">{cs.avgRisk}/5</span>
-                      </TableCell>
                       <TableCell className="text-center">
                         <span className="text-violet-600 font-semibold">{cs.avgDev}/5</span>
                       </TableCell>

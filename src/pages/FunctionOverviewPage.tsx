@@ -163,6 +163,27 @@ const getDevBadge = (level: DevDifficulty) => {
   );
 };
 
+const getWeightBadge = (level: WeightLevel) => {
+  const config = weightConfig[level];
+  return (
+    <Badge className={`${config.bgColor} ${config.color} ${config.borderColor} border font-bold`}>
+      {config.emoji} {config.label} ({config.score})
+    </Badge>
+  );
+};
+
+const getWeightBar = (score: number) => {
+  const color = score >= 10 ? 'bg-emerald-500' : score >= 7 ? 'bg-blue-500' : score >= 4 ? 'bg-orange-500' : 'bg-red-500';
+  return (
+    <div className="flex items-center gap-2 min-w-[100px]">
+      <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${(score / 10) * 100}%` }} />
+      </div>
+      <span className="text-xs font-bold text-muted-foreground w-8 text-right">{score}/10</span>
+    </div>
+  );
+};
+
 const getRiskBar = (score: number, maxScore = 5) => {
   const colors: Record<number, string> = {
     1: 'bg-green-500',

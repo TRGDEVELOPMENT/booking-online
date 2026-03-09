@@ -313,7 +313,6 @@ export default function FunctionOverviewPage() {
       { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 12 }, { wch: 14 },
       { wch: 22 }, { wch: 50 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
     ];
-    ];
 
     // Sheet 3: Summary by Category
     const summaryData = categoryStats.map(c => ({

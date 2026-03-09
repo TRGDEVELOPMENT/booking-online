@@ -134,16 +134,17 @@ const ReservationCancelPage = () => {
       const { error } = await supabase
         .from("reservations")
         .update({
-          status: "cancelled",
+          cancel_request_status: "requested",
+          cancel_requested_at: new Date().toISOString(),
           cancel_reason: cancelReason,
-        })
+        } as any)
         .eq("id", selectedReservation.id);
 
       if (error) throw error;
 
       toast({
-        title: "ยกเลิกใบจองสำเร็จ",
-        description: `ใบจองเลขที่ ${selectedReservation.document_number} ถูกยกเลิกแล้ว`,
+        title: "บันทึกขอยกเลิกสำเร็จ",
+        description: `ใบจองเลขที่ ${selectedReservation.document_number} อยู่ระหว่างรอการอนุมัติยกเลิก`,
       });
 
       setIsCancelDialogOpen(false);
@@ -153,7 +154,7 @@ const ReservationCancelPage = () => {
       console.error("Error cancelling reservation:", error);
       toast({
         title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถยกเลิกใบจองได้",
+        description: "ไม่สามารถบันทึกขอยกเลิกใบจองได้",
         variant: "destructive",
       });
     } finally {

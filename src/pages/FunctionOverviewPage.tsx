@@ -43,6 +43,17 @@ import {
 type RiskLevel = 'critical' | 'high' | 'medium' | 'low';
 type DevDifficulty = 'very_hard' | 'hard' | 'medium' | 'easy';
 type WeightLevel = 'complete' | 'minor' | 'major' | 'critical';
+type PerfLevel = 'critical' | 'high' | 'medium' | 'low' | 'minimal';
+
+interface PerfSpec {
+  responseTime: string;     // e.g. "<1s", "<2s"
+  concurrentUsers: string;  // e.g. "10-20"
+  availability: string;     // e.g. "99.9%"
+  dataVolume: string;       // e.g. "สูง", "ปานกลาง"
+  score: number;            // 1-5
+  level: PerfLevel;
+  notes: string;
+}
 
 interface FunctionItem {
   no: number;
@@ -55,12 +66,21 @@ interface FunctionItem {
   riskReason: string;
   icon: React.ElementType;
   devDifficulty: DevDifficulty;
-  devScore: number; // 1-5
+  devScore: number;
   devManDays: number;
   devNotes: string;
   weightLevel: WeightLevel;
-  weightScore: number; // 10, 7, 4, 1
+  weightScore: number;
+  perf: PerfSpec;
 }
+
+const perfLevelConfig: Record<PerfLevel, { label: string; color: string; bgColor: string; borderColor: string; emoji: string }> = {
+  critical: { label: 'วิกฤต', color: 'text-red-700', bgColor: 'bg-red-100', borderColor: 'border-red-300', emoji: '🔴' },
+  high: { label: 'สูง', color: 'text-orange-700', bgColor: 'bg-orange-100', borderColor: 'border-orange-300', emoji: '🟠' },
+  medium: { label: 'ปานกลาง', color: 'text-yellow-700', bgColor: 'bg-yellow-100', borderColor: 'border-yellow-300', emoji: '🟡' },
+  low: { label: 'ต่ำ', color: 'text-cyan-700', bgColor: 'bg-cyan-100', borderColor: 'border-cyan-300', emoji: '🔵' },
+  minimal: { label: 'น้อยมาก', color: 'text-emerald-700', bgColor: 'bg-emerald-100', borderColor: 'border-emerald-300', emoji: '🟢' },
+};
 
 const weightConfig: Record<WeightLevel, { label: string; score: number; color: string; bgColor: string; borderColor: string; emoji: string; description: string }> = {
   complete: { label: 'Complete', score: 10, color: 'text-emerald-700', bgColor: 'bg-emerald-100', borderColor: 'border-emerald-300', emoji: '✅', description: 'ไม่มีข้อผิดพลาด — ขาดไปแทบไม่กระทบการใช้งาน' },

@@ -616,15 +616,15 @@ export default function FunctionOverviewPage() {
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip formatter={(value: number, name: string) => {
-                  const labels: Record<string, string> = { totalDays: 'Man-Days', avgRisk: 'ความเสี่ยง', avgDev: 'ความยาก Dev', count: 'จำนวน' };
+                  const labels: Record<string, string> = { totalDays: 'Man-Days', avgWeight: 'Avg Weight', avgDev: 'ความยาก Dev', count: 'จำนวน' };
                   return [value, labels[name] || name];
                 }} />
                 <Legend formatter={(value) => {
-                  const labels: Record<string, string> = { totalDays: 'Man-Days', avgRisk: 'ความเสี่ยงเฉลี่ย', avgDev: 'ความยาก Dev เฉลี่ย', count: 'จำนวน Function' };
+                  const labels: Record<string, string> = { totalDays: 'Man-Days', avgWeight: 'Avg Weight Score', avgDev: 'ความยาก Dev เฉลี่ย', count: 'จำนวน Function' };
                   return labels[value] || value;
                 }} />
                 <Bar dataKey="totalDays" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="avgRisk" fill="#ea580c" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="avgWeight" fill="#d97706" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="avgDev" fill="#7c3aed" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

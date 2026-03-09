@@ -339,24 +339,24 @@ export default function DocumentationPage() {
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <div className="bg-blue-50 rounded-lg p-6">
               <h4 className="font-semibold text-blue-800 mb-2">🎨 Frontend</h4>
-              <p className="text-3xl font-bold text-blue-600">4.75 วัน</p>
+              <p className="text-3xl font-bold text-blue-600">10.0 วัน</p>
               <p className="text-sm text-blue-600">Lovable AI</p>
             </div>
             <div className="bg-green-50 rounded-lg p-6">
               <h4 className="font-semibold text-green-800 mb-2">⚙️ Backend</h4>
-              <p className="text-3xl font-bold text-green-600">9.0 วัน</p>
+              <p className="text-3xl font-bold text-green-600">14.0 วัน</p>
               <p className="text-sm text-green-600">Dev + Cursor AI</p>
             </div>
             <div className="bg-purple-50 rounded-lg p-6">
               <h4 className="font-semibold text-purple-800 mb-2">🔗 Integration</h4>
-              <p className="text-3xl font-bold text-purple-600">2.5 วัน</p>
+              <p className="text-3xl font-bold text-purple-600">5.5 วัน</p>
               <p className="text-sm text-purple-600">Testing & Bug Fix</p>
             </div>
           </div>
 
           <div className="bg-accent rounded-lg p-8 text-center mb-8">
-            <p className="text-4xl font-bold text-accent-foreground">16.25 Man-Days</p>
-            <p className="text-accent-foreground/70">รวมทั้งหมด (~3.5 สัปดาห์)</p>
+            <p className="text-4xl font-bold text-accent-foreground">29.5 Man-Days</p>
+            <p className="text-accent-foreground/70">รวมทั้งหมด (~6 สัปดาห์) — ประเมินจาก 25 ฟังก์ชัน</p>
           </div>
 
           <div className="overflow-x-auto">
@@ -372,18 +372,18 @@ export default function DocumentationPage() {
               <tbody>
                 <tr>
                   <td className="border p-2">เขียน Code เองทั้งหมด</td>
-                  <td className="border p-2 text-right">~50 วัน</td>
-                  <td className="border p-2 text-right">~2.5 เดือน</td>
+                  <td className="border p-2 text-right">~75 วัน</td>
+                  <td className="border p-2 text-right">~3.5 เดือน</td>
                 </tr>
                 <tr className="bg-green-50 font-semibold">
                   <td className="border p-2">Lovable + Cursor AI</td>
-                  <td className="border p-2 text-right">~16 วัน</td>
-                  <td className="border p-2 text-right">~3.5 สัปดาห์</td>
+                  <td className="border p-2 text-right">~29.5 วัน</td>
+                  <td className="border p-2 text-right">~6 สัปดาห์</td>
                 </tr>
                 <tr className="bg-primary/10">
                   <td className="border p-2 font-semibold">ประหยัดได้</td>
-                  <td className="border p-2 text-right font-semibold">~34 วัน</td>
-                  <td className="border p-2 text-right font-semibold text-primary">68%</td>
+                  <td className="border p-2 text-right font-semibold">~45.5 วัน</td>
+                  <td className="border p-2 text-right font-semibold text-primary">61%</td>
                 </tr>
               </tbody>
             </table>

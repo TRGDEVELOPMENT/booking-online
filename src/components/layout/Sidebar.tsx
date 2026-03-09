@@ -64,7 +64,11 @@ interface MenuItem {
   subItems?: SubItem[];
 }
 
-const menuItems: MenuItem[] = [
+const isPublished = window.location.hostname === 'booking-online.lovable.app';
+
+const devMenuIds = ['function-overview', 'test-cases', 'documentation', 'api-spec'];
+
+const allMenuItems: MenuItem[] = [
   { 
     id: 'dashboard', 
     label: 'แดชบอร์ด', 

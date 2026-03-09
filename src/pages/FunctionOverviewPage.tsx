@@ -700,12 +700,6 @@ export default function FunctionOverviewPage() {
                               {fn.responsible}
                             </TableCell>
                             <TableCell className="text-center">
-                              {getRiskBadge(fn.riskLevel)}
-                            </TableCell>
-                            <TableCell>
-                              {getRiskBar(fn.riskScore)}
-                            </TableCell>
-                            <TableCell className="text-center">
                               {getDevBadge(fn.devDifficulty)}
                             </TableCell>
                             <TableCell>

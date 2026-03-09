@@ -339,16 +339,22 @@ export default function FunctionOverviewPage() {
       'Category': f.category,
       'Weight Level': weightConfig[f.weightLevel].label,
       'Weight Score (Max 10)': f.weightScore,
-      'Responsible': f.responsible,
+      'Perf Level': perfLevelConfig[f.perf.level].label,
+      'Perf Score (1-5)': f.perf.score,
+      'Response Time': f.perf.responseTime,
+      'Concurrent Users': f.perf.concurrentUsers,
+      'Availability': f.perf.availability,
+      'Data Volume': f.perf.dataVolume,
       'Dev Difficulty': devConfig[f.devDifficulty].label,
       'Dev Score': f.devScore,
       'Man-Days': f.devManDays,
-      'Dev Notes': f.devNotes,
+      'Perf Notes': f.perf.notes,
     }));
     const ws0 = XLSX.utils.json_to_sheet(scoreMapSheet);
     ws0['!cols'] = [
       { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 12 }, { wch: 16 },
-      { wch: 22 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 50 },
+      { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 12 },
+      { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 50 },
     ];
 
     // Sheet 2: Function Details

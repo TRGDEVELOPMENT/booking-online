@@ -593,12 +593,11 @@ export default function FunctionOverviewPage() {
                     <TableHead className="w-10">F.No</TableHead>
                     <TableHead>Function</TableHead>
                     <TableHead>หมวด</TableHead>
-                    <TableHead className="text-center">Risk Score</TableHead>
                     <TableHead className="text-center">Dev Score</TableHead>
-                    <TableHead className="text-center">Total</TableHead>
-                    <TableHead className="text-center">Priority</TableHead>
+                    <TableHead className="text-center">ความยาก Dev</TableHead>
                     <TableHead className="text-center">Man-Days</TableHead>
                     <TableHead className="hidden lg:table-cell">ผู้รับผิดชอบ</TableHead>
+                    <TableHead className="hidden xl:table-cell">หมายเหตุ Dev</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

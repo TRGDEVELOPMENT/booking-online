@@ -391,6 +391,7 @@ export default function FunctionOverviewPage() {
       'จำนวน Function': c.count,
       'Avg Weight Score': c.avgWeight,
       'Total Weight Score': c.totalWeight,
+      'Avg Perf Score': c.avgPerf,
       'Avg Dev Score': c.avgDev,
       'Total Man-Days': c.totalDays,
     }));
@@ -399,11 +400,12 @@ export default function FunctionOverviewPage() {
       'จำนวน Function': functions.length,
       'Avg Weight Score': +avgWeight,
       'Total Weight Score': totalWeight,
+      'Avg Perf Score': +avgPerf,
       'Avg Dev Score': +avgDev,
       'Total Man-Days': totalManDays,
     });
     const ws2 = XLSX.utils.json_to_sheet(summaryData);
-    ws2['!cols'] = [{ wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 16 }];
+    ws2['!cols'] = [{ wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 16 }];
 
     // Sheet 4: Distribution
     const distData = [

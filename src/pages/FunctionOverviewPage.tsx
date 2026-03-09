@@ -257,9 +257,6 @@ export default function FunctionOverviewPage() {
       'Category': f.category,
       'Responsible': f.responsible,
       'Description': f.description,
-      'Risk Level': riskConfig[f.riskLevel].label,
-      'Risk Score (1-5)': f.riskScore,
-      'Risk Reason': f.riskReason,
       'Dev Difficulty': devConfig[f.devDifficulty].label,
       'Dev Score (1-5)': f.devScore,
       'Man-Days': f.devManDays,
@@ -268,7 +265,6 @@ export default function FunctionOverviewPage() {
     const ws1 = XLSX.utils.json_to_sheet(detailData);
     ws1['!cols'] = [
       { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 22 }, { wch: 50 },
-      { wch: 12 }, { wch: 14 }, { wch: 40 },
       { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
     ];
 

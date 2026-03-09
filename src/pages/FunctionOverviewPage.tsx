@@ -313,10 +313,13 @@ export default function FunctionOverviewPage() {
       avgDev: +(fns.reduce((s, f) => s + f.devScore, 0) / fns.length).toFixed(1),
       avgWeight: +(fns.reduce((s, f) => s + f.weightScore, 0) / fns.length).toFixed(1),
       totalWeight: fns.reduce((s, f) => s + f.weightScore, 0),
+      avgPerf: +(fns.reduce((s, f) => s + f.perf.score, 0) / fns.length).toFixed(1),
       totalDays: +fns.reduce((s, f) => s + f.devManDays, 0).toFixed(1),
       count: fns.length,
     };
   });
+
+  const avgPerf = (functions.reduce((sum, f) => sum + f.perf.score, 0) / functions.length).toFixed(1);
 
   // Score Map data: sorted by weight score ascending (critical first)
   const scoreMapData = functions

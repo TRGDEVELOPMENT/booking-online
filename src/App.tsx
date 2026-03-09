@@ -7,6 +7,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Dashboard from "@/pages/Dashboard";
 import FunctionOverviewPage from "@/pages/FunctionOverviewPage";
+import TestCasesPage from "@/pages/TestCasesPage";
 import ReservationList from "@/pages/ReservationList";
 import ReservationCreate from "@/pages/ReservationCreate";
 import ReservationEdit from "@/pages/ReservationEdit";

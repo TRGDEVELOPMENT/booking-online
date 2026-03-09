@@ -786,9 +786,9 @@ export default function FunctionOverviewPage() {
                       <TableRow className="bg-muted/30">
                         <TableHead className="w-10">#</TableHead>
                         <TableHead>Function</TableHead>
-                        <TableHead className="hidden md:table-cell">ผู้รับผิดชอบ</TableHead>
+                        <TableHead className="text-center">Weight</TableHead>
+                        <TableHead className="w-[110px]">Weight Score</TableHead>
                         <TableHead className="text-center">ความยาก Dev</TableHead>
-                        <TableHead className="w-[110px]">Dev Score</TableHead>
                         <TableHead className="text-center w-20">Man-Days</TableHead>
                         <TableHead className="hidden xl:table-cell">หมายเหตุ Dev</TableHead>
                       </TableRow>
@@ -798,10 +798,9 @@ export default function FunctionOverviewPage() {
                         const FnIcon = fn.icon;
                         return (
                           <TableRow key={fn.no} className={
-                            fn.devDifficulty === 'very_hard' ? 'bg-purple-50/40' :
-                            fn.devDifficulty === 'hard' ? 'bg-blue-50/30' :
-                            fn.riskLevel === 'critical' ? 'bg-red-50/50' :
-                            fn.riskLevel === 'high' ? 'bg-orange-50/30' : ''
+                            fn.weightScore <= 1 ? 'bg-red-50/40' :
+                            fn.weightScore <= 4 ? 'bg-orange-50/30' :
+                            fn.weightScore <= 7 ? 'bg-blue-50/20' : ''
                           }>
                             <TableCell className="font-medium text-muted-foreground">{fn.no}</TableCell>
                             <TableCell>
@@ -813,14 +812,14 @@ export default function FunctionOverviewPage() {
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                              {fn.responsible}
+                            <TableCell className="text-center">
+                              {getWeightBadge(fn.weightLevel)}
+                            </TableCell>
+                            <TableCell>
+                              {getWeightBar(fn.weightScore)}
                             </TableCell>
                             <TableCell className="text-center">
                               {getDevBadge(fn.devDifficulty)}
-                            </TableCell>
-                            <TableCell>
-                              {getDevBar(fn.devScore)}
                             </TableCell>
                             <TableCell className="text-center">
                               <span className="font-bold text-sm text-blue-700">{fn.devManDays}</span>

@@ -211,6 +211,24 @@ export type Database = {
           },
         ]
       }
+      document_sequences: {
+        Row: {
+          last_number: number
+          prefix: string
+          year_month: string
+        }
+        Insert: {
+          last_number?: number
+          prefix: string
+          year_month: string
+        }
+        Update: {
+          last_number?: number
+          prefix?: string
+          year_month?: string
+        }
+        Relationships: []
+      }
       engine_sizes: {
         Row: {
           company_id: string
@@ -734,6 +752,10 @@ export type Database = {
     }
     Functions: {
       generate_customer_id: { Args: { p_company_id: string }; Returns: string }
+      generate_document_number: {
+        Args: { p_branch_id: string; p_company_id: string }
+        Returns: string
+      }
       get_next_customer_no: { Args: { p_company_id: string }; Returns: number }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_role: {

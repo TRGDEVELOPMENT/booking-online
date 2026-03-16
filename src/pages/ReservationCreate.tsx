@@ -185,20 +185,14 @@ export default function ReservationCreate() {
   // Calculate net price
   const finalPrice = basePrice - discountAmount;
 
-  // Generate document number based on company format
-  const generateDocumentNumber = () => {
-    const now = new Date();
-    const year = now.getFullYear().toString().slice(-2);
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const running = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
-    
-    // Format: BPKRS-yymm-00001 for BPK
-    if (selectedCompany === 'BPK') {
-      return `BPKRS-${year}${month}-${running}`;
-    }
-    
-    // Default format for other companies: [COMPANY]RS-yymm-00001
-    return `${selectedCompany}RS-${year}${month}-${running}`;
+  // Generate document number via database function
+  const generateDocumentNumber = async (): Promise<string> => {
+    const { data, error } = await supabase.rpc('generate_document_number', {
+      p_company_id: selectedCompany,
+      p_branch_id: selectedBranch,
+    });
+    if (error) throw new Error('ไม่สามารถสร้างเลขที่เอกสารได้: ' + error.message);
+    return data as string;
   };
 
   const handleSaveDraft = async () => {
@@ -223,7 +217,7 @@ export default function ReservationCreate() {
     setIsSaving(true);
 
     try {
-      const documentNumber = generateDocumentNumber();
+      const documentNumber = await generateDocumentNumber();
       const customerName = `${selectedBookingCustomer.surnames?.description || ''}${selectedBookingCustomer.first_name} ${selectedBookingCustomer.last_name}`;
       const modelName = vehicleModels.find(m => m.id === selectedModel)?.name || '';
       const submodelName = standardSubmodels.find(s => s.id === selectedSubmodel)?.name || '';

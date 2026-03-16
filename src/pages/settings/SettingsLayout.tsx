@@ -38,6 +38,7 @@ const settingsMenuItems: MenuItem[] = [
   { id: 'benefits', label: 'สิทธิ์ประโยชน์อื่นๆ', icon: Award, path: '/settings/benefits', color: 'text-yellow-500' },
   { id: 'surnames', label: 'คำนำหน้าชื่อ', icon: User, path: '/settings/surnames', color: 'text-cyan-500' },
   { id: 'customers', label: 'ข้อมูลลูกค้า', icon: Users, path: '/settings/customers', color: 'text-teal-500' },
+  { id: 'branches', label: 'สาขา', icon: Building2, path: '/settings/branches', color: 'text-slate-500' },
 ];
 
 export default function SettingsLayout() {

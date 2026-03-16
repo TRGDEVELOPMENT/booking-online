@@ -135,6 +135,15 @@ const settingsItems: SettingsItem[] = [
     color: 'text-teal-600',
     bgColor: 'bg-teal-100 group-hover:bg-teal-600'
   },
+  { 
+    id: 'branches', 
+    label: 'สาขา', 
+    icon: Building2, 
+    path: '/settings/branches',
+    description: 'จัดการข้อมูลสาขา และ Document Prefix',
+    color: 'text-slate-600',
+    bgColor: 'bg-slate-100 group-hover:bg-slate-600'
+  },
 ];
 
 export default function SettingsIndex() {

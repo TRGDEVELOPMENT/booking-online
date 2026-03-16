@@ -80,6 +80,42 @@ export type Database = {
         }
         Relationships: []
       }
+      branches: {
+        Row: {
+          branch_id: string
+          branch_name: string
+          company_id: string
+          created_at: string
+          doc_prefix: string | null
+          id: string
+          no: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          branch_id: string
+          branch_name: string
+          company_id: string
+          created_at?: string
+          doc_prefix?: string | null
+          id?: string
+          no?: never
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string
+          branch_name?: string
+          company_id?: string
+          created_at?: string
+          doc_prefix?: string | null
+          id?: string
+          no?: never
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       colors: {
         Row: {
           company_id: string

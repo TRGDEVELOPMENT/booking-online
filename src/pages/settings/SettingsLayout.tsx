@@ -12,6 +12,7 @@ import {
   Settings,
   User,
   Users,
+  Building2,
   type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';

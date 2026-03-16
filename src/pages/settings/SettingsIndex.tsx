@@ -12,6 +12,7 @@ import {
   ArrowRight,
   User,
   Users,
+  Building2,
   type LucideIcon
 } from 'lucide-react';
 

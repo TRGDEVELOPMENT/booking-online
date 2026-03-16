@@ -217,7 +217,7 @@ export default function ReservationCreate() {
     setIsSaving(true);
 
     try {
-      const documentNumber = generateDocumentNumber();
+      const documentNumber = await generateDocumentNumber();
       const customerName = `${selectedBookingCustomer.surnames?.description || ''}${selectedBookingCustomer.first_name} ${selectedBookingCustomer.last_name}`;
       const modelName = vehicleModels.find(m => m.id === selectedModel)?.name || '';
       const submodelName = standardSubmodels.find(s => s.id === selectedSubmodel)?.name || '';

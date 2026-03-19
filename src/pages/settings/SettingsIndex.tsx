@@ -13,6 +13,9 @@ import {
   User,
   Users,
   Building2,
+  UserCog,
+  Shield,
+  KeyRound,
   type LucideIcon
 } from 'lucide-react';
 

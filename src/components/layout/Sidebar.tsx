@@ -138,6 +138,7 @@ const allMenuItems: MenuItem[] = [
       { id: 'accessories', label: 'อุปกรณ์ตกแต่ง', path: '/settings/accessories', icon: Wrench },
       { id: 'benefits', label: 'สิทธิประโยชน์', path: '/settings/benefits', icon: Award },
       { id: 'surnames', label: 'คำนำหน้าชื่อ', path: '/settings/surnames', icon: User },
+      { id: 'branches', label: 'สาขา', path: '/settings/branches', icon: Building2 },
     ]
   },
   { 

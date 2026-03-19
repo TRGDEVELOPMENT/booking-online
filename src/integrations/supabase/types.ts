@@ -136,7 +136,7 @@ export type Database = {
           hex_color?: string
           id?: string
           model_id?: string | null
-          no?: number
+          no: number
           status?: string
           sub_model_id?: string | null
           updated_at?: string

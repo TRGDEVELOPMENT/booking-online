@@ -42,9 +42,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   companies, 
   branches, 
-  vehicleModels,
-  standardSubmodels 
 } from '@/data/mockData';
+
 import { cn } from '@/lib/utils';
 import type { FuelType, PurchaseType } from '@/types/reservation';
 import { supabase } from '@/integrations/supabase/client';

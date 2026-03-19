@@ -122,6 +122,17 @@ const allMenuItems: MenuItem[] = [
     ]
   },
   { 
+    id: 'user-management', 
+    label: 'จัดการผู้ใช้งาน', 
+    icon: Users, 
+    path: '/settings/users',
+    subItems: [
+      { id: 'users', label: 'ผู้ใช้งาน', path: '/settings/users', icon: User },
+      { id: 'user-groups', label: 'กลุ่มผู้ใช้งาน', path: '/settings/user-groups', icon: Users },
+      { id: 'user-permissions', label: 'กำหนดสิทธิ์ผู้ใช้งาน', path: '/settings/user-permissions', icon: Award },
+    ]
+  },
+  { 
     id: 'settings', 
     label: 'ตั้งค่าระบบ', 
     icon: Settings, 

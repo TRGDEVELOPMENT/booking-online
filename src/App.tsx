@@ -34,6 +34,9 @@ import BenefitsPage from "@/pages/settings/BenefitsPage";
 import SurnamesPage from "@/pages/settings/SurnamesPage";
 import CustomersPage from "@/pages/settings/CustomersPage";
 import BranchesPage from "@/pages/settings/BranchesPage";
+import UsersPage from "@/pages/settings/UsersPage";
+import UserGroupsPage from "@/pages/settings/UserGroupsPage";
+import UserPermissionsPage from "@/pages/settings/UserPermissionsPage";
 
 // Reports Pages
 import MonthlyReservationsPage from "@/pages/reports/MonthlyReservationsPage";

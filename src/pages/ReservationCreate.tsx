@@ -211,8 +211,7 @@ export default function ReservationCreate() {
     else setBenefits(updateFn(benefits));
   };
   const companyBranches = branches.filter(b => b.companyId === selectedCompany);
-  const companyModels = vehicleModels.filter(m => m.companyId === selectedCompany);
-  const selectedSubmodelData = standardSubmodels.find(s => s.id === selectedSubmodel);
+  const selectedSubmodelData = dbSubModels.find(s => s.id === selectedSubmodel);
 
   // Calculate net price
   const finalPrice = basePrice - discountAmount;

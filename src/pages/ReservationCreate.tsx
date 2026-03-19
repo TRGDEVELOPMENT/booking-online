@@ -99,6 +99,39 @@ export default function ReservationCreate() {
   const [depositAmount, setDepositAmount] = useState(0);
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
 
+  // DB-driven models & sub_models
+  const [dbModels, setDbModels] = useState<Array<{ id: string; description: string }>>([]);
+  const [dbSubModels, setDbSubModels] = useState<Array<{ id: string; description: string }>>([]);
+
+  // Fetch models from DB
+  useEffect(() => {
+    const fetchModels = async () => {
+      const { data } = await supabase
+        .from('models')
+        .select('id, description')
+        .eq('status', 'active')
+        .order('description');
+      if (data) setDbModels(data);
+    };
+    fetchModels();
+  }, []);
+
+  // Fetch sub_models filtered by selected model
+  useEffect(() => {
+    setDbSubModels([]);
+    if (!selectedModel) return;
+    const fetchSubModels = async () => {
+      const { data } = await supabase
+        .from('sub_models')
+        .select('id, description')
+        .eq('model_id', selectedModel)
+        .eq('status', 'active')
+        .order('description');
+      if (data) setDbSubModels(data);
+    };
+    fetchSubModels();
+  }, [selectedModel]);
+
   // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์
   const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
   const [accessories, setAccessories] = useState<Array<{ id: number; name: string; value: number }>>([]);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { 
   Save, 
@@ -42,9 +42,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   companies, 
   branches, 
-  vehicleModels,
-  standardSubmodels 
 } from '@/data/mockData';
+
 import { cn } from '@/lib/utils';
 import type { FuelType, PurchaseType } from '@/types/reservation';
 import { supabase } from '@/integrations/supabase/client';
@@ -99,6 +98,39 @@ export default function ReservationCreate() {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [depositAmount, setDepositAmount] = useState(0);
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
+
+  // DB-driven models & sub_models
+  const [dbModels, setDbModels] = useState<Array<{ id: string; description: string }>>([]);
+  const [dbSubModels, setDbSubModels] = useState<Array<{ id: string; description: string }>>([]);
+
+  // Fetch models from DB
+  useEffect(() => {
+    const fetchModels = async () => {
+      const { data } = await supabase
+        .from('models')
+        .select('id, description')
+        .eq('status', 'active')
+        .order('description');
+      if (data) setDbModels(data);
+    };
+    fetchModels();
+  }, []);
+
+  // Fetch sub_models filtered by selected model
+  useEffect(() => {
+    setDbSubModels([]);
+    if (!selectedModel) return;
+    const fetchSubModels = async () => {
+      const { data } = await supabase
+        .from('sub_models')
+        .select('id, description')
+        .eq('model_id', selectedModel)
+        .eq('status', 'active')
+        .order('description');
+      if (data) setDbSubModels(data);
+    };
+    fetchSubModels();
+  }, [selectedModel]);
 
   // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์
   const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
@@ -179,8 +211,7 @@ export default function ReservationCreate() {
     else setBenefits(updateFn(benefits));
   };
   const companyBranches = branches.filter(b => b.companyId === selectedCompany);
-  const companyModels = vehicleModels.filter(m => m.companyId === selectedCompany);
-  const selectedSubmodelData = standardSubmodels.find(s => s.id === selectedSubmodel);
+  const selectedSubmodelData = dbSubModels.find(s => s.id === selectedSubmodel);
 
   // Calculate net price
   const finalPrice = basePrice - discountAmount;
@@ -219,8 +250,8 @@ export default function ReservationCreate() {
     try {
       const documentNumber = await generateDocumentNumber();
       const customerName = `${selectedBookingCustomer.surnames?.description || ''}${selectedBookingCustomer.first_name} ${selectedBookingCustomer.last_name}`;
-      const modelName = vehicleModels.find(m => m.id === selectedModel)?.name || '';
-      const submodelName = standardSubmodels.find(s => s.id === selectedSubmodel)?.name || '';
+      const modelName = dbModels.find(m => m.id === selectedModel)?.description || '';
+      const submodelName = dbSubModels.find(s => s.id === selectedSubmodel)?.description || '';
 
       // Get customer address
       const customerAddress = [
@@ -589,9 +620,9 @@ export default function ReservationCreate() {
                       <SelectValue placeholder="เลือกรุ่นรถ" />
                     </SelectTrigger>
                     <SelectContent>
-                      {companyModels.map(model => (
+                      {dbModels.map(model => (
                         <SelectItem key={model.id} value={model.id}>
-                          {model.name}
+                          {model.description}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -604,9 +635,9 @@ export default function ReservationCreate() {
                       <SelectValue placeholder="เลือกรุ่นย่อย" />
                     </SelectTrigger>
                     <SelectContent>
-                      {standardSubmodels.map(sub => (
+                      {dbSubModels.map(sub => (
                         <SelectItem key={sub.id} value={sub.id}>
-                          {sub.name}
+                          {sub.description}
                         </SelectItem>
                       ))}
                     </SelectContent>

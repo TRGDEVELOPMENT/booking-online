@@ -635,9 +635,9 @@ export default function ReservationCreate() {
                       <SelectValue placeholder="เลือกรุ่นย่อย" />
                     </SelectTrigger>
                     <SelectContent>
-                      {standardSubmodels.map(sub => (
+                      {dbSubModels.map(sub => (
                         <SelectItem key={sub.id} value={sub.id}>
-                          {sub.name}
+                          {sub.description}
                         </SelectItem>
                       ))}
                     </SelectContent>

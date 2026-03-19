@@ -90,6 +90,9 @@ const App = () => (
               <Route path="/settings/surnames" element={<SurnamesPage />} />
               <Route path="/settings/customers" element={<CustomersPage />} />
               <Route path="/settings/branches" element={<BranchesPage />} />
+              <Route path="/settings/users" element={<UsersPage />} />
+              <Route path="/settings/user-groups" element={<UserGroupsPage />} />
+              <Route path="/settings/user-permissions" element={<UserPermissionsPage />} />
             </Route>
             {/* Print page outside MainLayout for clean printing */}
             <Route path="/reservations/:id/print" element={<ReservationPrint />} />

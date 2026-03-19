@@ -147,6 +147,33 @@ const settingsItems: SettingsItem[] = [
     color: 'text-slate-600',
     bgColor: 'bg-slate-100 group-hover:bg-slate-600'
   },
+  { 
+    id: 'users', 
+    label: 'ผู้ใช้งาน', 
+    icon: UserCog, 
+    path: '/settings/users',
+    description: 'จัดการข้อมูลผู้ใช้งานในระบบ',
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-100 group-hover:bg-purple-600'
+  },
+  { 
+    id: 'user-groups', 
+    label: 'กลุ่มผู้ใช้งาน', 
+    icon: Shield, 
+    path: '/settings/user-groups',
+    description: 'แสดงกลุ่มผู้ใช้งาน (Roles) ที่กำหนดในระบบ',
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-100 group-hover:bg-purple-500'
+  },
+  { 
+    id: 'user-permissions', 
+    label: 'กำหนดสิทธิ์ผู้ใช้งาน', 
+    icon: KeyRound, 
+    path: '/settings/user-permissions',
+    description: 'ตารางแสดงสิทธิ์การเข้าถึงฟีเจอร์ตามกลุ่มผู้ใช้',
+    color: 'text-purple-400',
+    bgColor: 'bg-purple-100 group-hover:bg-purple-400'
+  },
 ];
 
 export default function SettingsIndex() {

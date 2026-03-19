@@ -244,6 +244,7 @@ export default function ColorsPage() {
         const { error } = await supabase
           .from('colors')
           .insert({
+            no: 0,
             model_id: formData.model_id,
             sub_model_id: formData.sub_model_id,
             description: formData.description,
@@ -368,6 +369,7 @@ export default function ColorsPage() {
           const { error } = await supabase
             .from('colors')
             .insert({
+              no: 0,
               model_id: model.id,
               sub_model_id: subModel.id,
               description,

@@ -99,9 +99,10 @@ export default function ReservationCreate() {
   const [depositAmount, setDepositAmount] = useState(0);
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
 
-  // DB-driven models & sub_models
+  // DB-driven models, sub_models, colors
   const [dbModels, setDbModels] = useState<Array<{ id: string; description: string }>>([]);
   const [dbSubModels, setDbSubModels] = useState<Array<{ id: string; description: string }>>([]);
+  const [dbColors, setDbColors] = useState<Array<{ id: string; description: string }>>([]);
 
   // Fetch models from DB
   useEffect(() => {
@@ -119,6 +120,7 @@ export default function ReservationCreate() {
   // Fetch sub_models filtered by selected model
   useEffect(() => {
     setDbSubModels([]);
+    setSelectedSubmodel('');
     if (!selectedModel) return;
     const fetchSubModels = async () => {
       const { data } = await supabase
@@ -131,6 +133,44 @@ export default function ReservationCreate() {
     };
     fetchSubModels();
   }, [selectedModel]);
+
+  // Fetch colors filtered by model + sub_model
+  useEffect(() => {
+    setDbColors([]);
+    setSelectedColor('');
+    if (!selectedModel || !selectedSubmodel) return;
+    const fetchColors = async () => {
+      const { data } = await supabase
+        .from('colors')
+        .select('id, description')
+        .eq('model_id', selectedModel)
+        .eq('sub_model_id', selectedSubmodel)
+        .eq('status', 'active')
+        .order('description');
+      if (data) setDbColors(data);
+    };
+    fetchColors();
+  }, [selectedModel, selectedSubmodel]);
+
+  // Fetch standard price by model + sub_model
+  useEffect(() => {
+    if (!selectedModel || !selectedSubmodel) {
+      setBasePrice(0);
+      return;
+    }
+    const fetchPrice = async () => {
+      const { data } = await supabase
+        .from('standard_prices')
+        .select('price')
+        .eq('model_id', selectedModel)
+        .eq('sub_model_id', selectedSubmodel)
+        .eq('status', 'active')
+        .limit(1)
+        .single();
+      if (data) setBasePrice(Number(data.price));
+    };
+    fetchPrice();
+  }, [selectedModel, selectedSubmodel]);
 
   // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์
   const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
@@ -653,18 +693,11 @@ export default function ReservationCreate() {
                       <SelectValue placeholder="เลือกสี" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="red">แดง</SelectItem>
-                      <SelectItem value="blue">น้ำเงิน</SelectItem>
-                      <SelectItem value="yellow">เหลือง</SelectItem>
-                      <SelectItem value="white">ขาว</SelectItem>
-                      <SelectItem value="black">ดำ</SelectItem>
-                      <SelectItem value="purple">ม่วง</SelectItem>
-                      <SelectItem value="green">เขียว</SelectItem>
-                      <SelectItem value="orange">ส้ม</SelectItem>
-                      <SelectItem value="brown">น้ำตาล</SelectItem>
-                      <SelectItem value="pink">ชมพู</SelectItem>
-                      <SelectItem value="skyblue">ฟ้า</SelectItem>
-                      <SelectItem value="gray">เทา</SelectItem>
+                      {dbColors.map(color => (
+                        <SelectItem key={color.id} value={color.description}>
+                          {color.description}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

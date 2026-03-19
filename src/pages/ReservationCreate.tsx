@@ -620,9 +620,9 @@ export default function ReservationCreate() {
                       <SelectValue placeholder="เลือกรุ่นรถ" />
                     </SelectTrigger>
                     <SelectContent>
-                      {companyModels.map(model => (
+                      {dbModels.map(model => (
                         <SelectItem key={model.id} value={model.id}>
-                          {model.name}
+                          {model.description}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -605,10 +605,16 @@ export default function ReservationCreate() {
                           <CheckCircle2 className="w-5 h-5 text-green-600" />
                           <span className="font-medium text-green-600">ผู้ซื้อที่เลือก</span>
                         </div>
-                        <div className="space-y-1 text-sm">
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">รหัส:</span>
-                            <span className="font-mono">{selectedBuyerCustomer.customer_id}</span>
+                        <div className="text-sm space-y-1">
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">รหัส:</span>
+                              <span className="font-mono">{selectedBuyerCustomer.customer_id}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">Tax ID:</span>
+                              <span>{selectedBuyerCustomer.tax_id}</span>
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-muted-foreground">ชื่อ:</span>
@@ -616,9 +622,15 @@ export default function ReservationCreate() {
                               {selectedBuyerCustomer.surnames?.description || ''}{selectedBuyerCustomer.first_name} {selectedBuyerCustomer.last_name}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">เบอร์โทร:</span>
-                            <span>{selectedBuyerCustomer.mobile_phone || '-'}</span>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">เบอร์โทร:</span>
+                              <span>{selectedBuyerCustomer.mobile_phone || selectedBuyerCustomer.telephone || '-'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">อีเมล:</span>
+                              <span>{selectedBuyerCustomer.email || '-'}</span>
+                            </div>
                           </div>
                         </div>
                       </div>

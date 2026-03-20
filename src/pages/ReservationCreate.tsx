@@ -525,12 +525,12 @@ export default function ReservationCreate() {
                             <span className="text-muted-foreground">Tax ID:</span>
                             <span>{selectedBookingCustomer.tax_id}</span>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">ชื่อ:</span>
-                          <span className="font-medium">
-                            {selectedBookingCustomer.surnames?.description || ''}{selectedBookingCustomer.first_name} {selectedBookingCustomer.last_name}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">ชื่อ:</span>
+                            <span className="font-medium">
+                              {selectedBookingCustomer.surnames?.description || ''}{selectedBookingCustomer.first_name} {selectedBookingCustomer.last_name}
+                            </span>
+                          </div>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">

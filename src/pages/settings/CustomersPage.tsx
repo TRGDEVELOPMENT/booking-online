@@ -108,6 +108,7 @@ export default function CustomersPage() {
         supabase
           .from('customers')
           .select('*, surnames(id, description)')
+          .eq('company_id', companyId)
           .order('no', { ascending: true }),
         supabase
           .from('surnames')

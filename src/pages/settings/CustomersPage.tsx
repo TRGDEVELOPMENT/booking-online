@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import type { TablesInsert } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
@@ -64,6 +65,7 @@ type SearchStatus = 'idle' | 'found' | 'not_found';
 
 export default function CustomersPage() {
   const { user } = useAuth();
+  const { selectedCompany } = useOutletContext<{ selectedCompany: string }>();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [surnames, setSurnames] = useState<Surname[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,11 +96,11 @@ export default function CustomersPage() {
     status: 'active',
   });
 
-  const companyId = localStorage.getItem('selectedCompany') || '';
+  const companyId = selectedCompany;
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [selectedCompany]);
 
   const fetchData = async () => {
     try {
@@ -106,6 +108,7 @@ export default function CustomersPage() {
         supabase
           .from('customers')
           .select('*, surnames(id, description)')
+          .eq('company_id', companyId)
           .order('no', { ascending: true }),
         supabase
           .from('surnames')

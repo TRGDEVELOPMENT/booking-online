@@ -247,7 +247,7 @@ export default function Dashboard() {
             {/* Pie Chart */}
             <Card className="border-border/50 shadow-sm">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base font-semibold">สัดส่วนตามประเภทรถ</CardTitle>
+                <CardTitle className="text-base font-semibold">Vehicle Type Distribution</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col items-center">
                 <div className="h-[200px] w-full">

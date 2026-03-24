@@ -29,14 +29,20 @@ const statusStyles: Record<string, string> = {
   cancelled: 'status-cancelled',
 };
 
-export function ReservationTable({ reservations, selectedIds, onSelectChange }: ReservationTableProps) {
-  const allSelected = reservations.length > 0 && selectedIds.length === reservations.length;
+export function ReservationTable({ reservations, selectedIds, onSelectChange, pageSize = 15 }: ReservationTableProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(reservations.length / pageSize));
+  const startIdx = (currentPage - 1) * pageSize;
+  const paginatedReservations = reservations.slice(startIdx, startIdx + pageSize);
+
+  const allSelected = paginatedReservations.length > 0 && paginatedReservations.every(r => selectedIds.includes(r.id));
 
   const toggleAll = () => {
     if (allSelected) {
-      onSelectChange([]);
+      onSelectChange(selectedIds.filter(id => !paginatedReservations.some(r => r.id === id)));
     } else {
-      onSelectChange(reservations.map(r => r.id));
+      const newIds = new Set([...selectedIds, ...paginatedReservations.map(r => r.id)]);
+      onSelectChange(Array.from(newIds));
     }
   };
 

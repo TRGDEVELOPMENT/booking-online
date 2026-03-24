@@ -1831,8 +1831,8 @@ export default function ReservationEdit() {
             </div>
             )}
             
-            {/* Action Buttons - Different for cashier mode */}
-            {!isCashierMode && (
+            {/* Action Buttons - Hidden in view-only mode */}
+            {!isViewOnly && !isCashierMode && (
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
               <Button 
                 variant="outline" 
@@ -1865,11 +1865,23 @@ export default function ReservationEdit() {
             )}
             
             {/* Cashier Action Button */}
-            {isCashierMode && (
+            {!isViewOnly && isCashierMode && (
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
               <Button 
                 variant="outline" 
                 onClick={() => navigate('/reservations/pending-payment')}
+              >
+                กลับไปหน้ารายการ
+              </Button>
+            </div>
+            )}
+
+            {/* View-only back button */}
+            {isViewOnly && (
+            <div className="flex items-center pt-4 border-t border-border pointer-events-auto">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/reservations')}
               >
                 กลับไปหน้ารายการ
               </Button>

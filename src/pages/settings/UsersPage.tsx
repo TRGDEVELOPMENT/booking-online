@@ -417,6 +417,7 @@ export default function UsersPage() {
                   </SelectContent>
                 </Select>
               )}
+            </div>
 
             {/* Supervisor selection - only for Sale role */}
             {formData.role === 'sale' && (

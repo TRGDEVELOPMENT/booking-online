@@ -301,7 +301,7 @@ export default function UsersPage() {
                   <TableCell>{index + 1}</TableCell>
                   <TableCell className="font-medium">{user.full_name}</TableCell>
                   <TableCell>
-                    {user.roles.includes('it') 
+                    {user.roles.includes('it') || user.branch_id === 'all'
                       ? <span className="text-sm text-muted-foreground">ทุกสาขา</span>
                       : branches.find(b => b.branch_id === user.branch_id)?.branch_name || user.branch_id || '-'}
                   </TableCell>

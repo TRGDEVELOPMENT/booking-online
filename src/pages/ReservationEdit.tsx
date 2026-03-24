@@ -66,12 +66,16 @@ export default function ReservationEdit() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { selectedCompany } = useOutletContext<{ selectedCompany: string }>();
   const { user, hasRole } = useAuth();
   const company = companies.find(c => c.id === selectedCompany);
   
+  // Check if view-only mode (URL does NOT end with /edit)
+  const isViewOnly = !location.pathname.endsWith('/edit');
+  
   // Check if in cashier mode
-  const isCashierMode = searchParams.get('mode') === 'cashier' || hasRole('cashier');
+  const isCashierMode = !isViewOnly && (searchParams.get('mode') === 'cashier' || hasRole('cashier'));
   
   // Check if user is a sales advisor (hide certain sections)
   const isSaleRole = hasRole('sale');

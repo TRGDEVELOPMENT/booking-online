@@ -16,13 +16,13 @@ import { DatabaseStatusLabels } from '@/types/database-reservation';
 import { branches } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 
-const workflowSteps = [
-  { label: 'สร้าง' },
-  { label: 'ยืนยัน' },
-  { label: 'ชำระเงิน' },
-  { label: 'ตรวจสอบ' },
-  { label: 'อนุมัติ' },
-  { label: 'พิมพ์' },
+const workflowStageLabels = [
+  'สร้างสัญญาจอง',
+  'ยืนยันสัญญาจอง',
+  'ตรวจสอบการชำระเงิน',
+  'ตรวจสอบรายละเอียด',
+  'อนุมัติ',
+  'พิมพ์/ลงนาม',
 ];
 
 function getWorkflowIndex(r: DatabaseReservation): number {

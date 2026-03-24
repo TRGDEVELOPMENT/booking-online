@@ -30,6 +30,7 @@ import {
   Clock,
   Wallet,
   BookOpen,
+  GitBranch,
   type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';

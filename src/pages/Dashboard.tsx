@@ -220,7 +220,7 @@ export default function Dashboard() {
             {/* Bar Chart */}
             <Card className="lg:col-span-2 border-border/50 shadow-sm">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base font-semibold">สถิติใบจองรายเดือน</CardTitle>
+                <CardTitle className="text-base font-semibold">Monthly Reservations</CardTitle>
               </CardHeader>
               <CardContent>
                 <ChartContainer config={barChartConfig} className="h-[300px] w-full">

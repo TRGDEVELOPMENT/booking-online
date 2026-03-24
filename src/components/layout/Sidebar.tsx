@@ -63,6 +63,7 @@ interface MenuItem {
   icon: LucideIcon;
   path: string;
   subItems?: SubItem[];
+  roles?: string[]; // If set, only these roles can see this menu (empty = everyone)
 }
 
 const isPublished = window.location.hostname === 'booking-online.lovable.app';

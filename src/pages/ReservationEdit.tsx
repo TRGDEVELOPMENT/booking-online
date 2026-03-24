@@ -1774,9 +1774,15 @@ export default function ReservationEdit() {
                   บันทึก
                 </Button>
                 <Button 
-                  className="btn-primary-gradient gap-2"
+                  className={cn(
+                    "gap-2",
+                    confirmationStatus === 'confirmed' 
+                      ? "btn-primary-gradient" 
+                      : "bg-muted text-muted-foreground cursor-not-allowed"
+                  )}
                   onClick={handleSave}
-                  disabled={isSaving}
+                  disabled={isSaving || confirmationStatus !== 'confirmed'}
+                  title={confirmationStatus !== 'confirmed' ? 'กรุณายืนยันสัญญาจองก่อนส่งขออนุมัติ' : ''}
                 >
                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   ส่งขออนุมัติ

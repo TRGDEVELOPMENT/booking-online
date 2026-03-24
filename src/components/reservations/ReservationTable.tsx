@@ -149,42 +149,15 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                   </Link>
                 </td>
                 <td className="px-3 py-1.5">
-                  <Badge 
-                    variant={reservation.status === 'cancelled' ? null : 'default'}
-                    className={cn("status-badge w-fit", statusStyles[reservation.status] || 'status-draft')}
-                  >
-                    {DatabaseStatusLabels[reservation.status] || reservation.status}
-                  </Badge>
-                </td>
-                <td className="px-3 py-1.5">
                   {reservation.status === 'cancelled' ? (
-                    <span className="text-xs text-destructive font-medium">ยกเลิก</span>
+                    <Badge className="status-badge w-fit status-cancelled">ยกเลิก</Badge>
                   ) : (
-                    <div className="flex items-center gap-0.5">
-                      {workflowSteps.map((step, idx) => {
-                        const currentIdx = getWorkflowIndex(reservation);
-                        const isCompleted = idx < currentIdx;
-                        const isCurrent = idx === currentIdx;
-                        return (
-                          <div key={idx} className="flex items-center">
-                            <div className={cn(
-                              "w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold",
-                              isCompleted && "bg-green-500 text-white",
-                              isCurrent && "bg-[#2838cd] text-white",
-                              !isCompleted && !isCurrent && "bg-muted text-muted-foreground"
-                            )}>
-                              {isCompleted ? <Check className="w-3 h-3" /> : idx + 1}
-                            </div>
-                            {idx < workflowSteps.length - 1 && (
-                              <div className={cn(
-                                "w-2 h-0.5",
-                                isCompleted ? "bg-green-500" : "bg-muted"
-                              )} />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <Badge className={cn(
+                      "status-badge w-fit",
+                      "bg-[#2838cd]/10 text-[#2838cd] border border-[#2838cd]/30"
+                    )}>
+                      {workflowStageLabels[getWorkflowIndex(reservation)] || 'สร้างสัญญาจอง'}
+                    </Badge>
                   )}
                 </td>
                 <td className="px-3 py-1.5">

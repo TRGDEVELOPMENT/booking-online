@@ -41,7 +41,7 @@ const roleHeaders = [
   { key: 'cashier', label: 'แคชเชียร์' },
   { key: 'sale_supervisor', label: 'หัวหน้าทีมขาย' },
   { key: 'sale_manager', label: 'ผจก.ฝ่ายขาย' },
-  { key: 'user_admin', label: 'User Admin' },
+  { key: 'user_admin', label: 'ผู้ดูแลระบบ' },
   { key: 'it', label: 'IT Admin' },
 ];
 

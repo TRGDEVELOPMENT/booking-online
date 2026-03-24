@@ -28,6 +28,11 @@ export interface DatabaseReservation {
   freebies: Array<{ id: number; name: string; value: number }> | null;
   accessories: Array<{ id: number; name: string; value: number }> | null;
   benefits: Array<{ id: number; name: string; value: number }> | null;
+  confirmation_status: string | null;
+  confirmation_method: string | null;
+  confirmed_at: string | null;
+  review_status: string | null;
+  approval_status: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

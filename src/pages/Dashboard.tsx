@@ -168,16 +168,6 @@ export default function Dashboard() {
               <h2 className="text-xl font-semibold text-foreground">สรุปภาพรวม</h2>
               <p className="text-sm text-muted-foreground">ข้อมูลอัปเดตล่าสุด: วันนี้</p>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-1.5" />
-                Export Report
-              </Button>
-              <Button size="sm">
-                <Plus className="w-4 h-4 mr-1.5" />
-                สร้างใบจองใหม่
-              </Button>
-            </div>
           </div>
 
           {/* KPI Cards */}
@@ -295,58 +285,6 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* Recent Activity Table */}
-          <Card className="border-border/50 shadow-sm">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold">ธุรกรรมล่าสุด</CardTitle>
-                <Button variant="ghost" size="sm" className="text-primary">
-                  ดูทั้งหมด
-                  <ArrowUpRight className="w-3.5 h-3.5 ml-1" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border/50">
-                      <th className="text-left py-2.5 px-3 font-medium text-muted-foreground">เลขที่เอกสาร</th>
-                      <th className="text-left py-2.5 px-3 font-medium text-muted-foreground">ลูกค้า</th>
-                      <th className="text-left py-2.5 px-3 font-medium text-muted-foreground hidden sm:table-cell">รุ่นรถ</th>
-                      <th className="text-right py-2.5 px-3 font-medium text-muted-foreground hidden md:table-cell">มูลค่า</th>
-                      <th className="text-center py-2.5 px-3 font-medium text-muted-foreground">สถานะ</th>
-                      <th className="text-right py-2.5 px-3 font-medium text-muted-foreground hidden lg:table-cell">วันที่</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentActivity.map((item) => {
-                      const sc = statusConfig[item.status] || statusConfig.pending;
-                      return (
-                        <tr
-                          key={item.id}
-                          className="border-b border-border/30 last:border-0 hover:bg-muted/30 transition-colors"
-                        >
-                          <td className="py-3 px-3 font-medium text-foreground">{item.id}</td>
-                          <td className="py-3 px-3 text-foreground">{item.customer}</td>
-                          <td className="py-3 px-3 text-muted-foreground hidden sm:table-cell">{item.model}</td>
-                          <td className="py-3 px-3 text-right font-medium text-foreground hidden md:table-cell">
-                            ฿{item.amount?.toLocaleString() || '-'}
-                          </td>
-                          <td className="py-3 px-3 text-center">
-                            <Badge variant={sc.variant}>{sc.label}</Badge>
-                          </td>
-                          <td className="py-3 px-3 text-right text-muted-foreground hidden lg:table-cell">
-                            {item.date}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Quick Actions */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

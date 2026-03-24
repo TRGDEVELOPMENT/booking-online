@@ -6,6 +6,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { companies, branches } from '@/data/mockData';
 import type { DatabaseReservation } from '@/types/database-reservation';
 import bizrLogo from '@/assets/bizpk-logo.png';
+import lacLogo from '@/assets/LAC.png';
+
+const companyLogos: Record<string, string> = {
+  BPK: bizrLogo,
+  LAC: lacLogo,
+};
 
 export default function ReservationPrint() {
   const { id } = useParams<{ id: string }>();

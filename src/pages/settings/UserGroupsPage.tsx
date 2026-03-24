@@ -6,7 +6,7 @@ export default function UserGroupsPage() {
     { id: 'cashier', name: 'แคชเชียร์ (Cashier)', description: 'ยืนยันการรับชำระเงิน' },
     { id: 'sale_supervisor', name: 'หัวหน้าทีมขาย (Sale Supervisor)', description: 'ตรวจสอบใบจองจากทีมขาย' },
     { id: 'sale_manager', name: 'ผู้จัดการฝ่ายขาย (Sale Manager)', description: 'อนุมัติใบจอง' },
-    { id: 'user_admin', name: 'ผู้ดูแลผู้ใช้งาน (User Admin)', description: 'สร้างและจัดการผู้ใช้งานในระบบ' },
+    { id: 'user_admin', name: 'ผู้ดูแลระบบ (User Admin)', description: 'สร้างและจัดการผู้ใช้งานในระบบ' },
     { id: 'it', name: 'IT Admin', description: 'จัดการระบบและตั้งค่าทั้งหมด' },
   ];
 

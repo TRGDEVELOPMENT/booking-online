@@ -168,16 +168,6 @@ export default function Dashboard() {
               <h2 className="text-xl font-semibold text-foreground">สรุปภาพรวม</h2>
               <p className="text-sm text-muted-foreground">ข้อมูลอัปเดตล่าสุด: วันนี้</p>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-1.5" />
-                Export Report
-              </Button>
-              <Button size="sm">
-                <Plus className="w-4 h-4 mr-1.5" />
-                สร้างใบจองใหม่
-              </Button>
-            </div>
           </div>
 
           {/* KPI Cards */}

@@ -131,6 +131,7 @@ const allMenuItems: MenuItem[] = [
     label: 'จัดการผู้ใช้งาน', 
     icon: Users, 
     path: '/settings/users',
+    roles: ['user_admin', 'it'],
     subItems: [
       { id: 'users', label: 'ผู้ใช้งาน', path: '/settings/users', icon: User },
       { id: 'user-groups', label: 'กลุ่มผู้ใช้งาน', path: '/settings/user-groups', icon: Users },

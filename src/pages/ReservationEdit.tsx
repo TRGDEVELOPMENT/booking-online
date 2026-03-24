@@ -1322,8 +1322,8 @@ export default function ReservationEdit() {
               isLoading={isLoadingAttachments}
             />
 
-            {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Hidden for sale role */}
-            {!isSaleRole && (
+            {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Show when sent for approval (pending) or approved */}
+            {(approvalStatus === 'approved' || (!isSaleRole && reservationStatus === 'pending')) && (
             <div className="form-section border-2 border-primary/20 bg-primary/5">
               <div className="form-section-header flex items-center gap-2 text-primary">
                 <CreditCard className="w-5 h-5" />

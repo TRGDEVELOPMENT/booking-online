@@ -286,27 +286,6 @@ export default function Dashboard() {
           </div>
 
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { label: 'สร้างใบจอง', icon: Plus, href: '/reservations/create' },
-              { label: 'รายการใบจอง', icon: FileText, href: '/reservations' },
-              { label: 'ลูกค้า', icon: Users, href: '/settings/customers' },
-              { label: 'รายงาน', icon: Car, href: '/reports/monthly' },
-            ].map((action) => (
-              <Card
-                key={action.label}
-                className="border-border/50 shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group"
-              >
-                <CardContent className="p-4 flex flex-col items-center gap-2 text-center">
-                  <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                    <action.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{action.label}</span>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         </div>
       </div>
     </>

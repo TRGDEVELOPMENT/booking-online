@@ -119,6 +119,7 @@ const allMenuItems: MenuItem[] = [
     label: 'รายงาน', 
     icon: BarChart3, 
     path: '/reports',
+    roles: ['sale_supervisor', 'sale_manager', 'it'],
     subItems: [
       { id: 'monthly', label: 'รายงานการจองประจำเดือน', path: '/reports/monthly', icon: CalendarDays },
       { id: 'pending-approval', label: 'รายงานการจองที่ยังไม่อนุมัติ', path: '/reports/pending-approval', icon: Clock },

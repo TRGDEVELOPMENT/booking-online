@@ -63,6 +63,7 @@ interface MenuItem {
   icon: LucideIcon;
   path: string;
   subItems?: SubItem[];
+  roles?: string[]; // If set, only these roles can see this menu (empty = everyone)
 }
 
 const isPublished = window.location.hostname === 'booking-online.lovable.app';
@@ -110,13 +111,15 @@ const allMenuItems: MenuItem[] = [
     id: 'cancelled', 
     label: 'ยกเลิกใบจอง', 
     icon: Ban, 
-    path: '/reservations/cancel' 
+    path: '/reservations/cancel',
+    roles: ['sale', 'sale_supervisor', 'sale_manager', 'it'],
   },
   { 
     id: 'reports', 
     label: 'รายงาน', 
     icon: BarChart3, 
     path: '/reports',
+    roles: ['sale_supervisor', 'sale_manager', 'it'],
     subItems: [
       { id: 'monthly', label: 'รายงานการจองประจำเดือน', path: '/reports/monthly', icon: CalendarDays },
       { id: 'pending-approval', label: 'รายงานการจองที่ยังไม่อนุมัติ', path: '/reports/pending-approval', icon: Clock },
@@ -128,6 +131,7 @@ const allMenuItems: MenuItem[] = [
     label: 'จัดการผู้ใช้งาน', 
     icon: Users, 
     path: '/settings/users',
+    roles: ['user_admin', 'it'],
     subItems: [
       { id: 'users', label: 'ผู้ใช้งาน', path: '/settings/users', icon: User },
       { id: 'user-groups', label: 'กลุ่มผู้ใช้งาน', path: '/settings/user-groups', icon: Users },
@@ -139,6 +143,7 @@ const allMenuItems: MenuItem[] = [
     label: 'ตั้งค่าระบบ', 
     icon: Settings, 
     path: '/settings',
+    roles: ['it'],
     subItems: [
       { id: 'vehicle-types', label: 'ชนิดรถยนต์', path: '/settings/vehicle-types', icon: Car },
       { id: 'models', label: 'รุ่น (Model)', path: '/settings/models', icon: Layers },
@@ -214,9 +219,21 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
       'cashier': 'แคชเชียร์',
       'sale_supervisor': 'หัวหน้าทีมขาย',
       'sale_manager': 'ผู้จัดการฝ่ายขาย',
+      'user_admin': 'ผู้ดูแลระบบ',
       'it': 'IT',
     };
     return roleMap[role] || role;
+  };
+
+  // Filter top-level menu items by role
+  // IT can see everything; other roles check the `roles` property
+  const isIT = hasRole('it');
+  const filterMenuByRole = (items: MenuItem[]) => {
+    return items.filter(item => {
+      if (isIT) return true; // IT sees all
+      if (!item.roles || item.roles.length === 0) return true; // No restriction
+      return item.roles.some(role => hasRole(role as any));
+    });
   };
 
   const handleLogout = async () => {
@@ -265,7 +282,7 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-1">
-            {allMenuItems.filter(item => !isPublished || !devMenuIds.includes(item.id)).map(item => {
+            {filterMenuByRole(allMenuItems.filter(item => !isPublished || !devMenuIds.includes(item.id))).map(item => {
               const Icon = item.icon;
               const filteredSubItems = filterSubItemsByRole(item.subItems);
               const hasSubItems = filteredSubItems.length > 0;

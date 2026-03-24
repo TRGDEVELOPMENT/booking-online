@@ -535,7 +535,7 @@ export default function ReservationEdit() {
        <div className={cn("flex-1 p-6 overflow-auto", isViewOnly && "pointer-events-none")}>
         <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
           {/* Workflow Progress */}
-          <WorkflowSteps currentStage={calculateWorkflowStage()} documentStatus={calculateDocumentStatus()} />
+          <WorkflowSteps currentStage={calculateWorkflowStage()} documentStatus={calculateDocumentStatus()} assignments={assignments} />
 
           {/* Form Sections */}
           <div className="space-y-6">

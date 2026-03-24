@@ -301,7 +301,9 @@ export default function UsersPage() {
                   <TableCell>{index + 1}</TableCell>
                   <TableCell className="font-medium">{user.full_name}</TableCell>
                   <TableCell>
-                    {branches.find(b => b.branch_id === user.branch_id)?.branch_name || user.branch_id || '-'}
+                    {user.roles.includes('it') 
+                      ? <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">ทุกสาขา</Badge>
+                      : branches.find(b => b.branch_id === user.branch_id)?.branch_name || user.branch_id || '-'}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
@@ -373,24 +375,31 @@ export default function UsersPage() {
             )}
 
             <div className="space-y-2">
-              <Label>สาขา</Label>
-              <Select value={formData.branch_id} onValueChange={(v) => setFormData(p => ({ ...p, branch_id: v }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกสาขา" />
-                </SelectTrigger>
-                <SelectContent>
-                  {branches.map(b => (
-                    <SelectItem key={b.branch_id} value={b.branch_id}>{b.branch_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>สาขา {formData.role !== 'it' && <span className="text-destructive">*</span>}</Label>
+              {formData.role === 'it' ? (
+                <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                  <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">ทุกสาขา (All Branches)</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">IT Admin สามารถทำรายการได้ทุกสาขา</p>
+                </div>
+              ) : (
+                <Select value={formData.branch_id} onValueChange={(v) => setFormData(p => ({ ...p, branch_id: v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกสาขา" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {branches.map(b => (
+                      <SelectItem key={b.branch_id} value={b.branch_id}>{b.branch_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label>บทบาท (Role) <span className="text-destructive">*</span></Label>
               <Select
                 value={formData.role}
-                onValueChange={(v) => setFormData(p => ({ ...p, role: v, supervisor_id: '' }))}
+                onValueChange={(v) => setFormData(p => ({ ...p, role: v, supervisor_id: '', branch_id: v === 'it' ? '' : p.branch_id }))}
                 disabled={dialogMode === 'edit'}
               >
                 <SelectTrigger>

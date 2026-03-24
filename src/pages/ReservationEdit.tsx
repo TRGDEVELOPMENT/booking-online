@@ -517,8 +517,8 @@ export default function ReservationEdit() {
 
   return (
     <>
-      <Header 
-        title={isCashierMode ? "รับเงินจอง" : "แก้ไขใบจอง"}
+       <Header 
+        title={isViewOnly ? "รายละเอียดใบจอง" : isCashierMode ? "รับเงินจอง" : "แก้ไขใบจอง"}
         subtitle={`${company?.code} - เลขที่: ${documentNumber}${isCashierMode ? ' (โหมดแคชเชียร์)' : ''}`}
       />
       

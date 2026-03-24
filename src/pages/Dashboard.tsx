@@ -200,7 +200,7 @@ export default function Dashboard() {
                           {kpi.trend > 0 ? '+' : ''}
                           {kpi.trend}%
                         </span>
-                        <span className="text-xs text-muted-foreground">vs เดือนก่อน</span>
+                        <span className="text-xs text-muted-foreground">vs last month</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">

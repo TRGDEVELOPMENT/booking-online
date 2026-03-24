@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Edit, Trash2, MoreHorizontal, Printer, Check } from 'lucide-react';
+import { Eye, Edit, Trash2, MoreHorizontal, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,13 +16,13 @@ import { DatabaseStatusLabels } from '@/types/database-reservation';
 import { branches } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 
-const workflowSteps = [
-  { label: 'สร้าง' },
-  { label: 'ยืนยัน' },
-  { label: 'ชำระเงิน' },
-  { label: 'ตรวจสอบ' },
-  { label: 'อนุมัติ' },
-  { label: 'พิมพ์' },
+const workflowStageLabels = [
+  'สร้างสัญญาจอง',
+  'ยืนยันสัญญาจอง',
+  'ตรวจสอบการชำระเงิน',
+  'ตรวจสอบรายละเอียด',
+  'อนุมัติ',
+  'พิมพ์/ลงนาม',
 ];
 
 function getWorkflowIndex(r: DatabaseReservation): number {
@@ -116,7 +116,6 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
               </th>
               <th className="text-left px-3 py-2 font-semibold">เลขที่เอกสาร</th>
               <th className="text-left px-3 py-2 font-semibold">สถานะใบจอง</th>
-              <th className="text-center px-3 py-2 font-semibold">Stage</th>
               <th className="text-left px-3 py-2 font-semibold">ผู้จอง</th>
               <th className="text-left px-3 py-2 font-semibold">รุ่นรถ / สี</th>
               <th className="text-right px-3 py-2 font-semibold">ราคาสุทธิ</th>
@@ -150,42 +149,15 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                   </Link>
                 </td>
                 <td className="px-3 py-1.5">
-                  <Badge 
-                    variant={reservation.status === 'cancelled' ? null : 'default'}
-                    className={cn("status-badge w-fit", statusStyles[reservation.status] || 'status-draft')}
-                  >
-                    {DatabaseStatusLabels[reservation.status] || reservation.status}
-                  </Badge>
-                </td>
-                <td className="px-3 py-1.5">
                   {reservation.status === 'cancelled' ? (
-                    <span className="text-xs text-destructive font-medium">ยกเลิก</span>
+                    <Badge className="status-badge w-fit status-cancelled">ยกเลิก</Badge>
                   ) : (
-                    <div className="flex items-center gap-0.5">
-                      {workflowSteps.map((step, idx) => {
-                        const currentIdx = getWorkflowIndex(reservation);
-                        const isCompleted = idx < currentIdx;
-                        const isCurrent = idx === currentIdx;
-                        return (
-                          <div key={idx} className="flex items-center">
-                            <div className={cn(
-                              "w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold",
-                              isCompleted && "bg-green-500 text-white",
-                              isCurrent && "bg-[#2838cd] text-white",
-                              !isCompleted && !isCurrent && "bg-muted text-muted-foreground"
-                            )}>
-                              {isCompleted ? <Check className="w-3 h-3" /> : idx + 1}
-                            </div>
-                            {idx < workflowSteps.length - 1 && (
-                              <div className={cn(
-                                "w-2 h-0.5",
-                                isCompleted ? "bg-green-500" : "bg-muted"
-                              )} />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <Badge className={cn(
+                      "status-badge w-fit",
+                      "bg-[#2838cd]/10 text-[#2838cd] border border-[#2838cd]/30"
+                    )}>
+                      {workflowStageLabels[getWorkflowIndex(reservation)] || 'สร้างสัญญาจอง'}
+                    </Badge>
                   )}
                 </td>
                 <td className="px-3 py-1.5">

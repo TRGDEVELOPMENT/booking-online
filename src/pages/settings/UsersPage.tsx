@@ -399,7 +399,7 @@ export default function UsersPage() {
               <Label>บทบาท (Role) <span className="text-destructive">*</span></Label>
               <Select
                 value={formData.role}
-                onValueChange={(v) => setFormData(p => ({ ...p, role: v, supervisor_id: '' }))}
+                onValueChange={(v) => setFormData(p => ({ ...p, role: v, supervisor_id: '', branch_id: v === 'it' ? '' : p.branch_id }))}
                 disabled={dialogMode === 'edit'}
               >
                 <SelectTrigger>

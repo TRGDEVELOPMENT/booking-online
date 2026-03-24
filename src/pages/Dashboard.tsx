@@ -107,25 +107,25 @@ const kpiCards = [
 
 // Bar chart data
 const barChartData = [
-  { month: 'ม.ค.', reservations: 45, amount: 28.5 },
-  { month: 'ก.พ.', reservations: 52, amount: 32.8 },
-  { month: 'มี.ค.', reservations: 59, amount: 38.2 },
-  { month: 'เม.ย.', reservations: 48, amount: 30.1 },
-  { month: 'พ.ค.', reservations: 63, amount: 41.5 },
-  { month: 'มิ.ย.', reservations: 55, amount: 35.7 },
+  { month: 'Jan', reservations: 45, amount: 28.5 },
+  { month: 'Feb', reservations: 52, amount: 32.8 },
+  { month: 'Mar', reservations: 59, amount: 38.2 },
+  { month: 'Apr', reservations: 48, amount: 30.1 },
+  { month: 'May', reservations: 63, amount: 41.5 },
+  { month: 'Jun', reservations: 55, amount: 35.7 },
 ];
 
 const barChartConfig: ChartConfig = {
-  reservations: { label: 'จำนวนใบจอง', color: 'hsl(var(--primary))' },
-  amount: { label: 'มูลค่า (ล้านบาท)', color: 'hsl(var(--accent))' },
+  reservations: { label: 'Reservations', color: 'hsl(var(--primary))' },
+  amount: { label: 'Value (M฿)', color: 'hsl(var(--accent))' },
 };
 
 // Pie chart data
 const pieData = [
-  { name: 'รถยนต์นั่ง', value: 45, color: 'hsl(var(--primary))' },
-  { name: 'รถ SUV/PPV', value: 25, color: 'hsl(var(--accent))' },
-  { name: 'รถกระบะ', value: 20, color: 'hsl(var(--success))' },
-  { name: 'รถ EV', value: 10, color: 'hsl(var(--warning))' },
+  { name: 'Sedan', value: 45, color: 'hsl(var(--primary))' },
+  { name: 'SUV/PPV', value: 25, color: 'hsl(var(--accent))' },
+  { name: 'Pickup', value: 20, color: 'hsl(var(--success))' },
+  { name: 'EV', value: 10, color: 'hsl(var(--warning))' },
 ];
 
 // Recent activity from mock reservations

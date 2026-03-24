@@ -19,6 +19,7 @@ interface ReservationTableProps {
   reservations: DatabaseReservation[];
   selectedIds: string[];
   onSelectChange: (ids: string[]) => void;
+  pageSize?: number;
 }
 
 const statusStyles: Record<string, string> = {

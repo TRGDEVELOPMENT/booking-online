@@ -22,7 +22,14 @@ const steps = [
   { id: 'step6', label: 'พิมพ์/ลงนาม', shortLabel: 'พิมพ์' },
 ];
 
-export function WorkflowSteps({ currentStage, documentStatus }: WorkflowStepsProps) {
+// Map step index to assignment stage
+const stepToAssignmentStage: Record<number, string> = {
+  2: 'cashier',   // step3: ตรวจสอบการชำระเงิน
+  3: 'review',    // step4: ตรวจสอบรายละเอียด
+  4: 'approval',  // step5: อนุมัติ
+};
+
+export function WorkflowSteps({ currentStage, documentStatus, assignments = [] }: WorkflowStepsProps) {
   const currentIndex = steps.findIndex(s => s.id === currentStage);
   const isCancelled = documentStatus === 'cancelled' || currentStage === 'step7';
 

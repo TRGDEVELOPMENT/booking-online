@@ -30,6 +30,7 @@ import {
   Clock,
   Wallet,
   BookOpen,
+  GitBranch,
   type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -96,6 +97,7 @@ const allMenuItems: MenuItem[] = [
       { id: 'list', label: 'รายการใบจอง', path: '/reservations', icon: List },
       { id: 'create', label: 'สร้างใบจองใหม่', path: '/reservations/create', icon: FilePlus2 },
       { id: 'pending-payment', label: 'ใบจองรอยืนยันรับเงิน', path: '/reservations/pending-payment', icon: Wallet, roles: ['cashier'] },
+      { id: 'approval-chain', label: 'ปรับปรุงสายอนุมัติ', path: '/reservations/approval-chain', icon: GitBranch, roles: ['user_admin', 'it'] },
     ]
   },
   { 

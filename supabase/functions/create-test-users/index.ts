@@ -46,8 +46,15 @@ const testUsers: TestUser[] = [
     email: 'it@test.com',
     password: 'Test1234!',
     full_name: 'สมเกียรติ ไอที',
-    company_id: 'VPA',
+    company_id: 'BPK',
     role: 'it',
+  },
+  {
+    email: 'useradmin@test.com',
+    password: 'Test1234!',
+    full_name: 'สมพร ดูแลระบบ',
+    company_id: 'BPK',
+    role: 'user_admin',
   },
 ];
 

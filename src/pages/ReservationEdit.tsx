@@ -522,7 +522,7 @@ export default function ReservationEdit() {
         subtitle={`${company?.code} - เลขที่: ${documentNumber}${isCashierMode ? ' (โหมดแคชเชียร์)' : ''}`}
       />
       
-      <div className="flex-1 p-6 overflow-auto">
+       <div className={cn("flex-1 p-6 overflow-auto", isViewOnly && "pointer-events-none")}>
         <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
           {/* Workflow Progress */}
           <WorkflowSteps currentStage={calculateWorkflowStage()} documentStatus={calculateDocumentStatus()} />

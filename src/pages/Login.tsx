@@ -161,6 +161,7 @@ export default function Login() {
               <p><strong>แคชเชียร์:</strong> cashier@test.com</p>
               <p><strong>หัวหน้าทีมขาย:</strong> supervisor@test.com</p>
               <p><strong>ผู้จัดการฝ่ายขาย:</strong> manager@test.com</p>
+              <p><strong>ผู้ดูแลระบบ:</strong> useradmin@test.com</p>
               <p><strong>IT:</strong> it@test.com</p>
               <p className="mt-2 text-center">รหัสผ่าน: <strong>Test1234!</strong></p>
             </div>

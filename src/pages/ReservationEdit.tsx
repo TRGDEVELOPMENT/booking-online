@@ -37,6 +37,8 @@ import { Header } from '@/components/layout/Header';
 import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
 import FileUploadSection from '@/components/reservations/FileUploadSection';
 import { useReservationAttachments } from '@/hooks/useReservationAttachments';
+import { useReservationAssignments } from '@/hooks/useReservationAssignments';
+import { AdminAssignmentPanel } from '@/components/reservations/AdminAssignmentPanel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -79,6 +81,7 @@ export default function ReservationEdit() {
   
   // Check if user is a sales advisor (hide certain sections)
   const isSaleRole = hasRole('sale');
+  const isAdmin = hasRole('user_admin') || hasRole('it');
 
   // Loading states
   const [isLoading, setIsLoading] = useState(true);
@@ -166,6 +169,13 @@ export default function ReservationEdit() {
   } = useReservationAttachments({ 
     reservationId: id, 
     companyId: selectedCompany 
+  });
+
+  // Reservation assignments (for admin panel & workflow display)
+  const { assignments, refetch: refetchAssignments } = useReservationAssignments({
+    reservationId: id,
+    companyId: selectedCompany,
+    branchId: selectedBranch || null,
   });
 
   // Fetch reservation data
@@ -525,9 +535,26 @@ export default function ReservationEdit() {
        <div className={cn("flex-1 p-6 overflow-auto", isViewOnly && "pointer-events-none")}>
         <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
           {/* Workflow Progress */}
-          <WorkflowSteps currentStage={calculateWorkflowStage()} documentStatus={calculateDocumentStatus()} />
+          <WorkflowSteps currentStage={calculateWorkflowStage()} documentStatus={calculateDocumentStatus()} assignments={assignments} />
 
-          {/* Form Sections */}
+           {/* Admin Assignment Panel - visible only to user_admin/it */}
+           {isAdmin && id && (
+             <AdminAssignmentPanel
+               reservationId={id}
+               companyId={selectedCompany}
+               branchId={selectedBranch || null}
+               currentStatus={reservationStatus}
+               confirmationStatus={confirmationStatus}
+               reviewStatus={reviewStatus}
+               approvalStatus={approvalStatus}
+               onStatusChange={() => {
+                 // Reload the page data
+                 window.location.reload();
+               }}
+             />
+           )}
+
+           {/* Form Sections */}
           <div className="space-y-6">
             {/* Section 1: Branch/Vehicle Type Selection */}
             <div className="form-section">

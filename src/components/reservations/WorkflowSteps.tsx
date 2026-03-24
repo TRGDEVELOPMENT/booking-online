@@ -2,9 +2,15 @@ import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { WorkflowStage, DocumentStatus } from '@/types/reservation';
 
+interface AssignmentInfo {
+  stage: string;
+  assigned_user_name?: string;
+}
+
 interface WorkflowStepsProps {
   currentStage: WorkflowStage;
   documentStatus: DocumentStatus;
+  assignments?: AssignmentInfo[];
 }
 
 const steps = [
@@ -16,7 +22,14 @@ const steps = [
   { id: 'step6', label: 'พิมพ์/ลงนาม', shortLabel: 'พิมพ์' },
 ];
 
-export function WorkflowSteps({ currentStage, documentStatus }: WorkflowStepsProps) {
+// Map step index to assignment stage
+const stepToAssignmentStage: Record<number, string> = {
+  2: 'cashier',   // step3: ตรวจสอบการชำระเงิน
+  3: 'review',    // step4: ตรวจสอบรายละเอียด
+  4: 'approval',  // step5: อนุมัติ
+};
+
+export function WorkflowSteps({ currentStage, documentStatus, assignments = [] }: WorkflowStepsProps) {
   const currentIndex = steps.findIndex(s => s.id === currentStage);
   const isCancelled = documentStatus === 'cancelled' || currentStage === 'step7';
 
@@ -73,6 +86,16 @@ export function WorkflowSteps({ currentStage, documentStatus }: WorkflowStepsPro
                 <span className="hidden md:inline">{step.label}</span>
                 <span className="md:hidden">{step.shortLabel}</span>
               </p>
+              {/* Show assigned user name */}
+              {(() => {
+                const assignmentStage = stepToAssignmentStage[index];
+                const assignment = assignmentStage && assignments.find(a => a.stage === assignmentStage);
+                return assignment?.assigned_user_name ? (
+                  <p className="text-[10px] text-muted-foreground mt-0.5 text-center truncate max-w-[80px] md:max-w-[120px]" title={assignment.assigned_user_name}>
+                    👤 {assignment.assigned_user_name}
+                  </p>
+                ) : null;
+              })()}
             </div>
           );
         })}

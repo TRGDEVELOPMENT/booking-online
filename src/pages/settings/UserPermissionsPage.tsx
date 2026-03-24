@@ -18,21 +18,22 @@ interface Permission {
   cashier: boolean;
   sale_supervisor: boolean;
   sale_manager: boolean;
+  user_admin: boolean;
   it: boolean;
 }
 
 const defaultPermissions: Permission[] = [
-  { feature: 'สร้างใบจอง', sale: true, cashier: false, sale_supervisor: true, sale_manager: true, it: true },
-  { feature: 'แก้ไขใบจอง', sale: true, cashier: false, sale_supervisor: true, sale_manager: true, it: true },
-  { feature: 'ตรวจสอบใบจอง (Review)', sale: false, cashier: false, sale_supervisor: true, sale_manager: false, it: true },
-  { feature: 'อนุมัติใบจอง (Approve)', sale: false, cashier: false, sale_supervisor: false, sale_manager: true, it: true },
-  { feature: 'ยืนยันรับเงิน (Payment)', sale: false, cashier: true, sale_supervisor: false, sale_manager: false, it: true },
-  { feature: 'ขอยกเลิกใบจอง', sale: true, cashier: false, sale_supervisor: true, sale_manager: true, it: true },
-  { feature: 'ตรวจสอบการยกเลิก', sale: false, cashier: false, sale_supervisor: true, sale_manager: false, it: true },
-  { feature: 'อนุมัติการยกเลิก', sale: false, cashier: false, sale_supervisor: false, sale_manager: true, it: true },
-  { feature: 'ตั้งค่าข้อมูลหลัก', sale: false, cashier: false, sale_supervisor: false, sale_manager: true, it: true },
-  { feature: 'จัดการผู้ใช้งาน', sale: false, cashier: false, sale_supervisor: false, sale_manager: false, it: true },
-  { feature: 'ดูรายงาน', sale: true, cashier: true, sale_supervisor: true, sale_manager: true, it: true },
+  { feature: 'สร้างใบจอง', sale: true, cashier: false, sale_supervisor: true, sale_manager: true, user_admin: false, it: true },
+  { feature: 'แก้ไขใบจอง', sale: true, cashier: false, sale_supervisor: true, sale_manager: true, user_admin: false, it: true },
+  { feature: 'ตรวจสอบใบจอง (Review)', sale: false, cashier: false, sale_supervisor: true, sale_manager: false, user_admin: false, it: true },
+  { feature: 'อนุมัติใบจอง (Approve)', sale: false, cashier: false, sale_supervisor: false, sale_manager: true, user_admin: false, it: true },
+  { feature: 'ยืนยันรับเงิน (Payment)', sale: false, cashier: true, sale_supervisor: false, sale_manager: false, user_admin: false, it: true },
+  { feature: 'ขอยกเลิกใบจอง', sale: true, cashier: false, sale_supervisor: true, sale_manager: true, user_admin: false, it: true },
+  { feature: 'ตรวจสอบการยกเลิก', sale: false, cashier: false, sale_supervisor: true, sale_manager: false, user_admin: false, it: true },
+  { feature: 'อนุมัติการยกเลิก', sale: false, cashier: false, sale_supervisor: false, sale_manager: true, user_admin: false, it: true },
+  { feature: 'ตั้งค่าข้อมูลหลัก', sale: false, cashier: false, sale_supervisor: false, sale_manager: true, user_admin: false, it: true },
+  { feature: 'จัดการผู้ใช้งาน', sale: false, cashier: false, sale_supervisor: false, sale_manager: false, user_admin: true, it: true },
+  { feature: 'ดูรายงาน', sale: true, cashier: true, sale_supervisor: true, sale_manager: true, user_admin: false, it: true },
 ];
 
 const roleHeaders = [
@@ -40,6 +41,7 @@ const roleHeaders = [
   { key: 'cashier', label: 'แคชเชียร์' },
   { key: 'sale_supervisor', label: 'หัวหน้าทีมขาย' },
   { key: 'sale_manager', label: 'ผจก.ฝ่ายขาย' },
+  { key: 'user_admin', label: 'User Admin' },
   { key: 'it', label: 'IT Admin' },
 ];
 

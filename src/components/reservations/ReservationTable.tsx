@@ -115,7 +115,8 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                 <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
               </th>
               <th className="text-left px-3 py-2 font-semibold">เลขที่เอกสาร</th>
-              <th className="text-left px-3 py-2 font-semibold">สถานะ</th>
+              <th className="text-left px-3 py-2 font-semibold">สถานะใบจอง</th>
+              <th className="text-center px-3 py-2 font-semibold">Stage</th>
               <th className="text-left px-3 py-2 font-semibold">ผู้จอง</th>
               <th className="text-left px-3 py-2 font-semibold">รุ่นรถ / สี</th>
               <th className="text-right px-3 py-2 font-semibold">ราคาสุทธิ</th>

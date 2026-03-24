@@ -61,9 +61,9 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
 // KPI data
 const kpiCards = [
   {
-    title: 'ใบจองทั้งหมด',
+    title: 'Total Reservations',
     value: reservationSummary.total,
-    suffix: 'ใบ',
+    suffix: '',
     icon: FileText,
     trend: 12.5,
     sparkData: [30, 35, 28, 42, 45, 52, 59],
@@ -72,7 +72,7 @@ const kpiCards = [
     iconClass: 'text-primary',
   },
   {
-    title: 'มูลค่ารวม',
+    title: 'Total Value',
     value: `฿${(reservationSummary.totalAmount / 1000000).toFixed(1)}M`,
     icon: Wallet,
     trend: 8.3,
@@ -82,9 +82,9 @@ const kpiCards = [
     iconClass: 'text-success',
   },
   {
-    title: 'สมบูรณ์',
+    title: 'Completed',
     value: reservationSummary.final,
-    suffix: 'ใบ',
+    suffix: '',
     icon: FileCheck,
     trend: 5.2,
     sparkData: [20, 25, 22, 30, 35, 40, 45],
@@ -93,9 +93,9 @@ const kpiCards = [
     iconClass: 'text-success',
   },
   {
-    title: 'รอดำเนินการ',
+    title: 'Pending',
     value: reservationSummary.draft,
-    suffix: 'ใบ',
+    suffix: '',
     icon: Clock,
     trend: -3.1,
     sparkData: [15, 18, 22, 20, 17, 14, 12],

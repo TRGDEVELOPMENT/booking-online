@@ -219,9 +219,21 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
       'cashier': 'แคชเชียร์',
       'sale_supervisor': 'หัวหน้าทีมขาย',
       'sale_manager': 'ผู้จัดการฝ่ายขาย',
+      'user_admin': 'ผู้ดูแลระบบ',
       'it': 'IT',
     };
     return roleMap[role] || role;
+  };
+
+  // Filter top-level menu items by role
+  // IT can see everything; other roles check the `roles` property
+  const isIT = hasRole('it');
+  const filterMenuByRole = (items: MenuItem[]) => {
+    return items.filter(item => {
+      if (isIT) return true; // IT sees all
+      if (!item.roles || item.roles.length === 0) return true; // No restriction
+      return item.roles.some(role => hasRole(role as any));
+    });
   };
 
   const handleLogout = async () => {

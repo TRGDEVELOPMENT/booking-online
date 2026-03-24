@@ -11,7 +11,7 @@ interface Profile {
 }
 
 interface UserRole {
-  role: 'sale' | 'cashier' | 'sale_supervisor' | 'sale_manager' | 'it';
+  role: 'sale' | 'cashier' | 'sale_supervisor' | 'sale_manager' | 'user_admin' | 'it';
 }
 
 export function useAuth() {

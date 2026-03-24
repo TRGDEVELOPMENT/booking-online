@@ -148,16 +148,13 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                     {reservation.document_number}
                   </Link>
                 </td>
-                <td className="px-3 py-1.5">
+                <td className="px-3 py-1.5 text-sm">
                   {reservation.status === 'cancelled' ? (
-                    <Badge className="status-badge w-fit status-cancelled">ยกเลิก</Badge>
+                    <span className="text-destructive font-medium">ยกเลิก</span>
                   ) : (
-                    <Badge className={cn(
-                      "status-badge w-fit",
-                      "bg-[#2838cd]/10 text-[#2838cd] border border-[#2838cd]/30"
-                    )}>
+                    <span className="text-foreground">
                       {workflowStageLabels[getWorkflowIndex(reservation)] || 'สร้างสัญญาจอง'}
-                    </Badge>
+                    </span>
                   )}
                 </td>
                 <td className="px-3 py-1.5">

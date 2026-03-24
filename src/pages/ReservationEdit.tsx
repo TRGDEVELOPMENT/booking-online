@@ -1015,125 +1015,93 @@ export default function ReservationEdit() {
                             {bookingPhone ? `${bookingPhone.slice(0, 3)}-XXX-${bookingPhone.slice(-4)}` : 'ไม่ระบุ'}
                           </p>
                         </div>
-                        <Button 
-                          variant="outline" 
-                          onClick={async () => {
-                            if (!bookingPhone) {
-                              toast.error('กรุณากรอกเบอร์โทรศัพท์ลูกค้า');
-                              return;
-                            }
-                            setIsSendingOtp(true);
-                            try {
-                              // Mock OTP sending for now
-                              await new Promise(resolve => setTimeout(resolve, 1500));
-                              setConfirmationStatus('otp_sent');
-                              setOtpExpiresAt(new Date(Date.now() + 5 * 60 * 1000).toISOString());
-                              toast.success('ส่งรหัส OTP ไปที่ลูกค้าแล้ว');
-                            } catch (err) {
-                              toast.error('เกิดข้อผิดพลาดในการส่ง OTP');
-                            } finally {
-                              setIsSendingOtp(false);
-                            }
-                          }}
-                          disabled={isSendingOtp || confirmationStatus === 'otp_sent'}
-                          className="gap-2"
-                        >
-                          {isSendingOtp ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Send className="w-4 h-4" />
-                          )}
-                          {confirmationStatus === 'otp_sent' ? 'ส่ง OTP แล้ว' : 'ส่ง OTP'}
-                        </Button>
+                        {confirmationStatus === 'pending' && (
+                          <Button 
+                            variant="outline" 
+                            onClick={async () => {
+                              if (!bookingPhone) {
+                                toast.error('กรุณากรอกเบอร์โทรศัพท์ลูกค้า');
+                                return;
+                              }
+                              setIsSendingOtp(true);
+                              try {
+                                await new Promise(resolve => setTimeout(resolve, 1500));
+                                setConfirmationStatus('otp_sent');
+                                toast.success('ส่งรหัส OTP ไปที่ลูกค้าแล้ว (Demo)');
+                              } finally {
+                                setIsSendingOtp(false);
+                              }
+                            }}
+                            disabled={isSendingOtp}
+                            className="gap-2"
+                          >
+                            {isSendingOtp ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Send className="w-4 h-4" />
+                            )}
+                            ส่ง OTP
+                          </Button>
+                        )}
                       </div>
 
                       {confirmationStatus === 'otp_sent' && (
-                        <>
-                          <div className="pt-4 border-t border-border">
-                            <Label className="mb-2 block">กรอกรหัส OTP จากลูกค้า</Label>
-                            <div className="flex items-center gap-4">
-                              <InputOTP 
-                                maxLength={6} 
-                                value={otpCode}
-                                onChange={setOtpCode}
-                              >
-                                <InputOTPGroup>
-                                  <InputOTPSlot index={0} />
-                                  <InputOTPSlot index={1} />
-                                  <InputOTPSlot index={2} />
-                                  <InputOTPSlot index={3} />
-                                  <InputOTPSlot index={4} />
-                                  <InputOTPSlot index={5} />
-                                </InputOTPGroup>
-                              </InputOTP>
-                              <Button 
-                                onClick={async () => {
-                                  if (otpCode.length !== 6) {
-                                    toast.error('กรุณากรอกรหัส OTP 6 หลัก');
-                                    return;
-                                  }
-                                  setIsVerifyingOtp(true);
-                                  try {
-                                    // Mock OTP verification
-                                    await new Promise(resolve => setTimeout(resolve, 1000));
-                                    const now = new Date().toISOString();
-                                    setConfirmationStatus('confirmed');
-                                    setConfirmedAt(now);
-                                    // Update database
-                                    await supabase
-                                      .from('reservations')
-                                      .update({ 
-                                        confirmation_status: 'confirmed',
-                                        confirmation_method: 'otp',
-                                        confirmed_at: now
-                                      })
-                                      .eq('id', id);
-                                    toast.success('ยืนยันการจองสำเร็จ');
-                                  } catch (err) {
-                                    toast.error('รหัส OTP ไม่ถูกต้อง');
-                                  } finally {
-                                    setIsVerifyingOtp(false);
-                                  }
-                                }}
-                                disabled={isVerifyingOtp || otpCode.length !== 6}
-                                className="bg-green-600 hover:bg-green-700 text-white gap-2"
-                              >
-                                {isVerifyingOtp ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <CheckCircle className="w-4 h-4" />
-                                )}
-                                ยืนยัน OTP
-                              </Button>
-                            </div>
-                            <div className="flex items-center justify-between mt-3">
-                              <p className="text-sm text-muted-foreground">
-                                <Clock className="w-3 h-3 inline mr-1" />
-                                รหัส OTP หมดอายุใน 5 นาที
-                              </p>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={async () => {
-                                  setIsSendingOtp(true);
-                                  try {
-                                    await new Promise(resolve => setTimeout(resolve, 1500));
-                                    setOtpCode('');
-                                    setOtpExpiresAt(new Date(Date.now() + 5 * 60 * 1000).toISOString());
-                                    toast.success('ส่งรหัส OTP ใหม่แล้ว');
-                                  } finally {
-                                    setIsSendingOtp(false);
-                                  }
-                                }}
-                                disabled={isSendingOtp}
-                                className="text-green-600 hover:text-green-700 gap-1"
-                              >
-                                <RefreshCw className="w-3 h-3" />
-                                ส่งรหัสใหม่
-                              </Button>
-                            </div>
+                        <div className="pt-4 border-t border-border">
+                          <Label className="mb-2 block">กรอกรหัส OTP จากลูกค้า</Label>
+                          <div className="flex items-center gap-4">
+                            <InputOTP 
+                              maxLength={6} 
+                              value={otpCode}
+                              onChange={setOtpCode}
+                            >
+                              <InputOTPGroup>
+                                <InputOTPSlot index={0} />
+                                <InputOTPSlot index={1} />
+                                <InputOTPSlot index={2} />
+                                <InputOTPSlot index={3} />
+                                <InputOTPSlot index={4} />
+                                <InputOTPSlot index={5} />
+                              </InputOTPGroup>
+                            </InputOTP>
+                            <Button 
+                              onClick={async () => {
+                                if (otpCode.length !== 6) {
+                                  toast.error('กรุณากรอกรหัส OTP 6 หลัก');
+                                  return;
+                                }
+                                setIsVerifyingOtp(true);
+                                try {
+                                  await new Promise(resolve => setTimeout(resolve, 1000));
+                                  const now = new Date().toISOString();
+                                  setConfirmationStatus('confirmed');
+                                  setConfirmedAt(now);
+                                  await supabase
+                                    .from('reservations')
+                                    .update({ 
+                                      confirmation_status: 'confirmed',
+                                      confirmation_method: 'otp',
+                                      confirmed_at: now
+                                    })
+                                    .eq('id', id);
+                                  toast.success('ยืนยันสัญญาจองสำเร็จ');
+                                } catch (err) {
+                                  toast.error('รหัส OTP ไม่ถูกต้อง');
+                                } finally {
+                                  setIsVerifyingOtp(false);
+                                }
+                              }}
+                              disabled={isVerifyingOtp || otpCode.length !== 6}
+                              className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                            >
+                              {isVerifyingOtp ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <CheckCircle className="w-4 h-4" />
+                              )}
+                              ยืนยันสัญญาจอง
+                            </Button>
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   )}
@@ -1142,65 +1110,46 @@ export default function ReservationEdit() {
                   {confirmationMethod === 'link' && (
                     <div className="p-4 bg-background rounded-lg border border-border space-y-4">
                       <div>
-                        <Label className="mb-2 block">เลือกช่องทางส่ง Link</Label>
-                        <RadioGroup 
-                          value={linkSendMethod} 
-                          onValueChange={(v) => setLinkSendMethod(v as 'sms' | 'email')}
-                          className="flex gap-4"
-                        >
-                          <label className={cn(
-                            "flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-all",
-                            linkSendMethod === 'sms' ? "border-green-500 bg-green-50 dark:bg-green-950/30" : "border-border"
-                          )}>
-                            <RadioGroupItem value="sms" />
-                            <Smartphone className="w-4 h-4" />
-                            <span>SMS</span>
-                            <span className="text-sm text-muted-foreground">
-                              ({bookingPhone ? `${bookingPhone.slice(0, 3)}-XXX-${bookingPhone.slice(-4)}` : 'ไม่ระบุ'})
-                            </span>
-                          </label>
-                          <label className={cn(
-                            "flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-all",
-                            linkSendMethod === 'email' ? "border-green-500 bg-green-50 dark:bg-green-950/30" : "border-border"
-                          )}>
-                            <RadioGroupItem value="email" />
-                            <Mail className="w-4 h-4" />
-                            <span>Email</span>
-                            <span className="text-sm text-muted-foreground">
-                              ({bookingEmail || 'ไม่ระบุ'})
-                            </span>
-                          </label>
-                        </RadioGroup>
+                        <p className="text-sm text-muted-foreground mb-1">ส่ง Link ให้ลูกค้ากดยืนยันผ่าน</p>
+                        <p className="font-medium">
+                          {bookingPhone ? `โทรศัพท์: ${bookingPhone}` : ''}{bookingPhone && bookingEmail ? ' / ' : ''}{bookingEmail ? `อีเมล: ${bookingEmail}` : ''}
+                          {!bookingPhone && !bookingEmail && 'ไม่ระบุข้อมูลติดต่อ'}
+                        </p>
                       </div>
 
                       <Button 
                         onClick={async () => {
-                          const contact = linkSendMethod === 'sms' ? bookingPhone : bookingEmail;
-                          if (!contact) {
-                            toast.error(`กรุณากรอก${linkSendMethod === 'sms' ? 'เบอร์โทรศัพท์' : 'อีเมล'}ลูกค้า`);
+                          if (!bookingPhone && !bookingEmail) {
+                            toast.error('กรุณากรอกเบอร์โทรศัพท์หรืออีเมลลูกค้า');
                             return;
                           }
                           setIsSendingLink(true);
                           try {
-                            // Mock link sending
                             await new Promise(resolve => setTimeout(resolve, 1500));
-                            setConfirmationStatus('link_sent');
-                            // Update database
+                            // Simulate customer confirmed via link
+                            const now = new Date().toISOString();
+                            setConfirmationStatus('confirmed');
+                            setConfirmedAt(now);
                             await supabase
                               .from('reservations')
                               .update({ 
-                                confirmation_status: 'link_sent',
-                                confirmation_method: 'link'
+                                confirmation_status: 'confirmed',
+                                confirmation_method: 'link',
+                                confirmed_at: now
                               })
                               .eq('id', id);
-                            toast.success(`ส่ง Link ยืนยันไปที่${linkSendMethod === 'sms' ? 'โทรศัพท์' : 'อีเมล'}ลูกค้าแล้ว`);
+                            // Show confirmation dialog
+                            toast.success('ลูกค้ายืนยันเรียบร้อย', {
+                              description: 'ลูกค้ากดยืนยันสัญญาจองผ่าน Link เรียบร้อยแล้ว',
+                              duration: 5000,
+                            });
                           } catch (err) {
-                            toast.error('เกิดข้อผิดพลาดในการส่ง Link');
+                            toast.error('เกิดข้อผิดพลาด');
                           } finally {
                             setIsSendingLink(false);
                           }
                         }}
-                        disabled={isSendingLink || confirmationStatus === 'link_sent'}
+                        disabled={isSendingLink}
                         className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white"
                       >
                         {isSendingLink ? (
@@ -1208,35 +1157,8 @@ export default function ReservationEdit() {
                         ) : (
                           <Send className="w-4 h-4" />
                         )}
-                        {confirmationStatus === 'link_sent' ? 'ส่ง Link แล้ว - รอลูกค้ายืนยัน' : 'ส่ง Link ยืนยัน'}
+                        ส่ง Link ยืนยัน
                       </Button>
-
-                      {confirmationStatus === 'link_sent' && (
-                        <div className="flex items-center justify-between pt-3 border-t border-border">
-                          <p className="text-sm text-muted-foreground">
-                            <Clock className="w-3 h-3 inline mr-1" />
-                            รอลูกค้ากดยืนยันจาก Link ที่ส่งไป
-                          </p>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={async () => {
-                              setIsSendingLink(true);
-                              try {
-                                await new Promise(resolve => setTimeout(resolve, 1500));
-                                toast.success('ส่ง Link ใหม่แล้ว');
-                              } finally {
-                                setIsSendingLink(false);
-                              }
-                            }}
-                            disabled={isSendingLink}
-                            className="text-green-600 hover:text-green-700 gap-1"
-                          >
-                            <RefreshCw className="w-3 h-3" />
-                            ส่ง Link ใหม่
-                          </Button>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>

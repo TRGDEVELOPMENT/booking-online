@@ -2,9 +2,15 @@ import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { WorkflowStage, DocumentStatus } from '@/types/reservation';
 
+interface AssignmentInfo {
+  stage: string;
+  assigned_user_name?: string;
+}
+
 interface WorkflowStepsProps {
   currentStage: WorkflowStage;
   documentStatus: DocumentStatus;
+  assignments?: AssignmentInfo[];
 }
 
 const steps = [

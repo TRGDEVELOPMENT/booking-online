@@ -143,7 +143,7 @@ const allMenuItems: MenuItem[] = [
     label: 'ตั้งค่าระบบ', 
     icon: Settings, 
     path: '/settings',
-    roles: ['it'],
+    roles: ['user_admin', 'it'],
     subItems: [
       { id: 'vehicle-types', label: 'ชนิดรถยนต์', path: '/settings/vehicle-types', icon: Car },
       { id: 'models', label: 'รุ่น (Model)', path: '/settings/models', icon: Layers },

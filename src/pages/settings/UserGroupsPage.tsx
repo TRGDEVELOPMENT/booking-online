@@ -16,24 +16,29 @@ export default function UserGroupsPage() {
         <p className="text-muted-foreground">แสดงกลุ่มผู้ใช้งาน (Roles) ที่กำหนดในระบบ</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {groups.map(group => (
-          <div
-            key={group.id}
-            className="bg-card rounded-xl border border-border p-5 flex items-start gap-4"
-          >
-            <div className="p-3 rounded-lg bg-primary/10">
-              <Shield className="w-6 h-6 text-primary" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-foreground">{group.name}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{group.description}</p>
-              <span className="inline-block mt-2 text-xs font-mono bg-muted px-2 py-1 rounded">
-                {group.id}
-              </span>
-            </div>
-          </div>
-        ))}
+      <div className="bg-card rounded-xl border border-border/50 overflow-hidden shadow-card">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="table-header">
+              <th className="text-left px-4 py-2 font-semibold w-12">ลำดับ</th>
+              <th className="text-left px-4 py-2 font-semibold">ชื่อกลุ่ม</th>
+              <th className="text-left px-4 py-2 font-semibold">Role ID</th>
+              <th className="text-left px-4 py-2 font-semibold">คำอธิบาย</th>
+            </tr>
+          </thead>
+          <tbody>
+            {groups.map((group, index) => (
+              <tr key={group.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                <td className="px-4 py-2 text-muted-foreground">{index + 1}</td>
+                <td className="px-4 py-2 font-medium text-foreground">{group.name}</td>
+                <td className="px-4 py-2">
+                  <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded">{group.id}</span>
+                </td>
+                <td className="px-4 py-2 text-muted-foreground">{group.description}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

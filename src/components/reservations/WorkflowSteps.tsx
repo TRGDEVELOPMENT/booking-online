@@ -86,6 +86,16 @@ export function WorkflowSteps({ currentStage, documentStatus, assignments = [] }
                 <span className="hidden md:inline">{step.label}</span>
                 <span className="md:hidden">{step.shortLabel}</span>
               </p>
+              {/* Show assigned user name */}
+              {(() => {
+                const assignmentStage = stepToAssignmentStage[index];
+                const assignment = assignmentStage && assignments.find(a => a.stage === assignmentStage);
+                return assignment?.assigned_user_name ? (
+                  <p className="text-[10px] text-muted-foreground mt-0.5 text-center truncate max-w-[80px] md:max-w-[120px]" title={assignment.assigned_user_name}>
+                    👤 {assignment.assigned_user_name}
+                  </p>
+                ) : null;
+              })()}
             </div>
           );
         })}

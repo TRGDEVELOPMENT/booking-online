@@ -1322,8 +1322,8 @@ export default function ReservationEdit() {
               isLoading={isLoadingAttachments}
             />
 
-            {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Hidden for sale role */}
-            {!isSaleRole && (
+            {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Show when sent for approval (pending) or approved */}
+            {(approvalStatus === 'approved' || (!isSaleRole && reservationStatus === 'pending')) && (
             <div className="form-section border-2 border-primary/20 bg-primary/5">
               <div className="form-section-header flex items-center gap-2 text-primary">
                 <CreditCard className="w-5 h-5" />
@@ -1461,8 +1461,8 @@ export default function ReservationEdit() {
             </div>
             )}
 
-            {/* Section 11: ตรวจสอบใบจอง (หัวหน้าทีมขาย) - Hidden for cashiers and sale role */}
-            {!isCashierMode && !isSaleRole && (
+            {/* Section 11: ตรวจสอบใบจอง (หัวหน้าทีมขาย) - Show when in review step or approved */}
+            {(approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && (reviewStatus !== 'pending' || reservationStatus === 'pending'))) && (
             <div className="form-section border-2 border-orange-500/20 bg-orange-50/50 dark:bg-orange-950/20">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
@@ -1593,8 +1593,8 @@ export default function ReservationEdit() {
             </div>
             )}
 
-            {/* Section 12: อนุมัติใบจอง (ผู้จัดการฝ่ายขาย) - Hidden for cashiers and sale role */}
-            {!isCashierMode && !isSaleRole && (
+            {/* Section 12: อนุมัติใบจอง (ผู้จัดการฝ่ายขาย) - Show when reviewed or approved */}
+            {(approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && reviewStatus === 'reviewed')) && (
             <div className="form-section border-2 border-purple-500/20 bg-purple-50/50 dark:bg-purple-950/20">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-purple-700 dark:text-purple-400">

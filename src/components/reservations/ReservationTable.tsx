@@ -88,25 +88,25 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
   return (
     <div className="bg-card rounded-xl border border-border/50 overflow-hidden shadow-card">
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full text-sm">
           <thead>
             <tr className="table-header">
-              <th className="w-12 px-4 py-3">
+              <th className="w-10 px-3 py-2">
                 <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
               </th>
-              <th className="text-left px-4 py-3 text-sm font-semibold">เลขที่เอกสาร</th>
-              <th className="text-left px-4 py-3 text-sm font-semibold">สถานะ</th>
-              <th className="text-left px-4 py-3 text-sm font-semibold">ผู้จอง</th>
-              <th className="text-left px-4 py-3 text-sm font-semibold">รุ่นรถ / สี</th>
-              <th className="text-right px-4 py-3 text-sm font-semibold">ราคาสุทธิ</th>
-              <th className="text-right px-4 py-3 text-sm font-semibold">เงินจอง</th>
-              <th className="text-left px-4 py-3 text-sm font-semibold">สาขา</th>
-              <th className="text-left px-4 py-3 text-sm font-semibold">วันที่สร้าง</th>
-              <th className="text-center px-4 py-3 text-sm font-semibold">ดำเนินการ</th>
+              <th className="text-left px-3 py-2 font-semibold">เลขที่เอกสาร</th>
+              <th className="text-left px-3 py-2 font-semibold">สถานะ</th>
+              <th className="text-left px-3 py-2 font-semibold">ผู้จอง</th>
+              <th className="text-left px-3 py-2 font-semibold">รุ่นรถ / สี</th>
+              <th className="text-right px-3 py-2 font-semibold">ราคาสุทธิ</th>
+              <th className="text-right px-3 py-2 font-semibold">เงินจอง</th>
+              <th className="text-left px-3 py-2 font-semibold">สาขา</th>
+              <th className="text-left px-3 py-2 font-semibold">วันที่สร้าง</th>
+              <th className="text-center px-3 py-2 font-semibold">ดำเนินการ</th>
             </tr>
           </thead>
           <tbody>
-            {reservations.map((reservation) => (
+            {paginatedReservations.map((reservation) => (
               <tr 
                 key={reservation.id}
                 className={cn(
@@ -114,13 +114,13 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                   selectedIds.includes(reservation.id) && "bg-primary/5"
                 )}
               >
-                <td className="px-4 py-3">
+                <td className="px-3 py-1.5">
                   <Checkbox 
                     checked={selectedIds.includes(reservation.id)} 
                     onCheckedChange={() => toggleOne(reservation.id)} 
                   />
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-1.5">
                   <Link 
                     to={`/reservations/${reservation.id}`}
                     className="font-medium text-primary hover:underline"
@@ -128,7 +128,7 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                     {reservation.document_number}
                   </Link>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-1.5">
                   <Badge 
                     variant={reservation.status === 'cancelled' ? null : 'default'}
                     className={cn("status-badge w-fit", statusStyles[reservation.status] || 'status-draft')}
@@ -136,60 +136,52 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                     {DatabaseStatusLabels[reservation.status] || reservation.status}
                   </Badge>
                 </td>
-                <td className="px-4 py-3">
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {reservation.customer_name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {reservation.customer_phone || '-'}
-                    </p>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {reservation.model || '-'} {reservation.submodel || ''}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {reservation.color || '-'} {reservation.fuel_type ? `• ${reservation.fuel_type}` : ''}
-                    </p>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <p className="font-semibold text-foreground">
-                    {reservation.net_price ? `฿${reservation.net_price.toLocaleString()}` : '-'}
+                <td className="px-3 py-1.5">
+                  <p className="font-medium text-foreground leading-tight">
+                    {reservation.customer_name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {reservation.customer_phone || '-'}
                   </p>
                 </td>
-                <td className="px-4 py-3 text-right">
-                  <p className="font-semibold text-foreground">
-                    {reservation.deposit_amount ? `฿${reservation.deposit_amount.toLocaleString()}` : '-'}
+                <td className="px-3 py-1.5">
+                  <p className="font-medium text-foreground leading-tight">
+                    {reservation.model || '-'} {reservation.submodel || ''}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {reservation.color || '-'} {reservation.fuel_type ? `• ${reservation.fuel_type}` : ''}
                   </p>
                 </td>
-                <td className="px-4 py-3 text-sm text-muted-foreground">
+                <td className="px-3 py-1.5 text-right font-semibold text-foreground">
+                  {reservation.net_price ? `฿${reservation.net_price.toLocaleString()}` : '-'}
+                </td>
+                <td className="px-3 py-1.5 text-right font-semibold text-foreground">
+                  {reservation.deposit_amount ? `฿${reservation.deposit_amount.toLocaleString()}` : '-'}
+                </td>
+                <td className="px-3 py-1.5 text-muted-foreground">
                   {getBranchName(reservation.branch_id)}
                 </td>
-                <td className="px-4 py-3 text-sm text-muted-foreground">
+                <td className="px-3 py-1.5 text-muted-foreground">
                   {formatDate(reservation.created_at)}
                 </td>
-                <td className="px-4 py-3">
-                  <div className="flex justify-center gap-1">
+                <td className="px-3 py-1.5">
+                  <div className="flex justify-center gap-0.5">
                     <Link to={`/reservations/${reservation.id}`}>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
-                        <Eye className="w-4 h-4" />
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-primary">
+                        <Eye className="w-3.5 h-3.5" />
                       </Button>
                     </Link>
                     {reservation.status === 'draft' && (
                       <Link to={`/reservations/${reservation.id}/edit`}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                          <Edit className="w-4 h-4" />
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary">
+                          <Edit className="w-3.5 h-3.5" />
                         </Button>
                       </Link>
                     )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                          <MoreHorizontal className="w-4 h-4" />
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground">
+                          <MoreHorizontal className="w-3.5 h-3.5" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -227,15 +219,30 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
       </div>
 
       {/* Pagination */}
-      <div className="px-4 py-3 border-t border-border flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          แสดง {reservations.length} จาก {reservations.length} รายการ
+      <div className="px-3 py-2 border-t border-border flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">
+          แสดง {startIdx + 1}-{Math.min(startIdx + pageSize, reservations.length)} จาก {reservations.length} รายการ
         </p>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled>
+        <div className="flex items-center gap-1">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-7 text-xs"
+            disabled={currentPage <= 1}
+            onClick={() => setCurrentPage(p => p - 1)}
+          >
             ก่อนหน้า
           </Button>
-          <Button variant="outline" size="sm" disabled>
+          <span className="text-xs text-muted-foreground px-2">
+            {currentPage} / {totalPages}
+          </span>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-7 text-xs"
+            disabled={currentPage >= totalPages}
+            onClick={() => setCurrentPage(p => p + 1)}
+          >
             ถัดไป
           </Button>
         </div>

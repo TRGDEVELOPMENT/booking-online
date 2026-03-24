@@ -55,8 +55,8 @@ export function WorkflowSteps({ currentStage, documentStatus }: WorkflowStepsPro
               <div className={cn(
                 "w-12 h-12 rounded-full flex items-center justify-center border-4 transition-all duration-300",
                 isCompleted && "bg-green-500 border-green-500 text-white",
-                isCurrent && "bg-primary border-primary text-white ring-4 ring-primary/30",
-                isPending && "bg-white border-muted-foreground/30 text-muted-foreground"
+                isCurrent && "bg-navy border-navy text-white ring-4 ring-navy/20",
+                isPending && "bg-muted border-muted text-muted-foreground"
               )}>
                 {isCompleted ? (
                   <Check className="w-6 h-6" />

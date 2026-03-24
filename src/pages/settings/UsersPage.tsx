@@ -302,7 +302,7 @@ export default function UsersPage() {
                   <TableCell className="font-medium">{user.full_name}</TableCell>
                   <TableCell>
                     {user.roles.includes('it') 
-                      ? <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">ทุกสาขา</Badge>
+                      ? <span className="text-sm text-muted-foreground">ทุกสาขา</span>
                       : branches.find(b => b.branch_id === user.branch_id)?.branch_name || user.branch_id || '-'}
                   </TableCell>
                   <TableCell>

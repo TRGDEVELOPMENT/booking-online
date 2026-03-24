@@ -388,6 +388,47 @@ export type Database = {
         }
         Relationships: []
       }
+      reservation_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          assigned_user_id: string
+          branch_id: string | null
+          company_id: string
+          id: string
+          reservation_id: string
+          stage: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          assigned_user_id: string
+          branch_id?: string | null
+          company_id: string
+          id?: string
+          reservation_id: string
+          stage: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          assigned_user_id?: string
+          branch_id?: string | null
+          company_id?: string
+          id?: string
+          reservation_id?: string
+          stage?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservation_assignments_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservation_attachments: {
         Row: {
           company_id: string
@@ -457,6 +498,8 @@ export type Database = {
           cancel_review_status: string | null
           cancel_reviewed_at: string | null
           cancel_reviewed_by: string | null
+          cashier_user_id: string | null
+          cashier_user_name: string | null
           color: string | null
           company_id: string
           confirmation_method: string | null
@@ -517,6 +560,8 @@ export type Database = {
           cancel_review_status?: string | null
           cancel_reviewed_at?: string | null
           cancel_reviewed_by?: string | null
+          cashier_user_id?: string | null
+          cashier_user_name?: string | null
           color?: string | null
           company_id: string
           confirmation_method?: string | null
@@ -577,6 +622,8 @@ export type Database = {
           cancel_review_status?: string | null
           cancel_reviewed_at?: string | null
           cancel_reviewed_by?: string | null
+          cashier_user_id?: string | null
+          cashier_user_name?: string | null
           color?: string | null
           company_id?: string
           confirmation_method?: string | null

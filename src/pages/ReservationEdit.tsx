@@ -171,6 +171,13 @@ export default function ReservationEdit() {
     companyId: selectedCompany 
   });
 
+  // Reservation assignments (for admin panel & workflow display)
+  const { assignments, refetch: refetchAssignments } = useReservationAssignments({
+    reservationId: id,
+    companyId: selectedCompany,
+    branchId: selectedBranch || null,
+  });
+
   // Fetch reservation data
   useEffect(() => {
     const fetchReservation = async () => {

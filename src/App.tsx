@@ -16,6 +16,7 @@ import ReservationCancelPage from "@/pages/ReservationCancelPage";
 import ReservationCancelDetail from "@/pages/ReservationCancelDetail";
 import ReservationCancelPrint from "@/pages/ReservationCancelPrint";
 import ReservationPendingPaymentPage from "@/pages/ReservationPendingPaymentPage";
+import ApprovalChainPage from "@/pages/ApprovalChainPage";
 import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
 

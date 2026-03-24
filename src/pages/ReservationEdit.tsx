@@ -537,7 +537,24 @@ export default function ReservationEdit() {
           {/* Workflow Progress */}
           <WorkflowSteps currentStage={calculateWorkflowStage()} documentStatus={calculateDocumentStatus()} assignments={assignments} />
 
-          {/* Form Sections */}
+           {/* Admin Assignment Panel - visible only to user_admin/it */}
+           {isAdmin && id && (
+             <AdminAssignmentPanel
+               reservationId={id}
+               companyId={selectedCompany}
+               branchId={selectedBranch || null}
+               currentStatus={reservationStatus}
+               confirmationStatus={confirmationStatus}
+               reviewStatus={reviewStatus}
+               approvalStatus={approvalStatus}
+               onStatusChange={() => {
+                 // Reload the page data
+                 window.location.reload();
+               }}
+             />
+           )}
+
+           {/* Form Sections */}
           <div className="space-y-6">
             {/* Section 1: Branch/Vehicle Type Selection */}
             <div className="form-section">

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Edit, Trash2, MoreHorizontal, Printer } from 'lucide-react';
+import { Eye, Edit, Trash2, MoreHorizontal, Printer, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,6 +15,26 @@ import type { DatabaseReservation } from '@/types/database-reservation';
 import { DatabaseStatusLabels } from '@/types/database-reservation';
 import { branches } from '@/data/mockData';
 import { cn } from '@/lib/utils';
+
+const workflowSteps = [
+  { label: 'สร้าง' },
+  { label: 'ยืนยัน' },
+  { label: 'ชำระเงิน' },
+  { label: 'ตรวจสอบ' },
+  { label: 'อนุมัติ' },
+  { label: 'พิมพ์' },
+];
+
+function getWorkflowIndex(r: DatabaseReservation): number {
+  if (r.status === 'cancelled') return -1;
+  if (r.approval_status === 'approved') return 5;
+  if (r.review_status === 'reviewed') return 4;
+  if (r.status === 'pending') return 2;
+  if (r.confirmation_status === 'confirmed') return 2;
+  if (r.status === 'draft' && !r.confirmation_status) return 0;
+  if (r.confirmation_status === 'pending') return 1;
+  return 0;
+}
 
 interface ReservationTableProps {
   reservations: DatabaseReservation[];

@@ -998,8 +998,8 @@ export default function ReservationCreate() {
               </div>
             </div>
 
-            {/* Section: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Hidden for sale role */}
-            {!isSaleRole && (
+            {/* Section: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Only shown at payment verification stage (step3), hidden on create */}
+            {false && !isSaleRole && (
             <div className="form-section border-2 border-primary/20 bg-primary/5">
               <div className="form-section-header flex items-center gap-2 text-primary">
                 <CreditCard className="w-5 h-5" />

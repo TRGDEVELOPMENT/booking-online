@@ -64,6 +64,7 @@ const App = () => (
               <Route path="/test-cases" element={<TestCasesPage />} />
               <Route path="/reservations" element={<ReservationList />} />
               <Route path="/reservations/create" element={<ReservationCreate />} />
+              <Route path="/reservations/:id" element={<ReservationEdit />} />
               <Route path="/reservations/:id/edit" element={<ReservationEdit />} />
               <Route path="/reservations/cancel" element={<ReservationCancelPage />} />
               <Route path="/reservations/:id/cancel-detail" element={<ReservationCancelDetail />} />

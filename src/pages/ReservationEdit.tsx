@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useOutletContext, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { 
   Save, 
   ArrowRight, 
@@ -66,12 +66,16 @@ export default function ReservationEdit() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { selectedCompany } = useOutletContext<{ selectedCompany: string }>();
   const { user, hasRole } = useAuth();
   const company = companies.find(c => c.id === selectedCompany);
   
+  // Check if view-only mode (URL does NOT end with /edit)
+  const isViewOnly = !location.pathname.endsWith('/edit');
+  
   // Check if in cashier mode
-  const isCashierMode = searchParams.get('mode') === 'cashier' || hasRole('cashier');
+  const isCashierMode = !isViewOnly && (searchParams.get('mode') === 'cashier' || hasRole('cashier'));
   
   // Check if user is a sales advisor (hide certain sections)
   const isSaleRole = hasRole('sale');
@@ -513,12 +517,12 @@ export default function ReservationEdit() {
 
   return (
     <>
-      <Header 
-        title={isCashierMode ? "รับเงินจอง" : "แก้ไขใบจอง"}
+       <Header 
+        title={isViewOnly ? "รายละเอียดใบจอง" : isCashierMode ? "รับเงินจอง" : "แก้ไขใบจอง"}
         subtitle={`${company?.code} - เลขที่: ${documentNumber}${isCashierMode ? ' (โหมดแคชเชียร์)' : ''}`}
       />
       
-      <div className="flex-1 p-6 overflow-auto">
+       <div className={cn("flex-1 p-6 overflow-auto", isViewOnly && "pointer-events-none")}>
         <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
           {/* Workflow Progress */}
           <WorkflowSteps currentStage={calculateWorkflowStage()} documentStatus={calculateDocumentStatus()} />
@@ -1827,8 +1831,8 @@ export default function ReservationEdit() {
             </div>
             )}
             
-            {/* Action Buttons - Different for cashier mode */}
-            {!isCashierMode && (
+            {/* Action Buttons - Hidden in view-only mode */}
+            {!isViewOnly && !isCashierMode && (
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
               <Button 
                 variant="outline" 
@@ -1861,11 +1865,23 @@ export default function ReservationEdit() {
             )}
             
             {/* Cashier Action Button */}
-            {isCashierMode && (
+            {!isViewOnly && isCashierMode && (
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
               <Button 
                 variant="outline" 
                 onClick={() => navigate('/reservations/pending-payment')}
+              >
+                กลับไปหน้ารายการ
+              </Button>
+            </div>
+            )}
+
+            {/* View-only back button */}
+            {isViewOnly && (
+            <div className="flex items-center pt-4 border-t border-border pointer-events-auto">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/reservations')}
               >
                 กลับไปหน้ารายการ
               </Button>

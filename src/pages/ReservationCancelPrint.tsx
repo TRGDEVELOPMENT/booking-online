@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { companies } from "@/data/mockData";
 import type { DatabaseReservation } from "@/types/database-reservation";
+import lacLogo from '@/assets/LAC.png';
+
+const companyLogos: Record<string, string> = {
+  LAC: lacLogo,
+};
 
 const companyNames: Record<string, string> = {
   BPK: "บริษัท บิซ พีเค จำกัด",

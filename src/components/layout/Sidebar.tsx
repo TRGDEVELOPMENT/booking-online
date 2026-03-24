@@ -282,7 +282,7 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-1">
-            {allMenuItems.filter(item => !isPublished || !devMenuIds.includes(item.id)).map(item => {
+            {filterMenuByRole(allMenuItems.filter(item => !isPublished || !devMenuIds.includes(item.id))).map(item => {
               const Icon = item.icon;
               const filteredSubItems = filterSubItemsByRole(item.subItems);
               const hasSubItems = filteredSubItems.length > 0;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Edit, Trash2, MoreHorizontal, Printer, Check } from 'lucide-react';
+import { Eye, Edit, Trash2, MoreHorizontal, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';

@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { companies } from "@/data/mockData";
 import type { DatabaseReservation } from "@/types/database-reservation";
+import lacLogo from '@/assets/LAC.png';
+
+const companyLogos: Record<string, string> = {
+  LAC: lacLogo,
+};
 
 const companyNames: Record<string, string> = {
   BPK: "บริษัท บิซ พีเค จำกัด",
@@ -139,6 +144,13 @@ export default function ReservationCancelPrint() {
         className="print:mt-0 mt-20 p-12 max-w-4xl mx-auto bg-white min-h-screen"
         style={{ fontFamily: "TH Sarabun New, Sarabun, serif" }}
       >
+        {/* Company Logo */}
+        {companyLogos[reservation.company_id] && (
+          <div className="flex justify-center mb-6">
+            <img src={companyLogos[reservation.company_id]} alt="Company Logo" className="h-16 object-contain" />
+          </div>
+        )}
+
         {/* Date */}
         <div className="text-right mb-10">
           <p className="text-base">

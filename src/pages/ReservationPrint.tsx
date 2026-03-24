@@ -6,6 +6,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { companies, branches } from '@/data/mockData';
 import type { DatabaseReservation } from '@/types/database-reservation';
 import bizrLogo from '@/assets/bizpk-logo.png';
+import lacLogo from '@/assets/LAC.png';
+
+const companyLogos: Record<string, string> = {
+  BPK: bizrLogo,
+  LAC: lacLogo,
+};
 
 export default function ReservationPrint() {
   const { id } = useParams<{ id: string }>();
@@ -160,7 +166,9 @@ export default function ReservationPrint() {
           <div className="mb-2">
             {/* Logo & Title */}
             <div className="flex items-start gap-4 mb-4">
-              <img src={bizrLogo} alt="BIZR Logo" className="h-16 object-contain" />
+              {companyLogos[reservation.company_id] && (
+                <img src={companyLogos[reservation.company_id]} alt="Company Logo" className="h-16 object-contain" />
+              )}
               <div className="flex-1">
                 <div className="text-right text-sm text-gray-500 mb-1">{companyName}</div>
               </div>

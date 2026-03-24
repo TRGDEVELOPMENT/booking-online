@@ -61,9 +61,9 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
 // KPI data
 const kpiCards = [
   {
-    title: 'ใบจองทั้งหมด',
+    title: 'Total Reservations',
     value: reservationSummary.total,
-    suffix: 'ใบ',
+    suffix: '',
     icon: FileText,
     trend: 12.5,
     sparkData: [30, 35, 28, 42, 45, 52, 59],
@@ -72,7 +72,7 @@ const kpiCards = [
     iconClass: 'text-primary',
   },
   {
-    title: 'มูลค่ารวม',
+    title: 'Total Value',
     value: `฿${(reservationSummary.totalAmount / 1000000).toFixed(1)}M`,
     icon: Wallet,
     trend: 8.3,
@@ -82,9 +82,9 @@ const kpiCards = [
     iconClass: 'text-success',
   },
   {
-    title: 'สมบูรณ์',
+    title: 'Completed',
     value: reservationSummary.final,
-    suffix: 'ใบ',
+    suffix: '',
     icon: FileCheck,
     trend: 5.2,
     sparkData: [20, 25, 22, 30, 35, 40, 45],
@@ -93,9 +93,9 @@ const kpiCards = [
     iconClass: 'text-success',
   },
   {
-    title: 'รอดำเนินการ',
+    title: 'Pending',
     value: reservationSummary.draft,
-    suffix: 'ใบ',
+    suffix: '',
     icon: Clock,
     trend: -3.1,
     sparkData: [15, 18, 22, 20, 17, 14, 12],
@@ -107,25 +107,25 @@ const kpiCards = [
 
 // Bar chart data
 const barChartData = [
-  { month: 'ม.ค.', reservations: 45, amount: 28.5 },
-  { month: 'ก.พ.', reservations: 52, amount: 32.8 },
-  { month: 'มี.ค.', reservations: 59, amount: 38.2 },
-  { month: 'เม.ย.', reservations: 48, amount: 30.1 },
-  { month: 'พ.ค.', reservations: 63, amount: 41.5 },
-  { month: 'มิ.ย.', reservations: 55, amount: 35.7 },
+  { month: 'Jan', reservations: 45, amount: 28.5 },
+  { month: 'Feb', reservations: 52, amount: 32.8 },
+  { month: 'Mar', reservations: 59, amount: 38.2 },
+  { month: 'Apr', reservations: 48, amount: 30.1 },
+  { month: 'May', reservations: 63, amount: 41.5 },
+  { month: 'Jun', reservations: 55, amount: 35.7 },
 ];
 
 const barChartConfig: ChartConfig = {
-  reservations: { label: 'จำนวนใบจอง', color: 'hsl(var(--primary))' },
-  amount: { label: 'มูลค่า (ล้านบาท)', color: 'hsl(var(--accent))' },
+  reservations: { label: 'Reservations', color: 'hsl(var(--primary))' },
+  amount: { label: 'Value (M฿)', color: 'hsl(var(--accent))' },
 };
 
 // Pie chart data
 const pieData = [
-  { name: 'รถยนต์นั่ง', value: 45, color: 'hsl(var(--primary))' },
-  { name: 'รถ SUV/PPV', value: 25, color: 'hsl(var(--accent))' },
-  { name: 'รถกระบะ', value: 20, color: 'hsl(var(--success))' },
-  { name: 'รถ EV', value: 10, color: 'hsl(var(--warning))' },
+  { name: 'Sedan', value: 45, color: 'hsl(var(--primary))' },
+  { name: 'SUV/PPV', value: 25, color: 'hsl(var(--accent))' },
+  { name: 'Pickup', value: 20, color: 'hsl(var(--success))' },
+  { name: 'EV', value: 10, color: 'hsl(var(--warning))' },
 ];
 
 // Recent activity from mock reservations
@@ -156,8 +156,8 @@ export default function Dashboard() {
   return (
     <>
       <Header
-        title={`แดชบอร์ด - ${company?.name || ''}`}
-        subtitle="ภาพรวมระบบใบจองรถยนต์"
+        title={`Dashboard - ${company?.name || ''}`}
+        subtitle="Car Reservation System Overview"
       />
 
       <div className="flex-1 p-4 md:p-6 overflow-auto">
@@ -165,8 +165,8 @@ export default function Dashboard() {
           {/* Top Action Bar */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">สรุปภาพรวม</h2>
-              <p className="text-sm text-muted-foreground">ข้อมูลอัปเดตล่าสุด: วันนี้</p>
+              <h2 className="text-xl font-semibold text-foreground">Summary Overview</h2>
+              <p className="text-sm text-muted-foreground">Last updated: Today</p>
             </div>
           </div>
 
@@ -200,7 +200,7 @@ export default function Dashboard() {
                           {kpi.trend > 0 ? '+' : ''}
                           {kpi.trend}%
                         </span>
-                        <span className="text-xs text-muted-foreground">vs เดือนก่อน</span>
+                        <span className="text-xs text-muted-foreground">vs last month</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
@@ -220,7 +220,7 @@ export default function Dashboard() {
             {/* Bar Chart */}
             <Card className="lg:col-span-2 border-border/50 shadow-sm">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base font-semibold">สถิติใบจองรายเดือน</CardTitle>
+                <CardTitle className="text-base font-semibold">Monthly Reservations</CardTitle>
               </CardHeader>
               <CardContent>
                 <ChartContainer config={barChartConfig} className="h-[300px] w-full">
@@ -247,7 +247,7 @@ export default function Dashboard() {
             {/* Pie Chart */}
             <Card className="border-border/50 shadow-sm">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base font-semibold">สัดส่วนตามประเภทรถ</CardTitle>
+                <CardTitle className="text-base font-semibold">Vehicle Type Distribution</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col items-center">
                 <div className="h-[200px] w-full">

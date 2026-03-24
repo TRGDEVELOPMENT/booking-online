@@ -123,8 +123,8 @@ export default function ReservationList() {
         subtitle={`${company?.code} - ${company?.name}`}
       />
       
-      <div className="flex-1 p-6 overflow-auto">
-        <div className="max-w-7xl mx-auto space-y-4 animate-fade-in">
+      <div className="flex-1 p-4 overflow-auto">
+        <div className="max-w-7xl mx-auto space-y-3 animate-fade-in">
           {/* Action Bar */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">

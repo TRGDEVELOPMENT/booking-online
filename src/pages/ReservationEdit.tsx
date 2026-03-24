@@ -1461,8 +1461,8 @@ export default function ReservationEdit() {
             </div>
             )}
 
-            {/* Section 11: ตรวจสอบใบจอง (หัวหน้าทีมขาย) - Hidden for cashiers and sale role */}
-            {!isCashierMode && !isSaleRole && (
+            {/* Section 11: ตรวจสอบใบจอง (หัวหน้าทีมขาย) - Show when in review step or approved */}
+            {(approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && (reviewStatus !== 'pending' || reservationStatus === 'pending'))) && (
             <div className="form-section border-2 border-orange-500/20 bg-orange-50/50 dark:bg-orange-950/20">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">

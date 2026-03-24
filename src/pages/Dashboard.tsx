@@ -156,8 +156,8 @@ export default function Dashboard() {
   return (
     <>
       <Header
-        title={`แดชบอร์ด - ${company?.name || ''}`}
-        subtitle="ภาพรวมระบบใบจองรถยนต์"
+        title={`Dashboard - ${company?.name || ''}`}
+        subtitle="Car Reservation System Overview"
       />
 
       <div className="flex-1 p-4 md:p-6 overflow-auto">

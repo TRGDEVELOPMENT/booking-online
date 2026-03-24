@@ -165,8 +165,8 @@ export default function Dashboard() {
           {/* Top Action Bar */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">สรุปภาพรวม</h2>
-              <p className="text-sm text-muted-foreground">ข้อมูลอัปเดตล่าสุด: วันนี้</p>
+              <h2 className="text-xl font-semibold text-foreground">Summary Overview</h2>
+              <p className="text-sm text-muted-foreground">Last updated: Today</p>
             </div>
           </div>
 

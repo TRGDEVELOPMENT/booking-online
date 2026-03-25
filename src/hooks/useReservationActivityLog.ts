@@ -80,16 +80,16 @@ export function useReservationActivityLog(reservationId: string | undefined) {
     try {
       await supabase
         .from('reservation_activity_logs')
-        .insert({
+        .insert([{
           reservation_id: params.reservationId,
           action: params.action,
           action_label: label,
-          details: params.details || {},
+          details: (params.details || {}) as unknown as Record<string, unknown>,
           performed_by: user.id,
           performed_by_name: profile?.full_name || user.email || '',
           company_id: params.companyId,
           branch_id: params.branchId || null,
-        });
+        }]);
 
       // Refresh logs if we're watching the same reservation
       if (params.reservationId === reservationId) {

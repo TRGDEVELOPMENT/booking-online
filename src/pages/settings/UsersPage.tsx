@@ -109,7 +109,7 @@ export default function UsersPage() {
     setLoading(true);
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('user_id, full_name, company_id, branch_id, supervisor_id, status')
+      .select('user_id, full_name, company_id, branch_id, supervisor_id, status, username, email')
       .eq('company_id', profile?.company_id || '');
 
     if (profiles) {

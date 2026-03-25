@@ -138,6 +138,7 @@ const allMenuItems: MenuItem[] = [
       { id: 'user-permissions', label: 'กำหนดสิทธิ์ผู้ใช้งาน', path: '/settings/user-permissions', icon: Award },
       { id: 'approval-chain', label: 'ปรับปรุงสายอนุมัติใบจอง', path: '/settings/approval-chain', icon: GitBranch },
       { id: 'cancel-approval-chain', label: 'ปรับปรุงสายอนุมัติยกเลิกใบจอง', path: '/settings/cancel-approval-chain', icon: GitBranch },
+      { id: 'sales-teams', label: 'ปรับปรุงทีมขาย', path: '/settings/sales-teams', icon: Users },
     ]
   },
   { 

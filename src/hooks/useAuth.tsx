@@ -8,6 +8,8 @@ interface Profile {
   full_name: string;
   company_id: string;
   branch_id: string | null;
+  username: string | null;
+  email: string | null;
 }
 
 interface UserRole {

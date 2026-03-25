@@ -6,7 +6,7 @@ const corsHeaders = {
 }
 
 interface TestUser {
-  email: string;
+  username: string;
   password: string;
   full_name: string;
   company_id: string;
@@ -15,48 +15,48 @@ interface TestUser {
 
 const testUsers: TestUser[] = [
   {
-    email: 'sale@test.com',
+    username: 'sale',
     password: 'Test1234!',
     full_name: 'สมชาย ใจดี',
     company_id: 'BPK',
     role: 'sale',
   },
   {
-    email: 'cashier@test.com',
+    username: 'cashier',
     password: 'Test1234!',
     full_name: 'สมหญิง รักเงิน',
     company_id: 'BPK',
     role: 'cashier',
   },
   {
-    email: 'supervisor@test.com',
+    username: 'supervisor',
     password: 'Test1234!',
     full_name: 'สมศักดิ์ นำทีม',
-    company_id: 'LAC',
+    company_id: 'BPK',
     role: 'sale_supervisor',
   },
   {
-    email: 'manager@test.com',
+    username: 'manager',
     password: 'Test1234!',
     full_name: 'สมปอง บริหาร',
-    company_id: 'ICCK',
+    company_id: 'BPK',
     role: 'sale_manager',
   },
   {
-    email: 'it@test.com',
+    username: 'itadmin',
     password: 'Test1234!',
     full_name: 'สมเกียรติ ไอที',
     company_id: 'BPK',
     role: 'it',
   },
   {
-    email: 'useradmin@test.com',
+    username: 'useradmin',
     password: 'Test1234!',
     full_name: 'สมพร ดูแลระบบ',
     company_id: 'BPK',
     role: 'user_admin',
   },
-];
+]
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -77,9 +77,11 @@ Deno.serve(async (req) => {
     const results = []
 
     for (const user of testUsers) {
+      const internalEmail = `${user.username}@${user.company_id.toLowerCase()}.internal`
+
       // Check if user already exists
       const { data: existingUsers } = await supabase.auth.admin.listUsers()
-      const existingUser = existingUsers?.users?.find(u => u.email === user.email)
+      const existingUser = existingUsers?.users?.find(u => u.email === internalEmail)
       
       if (existingUser) {
         // Update password for existing user
@@ -87,31 +89,76 @@ Deno.serve(async (req) => {
           existingUser.id,
           { password: user.password }
         )
+
+        // Update username in profile if missing
+        await supabase
+          .from('profiles')
+          .update({ username: user.username })
+          .eq('user_id', existingUser.id)
+          .is('username', null)
         
         if (updateError) {
-          results.push({ email: user.email, status: 'update error', error: updateError.message })
+          results.push({ username: user.username, status: 'update error', error: updateError.message })
         } else {
-          results.push({ email: user.email, status: 'password updated', userId: existingUser.id })
+          results.push({ username: user.username, status: 'password updated', userId: existingUser.id })
         }
         continue
       }
 
-      // Create user
+      // Also check by old email format (migration from email-based)
+      const oldEmail = (() => {
+        const oldMap: Record<string, string> = {
+          sale: 'sale@test.com',
+          cashier: 'cashier@test.com',
+          supervisor: 'supervisor@test.com',
+          manager: 'manager@test.com',
+          itadmin: 'it@test.com',
+          useradmin: 'useradmin@test.com',
+        }
+        return oldMap[user.username]
+      })()
+
+      if (oldEmail) {
+        const oldUser = existingUsers?.users?.find(u => u.email === oldEmail)
+        if (oldUser) {
+          // Update existing user to new internal email
+          const { error: updateError } = await supabase.auth.admin.updateUserById(
+            oldUser.id,
+            { email: internalEmail, password: user.password }
+          )
+
+          // Update profile with username
+          await supabase
+            .from('profiles')
+            .update({ username: user.username })
+            .eq('user_id', oldUser.id)
+
+          if (updateError) {
+            results.push({ username: user.username, status: 'migration error', error: updateError.message })
+          } else {
+            results.push({ username: user.username, status: 'migrated from email', userId: oldUser.id })
+          }
+          continue
+        }
+      }
+
+      // Create user with internal email
       const { data, error } = await supabase.auth.admin.createUser({
-        email: user.email,
+        email: internalEmail,
         password: user.password,
         email_confirm: true,
         user_metadata: {
           full_name: user.full_name,
           company_id: user.company_id,
           role: user.role,
+          username: user.username,
         },
       })
 
       if (error) {
-        results.push({ email: user.email, status: 'error', error: error.message })
+        results.push({ username: user.username, status: 'error', error: error.message })
       } else {
-        results.push({ email: user.email, status: 'created', userId: data.user?.id })
+        results.push({ username: user.username, status: 'created', userId: data.user?.id })
       }
     }
 

@@ -81,17 +81,34 @@ Deno.serve(async (req) => {
     }
 
     // Default: create user
-    const { email, password, full_name, company_id, branch_id, role, supervisor_id } = body
+    const { username, password, full_name, company_id, branch_id, role, supervisor_id, email: contactEmail } = body
 
-    if (!email || !password || !full_name || !company_id || !role) {
+    if (!username || !password || !full_name || !company_id || !role) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // Create user via admin API
+    // Check if username already exists in this company
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', username)
+      .eq('company_id', company_id)
+      .maybeSingle()
+
+    if (existingProfile) {
+      return new Response(JSON.stringify({ error: 'รหัสพนักงานนี้ถูกใช้งานแล้วในบริษัทนี้' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Generate internal email for Supabase Auth (username@company.internal)
+    const internalEmail = `${username}@${company_id.toLowerCase()}.internal`
+
+    // Create user via admin API using internal email
     const { data, error } = await supabase.auth.admin.createUser({
-      email,
+      email: internalEmail,
       password,
       email_confirm: true,
       user_metadata: {
@@ -99,21 +116,34 @@ Deno.serve(async (req) => {
         company_id,
         branch_id: branch_id || null,
         role,
+        username,
+        contact_email: contactEmail || null,
       },
     })
 
     if (error) {
+      // Handle duplicate internal email (user already exists)
+      if (error.message.includes('already been registered')) {
+        return new Response(JSON.stringify({ error: 'รหัสพนักงานนี้ถูกใช้งานแล้ว' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
       return new Response(JSON.stringify({ error: error.message }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
     // Update supervisor_id if provided (for sale role)
-    if (supervisor_id && data.user) {
-      await supabase
-        .from('profiles')
-        .update({ supervisor_id })
-        .eq('user_id', data.user.id)
+    if (data.user) {
+      const updates: Record<string, unknown> = {}
+      if (supervisor_id) updates.supervisor_id = supervisor_id
+      
+      if (Object.keys(updates).length > 0) {
+        await supabase
+          .from('profiles')
+          .update(updates)
+          .eq('user_id', data.user.id)
+      }
     }
 
     return new Response(

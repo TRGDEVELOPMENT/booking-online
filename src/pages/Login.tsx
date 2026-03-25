@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -24,7 +24,7 @@ const companies = [
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [company, setCompany] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -38,16 +38,28 @@ export default function Login() {
       return;
     }
 
+    if (!username) {
+      toast.error('กรุณากรอกรหัสพนักงาน');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      // Construct internal email from username + company
+      const internalEmail = `${username}@${company.toLowerCase()}.internal`;
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: internalEmail,
         password,
       });
 
       if (error) {
-        toast.error(error.message);
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('รหัสพนักงานหรือรหัสผ่านไม่ถูกต้อง');
+        } else {
+          toast.error(error.message);
+        }
         return;
       }
 
@@ -105,13 +117,13 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">ชื่อผู้ใช้งาน</Label>
+              <Label htmlFor="username">รหัสพนักงาน</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="username"
+                type="text"
+                placeholder="เช่น EMP001, somchai"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.trim())}
                 required
               />
             </div>
@@ -154,15 +166,15 @@ export default function Login() {
 
           <div className="mt-6 pt-6 border-t border-border">
             <p className="text-sm text-muted-foreground text-center mb-3">
-              บัญชีทดสอบตาม Role
+              บัญชีทดสอบตาม Role (บริษัท BPK)
             </p>
             <div className="text-xs text-muted-foreground space-y-1">
-              <p><strong>ที่ปรึกษาการขาย:</strong> sale@test.com</p>
-              <p><strong>แคชเชียร์:</strong> cashier@test.com</p>
-              <p><strong>หัวหน้าทีมขาย:</strong> supervisor@test.com</p>
-              <p><strong>ผู้จัดการฝ่ายขาย:</strong> manager@test.com</p>
-              <p><strong>ผู้ดูแลระบบ:</strong> useradmin@test.com</p>
-              <p><strong>IT:</strong> it@test.com</p>
+              <p><strong>ที่ปรึกษาการขาย:</strong> sale</p>
+              <p><strong>แคชเชียร์:</strong> cashier</p>
+              <p><strong>หัวหน้าทีมขาย:</strong> supervisor</p>
+              <p><strong>ผู้จัดการฝ่ายขาย:</strong> manager</p>
+              <p><strong>ผู้ดูแลระบบ:</strong> useradmin</p>
+              <p><strong>IT:</strong> itadmin</p>
               <p className="mt-2 text-center">รหัสผ่าน: <strong>Test1234!</strong></p>
             </div>
           </div>

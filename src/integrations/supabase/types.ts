@@ -668,6 +668,68 @@ export type Database = {
         }
         Relationships: []
       }
+      sales_team_members: {
+        Row: {
+          created_at: string
+          id: string
+          member_user_id: string
+          team_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          member_user_id: string
+          team_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          member_user_id?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "sales_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_teams: {
+        Row: {
+          branch_id: string
+          company_id: string
+          created_at: string
+          id: string
+          status: string
+          supervisor_id: string
+          team_name: string
+          updated_at: string
+        }
+        Insert: {
+          branch_id: string
+          company_id: string
+          created_at?: string
+          id?: string
+          status?: string
+          supervisor_id: string
+          team_name: string
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          status?: string
+          supervisor_id?: string
+          team_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       standard_prices: {
         Row: {
           company_id: string

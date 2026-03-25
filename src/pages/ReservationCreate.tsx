@@ -49,6 +49,7 @@ import type { FuelType, PurchaseType } from '@/types/reservation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { useReservationActivityLog } from '@/hooks/useReservationActivityLog';
 
 // Note: Payment section, Review section, and Approval section are hidden for 'sale' role
 

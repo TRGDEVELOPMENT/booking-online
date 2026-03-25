@@ -258,12 +258,12 @@ export default function ApprovalChainPage() {
     }
   };
 
-  const getStatusBadge = (res: ReservationRow) => {
-    if (res.approval_status === 'approved') return <Badge className="bg-green-100 text-green-700 text-[10px]">อนุมัติแล้ว</Badge>;
-    if (res.review_status === 'reviewed') return <Badge className="bg-blue-100 text-blue-700 text-[10px]">รอนุมัติ</Badge>;
-    if (res.confirmation_status === 'confirmed') return <Badge className="bg-amber-100 text-amber-700 text-[10px]">รอตรวจสอบ</Badge>;
-    if (res.confirmation_status === 'otp_sent' || res.confirmation_status === 'link_sent') return <Badge className="bg-purple-100 text-purple-700 text-[10px]">รอยืนยัน</Badge>;
-    return <Badge variant="secondary" className="text-[10px]">ร่าง</Badge>;
+  const getStatusText = (res: ReservationRow) => {
+    if (res.approval_status === 'approved') return <span className="text-xs font-medium text-green-600">อนุมัติแล้ว</span>;
+    if (res.review_status === 'reviewed') return <span className="text-xs font-medium text-blue-600">รอนุมัติ</span>;
+    if (res.confirmation_status === 'confirmed') return <span className="text-xs font-medium text-amber-600">รอตรวจสอบ</span>;
+    if (res.confirmation_status === 'otp_sent' || res.confirmation_status === 'link_sent') return <span className="text-xs font-medium text-purple-600">รอยืนยัน</span>;
+    return <span className="text-xs font-medium text-muted-foreground">ร่าง</span>;
   };
 
   // Get member user IDs for the selected team

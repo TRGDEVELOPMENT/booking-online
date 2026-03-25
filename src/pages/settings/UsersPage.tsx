@@ -195,7 +195,13 @@ export default function UsersPage() {
       });
 
       if (response.error) throw new Error(response.error.message || 'เกิดข้อผิดพลาด');
-      if (response.data?.error) throw new Error(response.data.error);
+      const resData = response.data as any;
+      if (resData?.error) {
+        if (resData.error.includes('already been registered')) {
+          throw new Error('อีเมลนี้ถูกใช้งานแล้วในระบบ กรุณาใช้อีเมลอื่น');
+        }
+        throw new Error(resData.error);
+      }
 
       toast.success('สร้างผู้ใช้งานสำเร็จ');
       setDialogOpen(false);

@@ -410,6 +410,17 @@ export default function ReservationCreate() {
         }
       }
 
+      // Log activity
+      if (data?.id) {
+        await logActivity({
+          reservationId: data.id,
+          action: 'created',
+          companyId: selectedCompany,
+          branchId: selectedBranch || null,
+          details: { document_number: documentNumber },
+        });
+      }
+
       toast.success('บันทึกใบจองสำเร็จ');
       navigate('/reservations');
     } catch (err) {

@@ -62,6 +62,9 @@ export default function ReservationCreate() {
   // Check if user is a sales advisor (hide certain sections)
   const isSaleRole = hasRole('sale');
 
+  // Activity log
+  const { logActivity } = useReservationActivityLog(undefined);
+
   // Loading state
   const [isSaving, setIsSaving] = useState(false);
 

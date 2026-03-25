@@ -151,11 +151,15 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                 <td className="px-3 py-1.5 text-sm">
                   {reservation.status === 'cancelled' ? (
                     <span className="text-destructive font-medium">ยกเลิก</span>
-                  ) : (
-                    <span className="text-foreground">
-                      {workflowStageLabels[getWorkflowIndex(reservation)] || 'สร้างสัญญาจอง'}
-                    </span>
-                  )}
+                  ) : (() => {
+                    const idx = getWorkflowIndex(reservation);
+                    const stage = workflowStages[idx] || workflowStages[0];
+                    return (
+                      <span className={cn('font-medium', stage.color)}>
+                        {stage.label}
+                      </span>
+                    );
+                  })()}
                 </td>
                 <td className="px-3 py-1.5">
                   <p className="font-medium text-foreground leading-tight">

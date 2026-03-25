@@ -38,6 +38,8 @@ import BranchesPage from "@/pages/settings/BranchesPage";
 import UsersPage from "@/pages/settings/UsersPage";
 import UserGroupsPage from "@/pages/settings/UserGroupsPage";
 import UserPermissionsPage from "@/pages/settings/UserPermissionsPage";
+import SettingsApprovalChainPage from "@/pages/settings/SettingsApprovalChainPage";
+import SettingsCancelApprovalChainPage from "@/pages/settings/SettingsCancelApprovalChainPage";
 
 // Reports Pages
 import MonthlyReservationsPage from "@/pages/reports/MonthlyReservationsPage";

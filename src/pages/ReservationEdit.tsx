@@ -506,6 +506,14 @@ export default function ReservationEdit() {
         }
       }
 
+      // Log activity
+      await logActivity({
+        reservationId: id,
+        action: 'updated',
+        companyId: selectedCompany,
+        branchId: selectedBranch || null,
+      });
+
       toast.success('บันทึกการแก้ไขสำเร็จ');
       navigate('/reservations');
     } catch (err) {

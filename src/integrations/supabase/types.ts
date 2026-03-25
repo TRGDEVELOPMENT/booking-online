@@ -849,6 +849,44 @@ export type Database = {
         }
         Relationships: []
       }
+      team_approval_templates: {
+        Row: {
+          assigned_user_id: string
+          company_id: string
+          created_at: string
+          id: string
+          stage: string
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_user_id: string
+          company_id: string
+          created_at?: string
+          id?: string
+          stage: string
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_user_id?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          stage?: string
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_approval_templates_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "sales_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string

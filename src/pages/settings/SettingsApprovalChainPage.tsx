@@ -121,7 +121,7 @@ export default function SettingsApprovalChainPage() {
         .eq('team_id', selectedTeamId);
 
       const map: Record<string, string> = {};
-      for (const row of (data || []) as TemplateEntry[]) {
+      for (const row of (data || []) as unknown as TemplateEntry[]) {
         map[row.stage] = row.assigned_user_id;
       }
       setTemplates(map);

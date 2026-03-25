@@ -17,6 +17,7 @@ import ReservationCancelDetail from "@/pages/ReservationCancelDetail";
 import ReservationCancelPrint from "@/pages/ReservationCancelPrint";
 import ReservationPendingPaymentPage from "@/pages/ReservationPendingPaymentPage";
 import ApprovalChainPage from "@/pages/ApprovalChainPage";
+import CancelApprovalChainPage from "@/pages/CancelApprovalChainPage";
 import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -74,6 +75,7 @@ const App = () => (
               <Route path="/reservations/:id/cancel-detail" element={<ReservationCancelDetail />} />
               <Route path="/reservations/pending-payment" element={<ReservationPendingPaymentPage />} />
               <Route path="/reservations/approval-chain" element={<ApprovalChainPage />} />
+              <Route path="/reservations/cancel-approval-chain" element={<CancelApprovalChainPage />} />
               
               {/* Reports Routes */}
               <Route path="/reports" element={<MonthlyReservationsPage />} />

@@ -1,64 +1,72 @@
 
 
-## ปรับปรุง Flow การยกเลิกใบจอง — เพิ่ม branch_id ควบคุมสายอนุมัติ
+## ออกแบบระบบ Reservation Activity Log (ประวัติการดำเนินการใบจอง)
 
-### แผนการดำเนินงาน
+### แนวคิด
 
-#### 1. สร้างตาราง `team_cancel_approval_templates` (Database Migration)
+สร้างตาราง `reservation_activity_logs` เพื่อบันทึกทุกการกระทำที่เกิดขึ้นกับใบจองแต่ละรายการ แบบ append-only (เพิ่มเรื่อยๆ ไม่ลบ/แก้ไข) เหมือนระบบ Audit Trail
+
+### 1. โครงสร้างตาราง
 
 ```text
-team_cancel_approval_templates
+reservation_activity_logs
 ├── id (uuid, PK)
-├── team_id (uuid, NOT NULL) — อ้างอิง sales_teams
-├── stage (text, NOT NULL) — 'cancel_review' / 'cancel_approval'
-├── assigned_user_id (uuid, NOT NULL)
+├── reservation_id (uuid, NOT NULL) — อ้างอิงใบจอง
+├── action (text, NOT NULL) — ประเภทการกระทำ เช่น:
+│     'created', 'updated', 'confirmed',
+│     'cashier_verified', 'reviewed', 'approved',
+│     'submitted_for_approval', 'printed',
+│     'cancel_requested', 'cancel_reviewed', 'cancel_approved',
+│     'assignment_changed', 'attachment_uploaded', 'attachment_deleted'
+├── action_label (text) — คำอธิบายภาษาไทย เช่น "สร้างใบจอง", "อนุมัติ"
+├── details (jsonb) — รายละเอียดเพิ่มเติม เช่น field ที่เปลี่ยน, ค่าเดิม/ค่าใหม่, หมายเหตุ
+├── performed_by (uuid, NOT NULL) — user_id ผู้ดำเนินการ
+├── performed_by_name (text) — ชื่อผู้ดำเนินการ (denormalized เพื่อความเร็ว)
 ├── company_id (text, NOT NULL)
-├── branch_id (text, NOT NULL) — ดึงจาก sales_teams.branch_id เพื่อกรองตามสาขา
-├── created_at / updated_at
-└── UNIQUE(team_id, stage)
+├── branch_id (text)
+├── created_at (timestamptz, DEFAULT now())
 ```
 
-RLS: เหมือน `team_approval_templates` (admin/it สามารถ CRUD, authenticated สามารถ SELECT) โดยกรอง `company_id`
+### 2. RLS Policy
 
-#### 2. ปรับหน้า Settings > ปรับปรุงสายอนุมัติยกเลิกใบจอง (`SettingsCancelApprovalChainPage.tsx`)
+- SELECT: กรองตาม `company_id` (ทุก authenticated user ในบริษัทเดียวกันดูได้)
+- INSERT: กรองตาม `company_id` (user ในบริษัทเดียวกันเพิ่มได้)
+- UPDATE/DELETE: ไม่อนุญาต (append-only)
 
-เขียนใหม่ให้เหมือน `SettingsApprovalChainPage.tsx`:
-- เลือกทีมขาย → แสดงข้อมูลทีม (สาขา, หัวหน้าทีม, สมาชิก)
-- กำหนดผู้รับผิดชอบ 2 ขั้นตอน:
-  - ตรวจสอบการยกเลิก (`cancel_review`) — role: `sale_supervisor`
-  - อนุมัติยกเลิก (`cancel_approval`) — role: `sale_manager`
-- **กรอง dropdown ผู้ใช้งานตาม branch_id ของทีมขาย**
-- บันทึกลง `team_cancel_approval_templates` พร้อม `branch_id` จากทีมที่เลือก
+### 3. การบันทึก Log ในโค้ด
 
-#### 3. สร้างหน้า ใบจองรถยนต์ > เปลี่ยนสายอนุมัติยกเลิกใบจอง (`CancelApprovalChainPage.tsx`)
+สร้าง helper function `logReservationActivity()` เรียกใช้ทุกครั้งที่มีการกระทำสำคัญ:
 
-สร้างหน้าใหม่ (เหมือน `ApprovalChainPage.tsx`):
-- แสดงเฉพาะใบจองที่ `cancel_request_status = 'requested'` และ `cancel_approval_status != 'approved'`
-- ตาราง: เลขที่เอกสาร, ชื่อลูกค้า, สาขา, เหตุผลยกเลิก, สถานะ
-- 2 คอลัมน์ dropdown: ผู้ตรวจสอบ, ผู้อนุมัติ
-- **บันทึกลง `reservation_assignments` ด้วย stage `cancel_review` / `cancel_approval` พร้อม `branch_id` จากใบจอง**
+```text
+logReservationActivity({
+  reservationId, action, actionLabel, details, companyId, branchId
+})
+```
 
-#### 4. เพิ่มเมนูและ Route
+เรียกใช้ในจุดต่างๆ ของ `ReservationEdit.tsx` และ `ReservationCreate.tsx`:
+- บันทึกร่าง / อัปเดต
+- ยืนยันสัญญา (OTP/Link)
+- ตรวจสอบการชำระเงิน
+- ตรวจสอบรายละเอียด (review)
+- อนุมัติ / ไม่อนุมัติ
+- ส่งขออนุมัติ
+- ขอยกเลิก / ตรวจสอบยกเลิก / อนุมัติยกเลิก
+- อัปโหลด/ลบไฟล์แนบ
+- เปลี่ยนสายอนุมัติ
 
-- เพิ่มเมนู "เปลี่ยนสายอนุมัติยกเลิกใบจอง" ในกลุ่มใบจองรถยนต์ (Sidebar)
-- เพิ่ม Route `/reservations/cancel-approval-chain` → `CancelApprovalChainPage`
+### 4. แสดงผล Activity Log ในหน้า ReservationEdit
 
----
+เพิ่มส่วน "ประวัติการดำเนินการ" ที่ด้านล่างหน้าแก้ไขใบจอง:
+- แสดงเป็น Timeline (เรียงจากใหม่ไปเก่า)
+- แต่ละรายการแสดง: วันเวลา, ผู้ดำเนินการ, การกระทำ, รายละเอียด
 
-### รายละเอียดทางเทคนิค
-
-**ไฟล์ที่ต้องแก้ไข/สร้าง:**
+### ไฟล์ที่ต้องสร้าง/แก้ไข
 
 | ไฟล์ | การดำเนินการ |
 |---|---|
-| `supabase/migrations/` | สร้างตาราง `team_cancel_approval_templates` (มี `branch_id`) + RLS |
-| `src/pages/settings/SettingsCancelApprovalChainPage.tsx` | เขียนใหม่ — เทมเพลตระดับทีม พร้อม branch_id |
-| `src/pages/CancelApprovalChainPage.tsx` | สร้างใหม่ — เปลี่ยนสายอนุมัติรายใบจอง พร้อม branch_id |
-| `src/components/layout/Sidebar.tsx` | เพิ่มเมนู "เปลี่ยนสายอนุมัติยกเลิกใบจอง" |
-| `src/App.tsx` | เพิ่ม Route `/reservations/cancel-approval-chain` |
-
-**หลักการใช้ branch_id:**
-- ตาราง `team_cancel_approval_templates`: เก็บ `branch_id` จาก `sales_teams.branch_id` ตอนบันทึกเทมเพลต
-- ตาราง `reservation_assignments` (stage: `cancel_review`/`cancel_approval`): เก็บ `branch_id` จาก `reservations.branch_id` ตอนมอบหมายรายใบจอง
-- กรอง dropdown ผู้ใช้งานตาม `branch_id` เพื่อให้แสดงเฉพาะคนในสาขาเดียวกัน
+| `supabase/migrations/` | สร้างตาราง `reservation_activity_logs` + RLS |
+| `src/hooks/useReservationActivityLog.ts` | สร้างใหม่ — hook สำหรับบันทึกและดึง log |
+| `src/components/reservations/ActivityTimeline.tsx` | สร้างใหม่ — component แสดง timeline |
+| `src/pages/ReservationEdit.tsx` | เพิ่มการเรียก log ในทุกจุดที่มี action + แสดง timeline |
+| `src/pages/ReservationCreate.tsx` | เพิ่มการเรียก log ตอนสร้างใบจอง |
 

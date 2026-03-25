@@ -26,7 +26,8 @@ const workflowStages = [
 ];
 
 function getWorkflowIndex(r: DatabaseReservation): number {
-  if (r.status === 'cancelled') return -1;
+  if (r.status === 'cancelled') return -2; // cancelled
+  if (r.cancel_approval_status === 'approved') return -3; // cancel approved
   if (r.approval_status === 'approved') return 5;
   if (r.review_status === 'reviewed') return 4;
   if (r.status === 'pending') return 2;

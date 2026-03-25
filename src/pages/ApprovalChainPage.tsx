@@ -398,7 +398,7 @@ export default function ApprovalChainPage() {
                           <TableCell className="font-mono text-xs">{res.document_number}</TableCell>
                           <TableCell className="text-sm truncate max-w-[160px]">{res.customer_name}</TableCell>
                           <TableCell className="text-xs">{branchName}</TableCell>
-                          <TableCell>{getStatusBadge(res)}</TableCell>
+                          <TableCell>{getStatusText(res)}</TableCell>
                           {stageConfig.map(({ stage, role }) => {
                             const assignment = getAssignment(res.id, stage);
                             const availableUsers = getUsersForRole(role, res.branch_id);

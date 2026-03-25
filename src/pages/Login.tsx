@@ -166,7 +166,7 @@ export default function Login() {
 
           <div className="mt-6 pt-6 border-t border-border">
             <p className="text-sm text-muted-foreground text-center mb-3">
-              บัญชีทดสอบตาม Role (บริษัท BPK)
+              บัญชีทดสอบตาม Role
             </p>
             <div className="text-xs text-muted-foreground space-y-1">
               <p><strong>ที่ปรึกษาการขาย:</strong> sale</p>

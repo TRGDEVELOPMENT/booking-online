@@ -67,6 +67,8 @@ const settingsMenuItems: MenuEntry[] = [
       { id: 'users', label: 'ผู้ใช้งาน', icon: Users, path: '/settings/users', color: 'text-purple-500' },
       { id: 'user-groups', label: 'กลุ่มผู้ใช้งาน', icon: Shield, path: '/settings/user-groups', color: 'text-purple-400' },
       { id: 'user-permissions', label: 'กำหนดสิทธิ์ผู้ใช้งาน', icon: KeyRound, path: '/settings/user-permissions', color: 'text-purple-300' },
+      { id: 'approval-chain', label: 'ปรับปรุงสายอนุมัติใบจอง', icon: KeyRound, path: '/settings/approval-chain', color: 'text-purple-200' },
+      { id: 'cancel-approval-chain', label: 'ปรับปรุงสายอนุมัติยกเลิกใบจอง', icon: KeyRound, path: '/settings/cancel-approval-chain', color: 'text-purple-100' },
     ],
   },
 ];

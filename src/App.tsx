@@ -98,6 +98,8 @@ const App = () => (
               <Route path="/settings/users" element={<UsersPage />} />
               <Route path="/settings/user-groups" element={<UserGroupsPage />} />
               <Route path="/settings/user-permissions" element={<UserPermissionsPage />} />
+              <Route path="/settings/approval-chain" element={<SettingsApprovalChainPage />} />
+              <Route path="/settings/cancel-approval-chain" element={<SettingsCancelApprovalChainPage />} />
             </Route>
             {/* Print page outside MainLayout for clean printing */}
             <Route path="/reservations/:id/print" element={<ReservationPrint />} />

@@ -164,7 +164,8 @@ export default function UsersPage() {
     setEditingUserId(user.user_id);
     setFormData({
       full_name: user.full_name,
-      email: '', // Not editable
+      username: user.username || '',
+      email: user.email || '',
       password: '',
       branch_id: user.branch_id || '',
       role: user.roles[0] || '',

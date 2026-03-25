@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, UserPlus, Loader2, Pencil } from 'lucide-react';
+import { Search, UserPlus, Loader2, Pencil, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -19,6 +19,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
@@ -82,6 +92,7 @@ export default function UsersPage() {
     supervisor_id: '',
     status: 'active',
   });
+  const [roleWarningOpen, setRoleWarningOpen] = useState(false);
 
   const isAdmin = hasRole('user_admin') || hasRole('it');
 
@@ -207,6 +218,30 @@ export default function UsersPage() {
       return;
     }
 
+    // Check if role is changing
+    const currentUser = users.find(u => u.user_id === editingUserId);
+    const isRoleChanging = currentUser && currentUser.roles[0] !== formData.role;
+
+    if (isRoleChanging) {
+      // Check if user is referenced in reservation assignments
+      const { data: assignments } = await supabase
+        .from('reservation_assignments')
+        .select('id')
+        .eq('assigned_user_id', editingUserId)
+        .limit(1);
+
+      if (assignments && assignments.length > 0) {
+        setRoleWarningOpen(true);
+        return;
+      }
+    }
+
+    await executeEditUser();
+  };
+
+  const executeEditUser = async () => {
+    if (!editingUserId) return;
+    setRoleWarningOpen(false);
     setIsSubmitting(true);
     try {
       // Update profile
@@ -495,6 +530,25 @@ export default function UsersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Role Change Warning Dialog */}
+      <AlertDialog open={roleWarningOpen} onOpenChange={setRoleWarningOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              ยืนยันการเปลี่ยน Role
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              ผู้ใช้งานนี้ มีบันทึกไว้ในสายอนุมัติใบจอง ยืนยันการแก้ไข Role ผู้ใช้งานหรือไม่
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={executeEditUser}>ยืนยัน</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

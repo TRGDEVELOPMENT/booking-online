@@ -84,7 +84,7 @@ export function useReservationActivityLog(reservationId: string | undefined) {
           reservation_id: params.reservationId,
           action: params.action,
           action_label: label,
-          details: (params.details || {}) as unknown as Record<string, unknown>,
+          details: JSON.parse(JSON.stringify(params.details || {})),
           performed_by: user.id,
           performed_by_name: profile?.full_name || user.email || '',
           company_id: params.companyId,

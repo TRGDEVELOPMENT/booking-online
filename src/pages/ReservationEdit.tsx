@@ -1844,6 +1844,11 @@ export default function ReservationEdit() {
             </div>
             )}
 
+            {/* Activity Timeline */}
+            <div className="pointer-events-auto">
+              <ActivityTimeline logs={activityLogs} isLoading={isLoadingLogs} />
+            </div>
+
             {/* View-only back button */}
             {isViewOnly && (
             <div className="flex items-center pt-4 border-t border-border pointer-events-auto">

@@ -75,6 +75,7 @@ const App = () => (
               <Route path="/reservations/:id/cancel-detail" element={<ReservationCancelDetail />} />
               <Route path="/reservations/pending-payment" element={<ReservationPendingPaymentPage />} />
               <Route path="/reservations/approval-chain" element={<ApprovalChainPage />} />
+              <Route path="/reservations/cancel-approval-chain" element={<CancelApprovalChainPage />} />
               
               {/* Reports Routes */}
               <Route path="/reports" element={<MonthlyReservationsPage />} />

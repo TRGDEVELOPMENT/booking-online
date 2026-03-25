@@ -204,7 +204,7 @@ export default function ApprovalChainPage() {
   if (!isAdmin) {
     return (
       <>
-        <Header title="ปรับปรุงสายอนุมัติ" subtitle="ไม่มีสิทธิ์เข้าถึง" />
+        <Header title="เปลี่ยนสายอนุมัติของใบจอง" subtitle="ไม่มีสิทธิ์เข้าถึง" />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-muted-foreground">คุณไม่มีสิทธิ์เข้าถึงหน้านี้</p>
         </div>
@@ -215,7 +215,7 @@ export default function ApprovalChainPage() {
   return (
     <>
       <Header
-        title="ปรับปรุงสายอนุมัติ"
+        title="เปลี่ยนสายอนุมัติของใบจอง"
         subtitle="ปรับปรุงผู้ตรวจสอบและอนุมัติใบจองแต่ละรายการ (เฉพาะใบจองที่ยังไม่ได้รับการอนุมัติ)"
       />
 

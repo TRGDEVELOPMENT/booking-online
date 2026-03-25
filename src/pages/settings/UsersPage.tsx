@@ -361,6 +361,7 @@ export default function UsersPage() {
               filteredUsers.map((user, index) => (
                 <TableRow key={user.user_id} className={user.status === 'inactive' ? 'opacity-50' : ''}>
                   <TableCell>{index + 1}</TableCell>
+                  <TableCell className="font-mono text-xs">{user.username || '-'}</TableCell>
                   <TableCell className="font-medium">{user.full_name}</TableCell>
                   <TableCell>
                     {user.roles.includes('it') || user.branch_id === 'all'

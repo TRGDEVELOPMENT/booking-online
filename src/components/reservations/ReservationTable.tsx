@@ -16,13 +16,13 @@ import { DatabaseStatusLabels } from '@/types/database-reservation';
 import { branches } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 
-const workflowStageLabels = [
-  'สร้างสัญญาจอง',
-  'ยืนยันสัญญาจอง',
-  'ตรวจสอบการชำระเงิน',
-  'ตรวจสอบรายละเอียด',
-  'อนุมัติ',
-  'พิมพ์/ลงนาม',
+const workflowStages = [
+  { label: 'สร้างสัญญาจอง', color: 'text-slate-500' },
+  { label: 'ยืนยันสัญญาจอง', color: 'text-amber-600' },
+  { label: 'ตรวจสอบการชำระเงิน', color: 'text-orange-600' },
+  { label: 'ตรวจสอบรายละเอียด', color: 'text-blue-600' },
+  { label: 'อนุมัติ', color: 'text-indigo-600' },
+  { label: 'พิมพ์/ลงนาม', color: 'text-green-600' },
 ];
 
 function getWorkflowIndex(r: DatabaseReservation): number {
@@ -151,11 +151,15 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                 <td className="px-3 py-1.5 text-sm">
                   {reservation.status === 'cancelled' ? (
                     <span className="text-destructive font-medium">ยกเลิก</span>
-                  ) : (
-                    <span className="text-foreground">
-                      {workflowStageLabels[getWorkflowIndex(reservation)] || 'สร้างสัญญาจอง'}
-                    </span>
-                  )}
+                  ) : (() => {
+                    const idx = getWorkflowIndex(reservation);
+                    const stage = workflowStages[idx] || workflowStages[0];
+                    return (
+                      <span className={cn('font-medium', stage.color)}>
+                        {stage.label}
+                      </span>
+                    );
+                  })()}
                 </td>
                 <td className="px-3 py-1.5">
                   <p className="font-medium text-foreground leading-tight">

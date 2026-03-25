@@ -87,6 +87,7 @@ export default function UsersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
+    username: '',
     email: '',
     password: 'Test1234!',
     branch_id: '',

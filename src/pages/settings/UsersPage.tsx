@@ -416,25 +416,26 @@ export default function UsersPage() {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label>รหัสพนักงาน <span className="text-destructive">*</span></Label>
+              <Input
+                value={formData.username}
+                onChange={(e) => setFormData(p => ({ ...p, username: e.target.value.trim() }))}
+                placeholder="เช่น EMP001, somchai"
+                disabled={dialogMode === 'edit'}
+                className={dialogMode === 'edit' ? 'bg-muted' : ''}
+              />
+            </div>
+
             {dialogMode === 'create' && (
-              <>
-                <div className="space-y-2">
-                  <Label>รหัสพนักงาน <span className="text-destructive">*</span></Label>
-                  <Input
-                    value={formData.username}
-                    onChange={(e) => setFormData(p => ({ ...p, username: e.target.value.trim() }))}
-                    placeholder="เช่น EMP001, somchai"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>รหัสผ่าน</Label>
-                  <Input
-                    value={formData.password}
-                    onChange={(e) => setFormData(p => ({ ...p, password: e.target.value }))}
-                    placeholder="รหัสผ่าน"
-                  />
-                </div>
-              </>
+              <div className="space-y-2">
+                <Label>รหัสผ่าน</Label>
+                <Input
+                  value={formData.password}
+                  onChange={(e) => setFormData(p => ({ ...p, password: e.target.value }))}
+                  placeholder="รหัสผ่าน"
+                />
+              </div>
             )}
 
             <div className="space-y-2">

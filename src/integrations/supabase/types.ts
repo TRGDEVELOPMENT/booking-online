@@ -363,34 +363,40 @@ export type Database = {
           branch_id: string | null
           company_id: string
           created_at: string
+          email: string | null
           full_name: string
           id: string
           status: string
           supervisor_id: string | null
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
           branch_id?: string | null
           company_id: string
           created_at?: string
+          email?: string | null
           full_name: string
           id?: string
           status?: string
           supervisor_id?: string | null
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
           branch_id?: string | null
           company_id?: string
           created_at?: string
+          email?: string | null
           full_name?: string
           id?: string
           status?: string
           supervisor_id?: string | null
           updated_at?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }

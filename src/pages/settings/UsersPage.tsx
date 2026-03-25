@@ -48,6 +48,8 @@ interface UserWithRole {
   branch_id: string | null;
   supervisor_id: string | null;
   status: string;
+  username: string | null;
+  email: string | null;
   roles: string[];
 }
 
@@ -85,6 +87,7 @@ export default function UsersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
+    username: '',
     email: '',
     password: 'Test1234!',
     branch_id: '',
@@ -106,7 +109,7 @@ export default function UsersPage() {
     setLoading(true);
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('user_id, full_name, company_id, branch_id, supervisor_id, status')
+      .select('user_id, full_name, company_id, branch_id, supervisor_id, status, username, email')
       .eq('company_id', profile?.company_id || '');
 
     if (profiles) {
@@ -145,6 +148,7 @@ export default function UsersPage() {
     setEditingUserId(null);
     setFormData({
       full_name: '',
+      username: '',
       email: '',
       password: 'Test1234!',
       branch_id: '',
@@ -160,7 +164,8 @@ export default function UsersPage() {
     setEditingUserId(user.user_id);
     setFormData({
       full_name: user.full_name,
-      email: '', // Not editable
+      username: user.username || '',
+      email: user.email || '',
       password: '',
       branch_id: user.branch_id || '',
       role: user.roles[0] || '',
@@ -171,7 +176,7 @@ export default function UsersPage() {
   };
 
   const handleCreateUser = async () => {
-    if (!formData.full_name || !formData.email || !formData.role) {
+    if (!formData.full_name || !formData.username || !formData.role) {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
@@ -184,22 +189,20 @@ export default function UsersPage() {
     try {
       const response = await supabase.functions.invoke('create-user', {
         body: {
-          email: formData.email,
+          username: formData.username,
           password: formData.password,
           full_name: formData.full_name,
           company_id: profile?.company_id,
           branch_id: formData.branch_id || null,
           role: formData.role,
           supervisor_id: formData.role === 'sale' ? formData.supervisor_id : null,
+          email: formData.email || null,
         },
       });
 
       if (response.error) throw new Error(response.error.message || 'เกิดข้อผิดพลาด');
       const resData = response.data as any;
       if (resData?.error) {
-        if (resData.error.includes('already been registered')) {
-          throw new Error('อีเมลนี้ถูกใช้งานแล้วในระบบ กรุณาใช้อีเมลอื่น');
-        }
         throw new Error(resData.error);
       }
 
@@ -258,6 +261,7 @@ export default function UsersPage() {
           branch_id: formData.role === 'it' ? null : (formData.branch_id || null),
           supervisor_id: formData.role === 'sale' ? formData.supervisor_id : null,
           status: formData.status,
+          email: formData.email || null,
         })
         .eq('user_id', editingUserId);
 
@@ -332,6 +336,7 @@ export default function UsersPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[60px]">ลำดับ</TableHead>
+              <TableHead>รหัสพนักงาน</TableHead>
               <TableHead>ชื่อ-สกุล</TableHead>
               <TableHead>สาขา</TableHead>
               <TableHead>บทบาท</TableHead>
@@ -343,13 +348,13 @@ export default function UsersPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 7 : 6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center text-muted-foreground py-8">
                   กำลังโหลด...
                 </TableCell>
               </TableRow>
             ) : filteredUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 7 : 6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center text-muted-foreground py-8">
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>
@@ -357,6 +362,7 @@ export default function UsersPage() {
               filteredUsers.map((user, index) => (
                 <TableRow key={user.user_id} className={user.status === 'inactive' ? 'opacity-50' : ''}>
                   <TableCell>{index + 1}</TableCell>
+                  <TableCell className="font-mono text-xs">{user.username || '-'}</TableCell>
                   <TableCell className="font-medium">{user.full_name}</TableCell>
                   <TableCell>
                     {user.roles.includes('it') || user.branch_id === 'all'
@@ -413,12 +419,11 @@ export default function UsersPage() {
             {dialogMode === 'create' && (
               <>
                 <div className="space-y-2">
-                  <Label>อีเมล <span className="text-destructive">*</span></Label>
+                  <Label>รหัสพนักงาน <span className="text-destructive">*</span></Label>
                   <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
-                    placeholder="email@example.com"
+                    value={formData.username}
+                    onChange={(e) => setFormData(p => ({ ...p, username: e.target.value.trim() }))}
+                    placeholder="เช่น EMP001, somchai"
                   />
                 </div>
                 <div className="space-y-2">
@@ -431,6 +436,16 @@ export default function UsersPage() {
                 </div>
               </>
             )}
+
+            <div className="space-y-2">
+              <Label>อีเมล (ไม่บังคับ)</Label>
+              <Input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
+                placeholder="email@example.com"
+              />
+            </div>
 
             <div className="space-y-2">
               <Label>บทบาท (Role) <span className="text-destructive">*</span></Label>

@@ -530,6 +530,25 @@ export default function UsersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Role Change Warning Dialog */}
+      <AlertDialog open={roleWarningOpen} onOpenChange={setRoleWarningOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              ยืนยันการเปลี่ยน Role
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              ผู้ใช้งานนี้ มีบันทึกไว้ในสายอนุมัติใบจอง ยืนยันการแก้ไข Role ผู้ใช้งานหรือไม่
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={executeEditUser}>ยืนยัน</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

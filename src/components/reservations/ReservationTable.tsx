@@ -159,10 +159,10 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                       return <span className="font-medium" style={{ color: '#b51f19' }}>ยกเลิก</span>;
                     }
                     const stage = workflowStages[idx] || workflowStages[0];
-                    const colorStyle = idx === 1 ? { color: '#02681f' }
+                    const colorStyle = idx === 1 ? { color: '#2349bb' }
                       : idx === 3 ? { color: '#2b93d4' }
                       : idx === 4 ? { color: '#2349bb' }
-                      : idx === 5 ? { color: '#2349bb' }
+                      : idx === 5 ? { color: '#02681f' }
                       : undefined;
                     return (
                       <span className={cn('font-medium', stage.color)} style={colorStyle}>

@@ -180,6 +180,9 @@ export default function ReservationEdit() {
     branchId: selectedBranch || null,
   });
 
+  // Activity log
+  const { logs: activityLogs, isLoading: isLoadingLogs, logActivity } = useReservationActivityLog(id);
+
   // Fetch reservation data
   useEffect(() => {
     const fetchReservation = async () => {

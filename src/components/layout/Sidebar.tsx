@@ -136,6 +136,8 @@ const allMenuItems: MenuItem[] = [
       { id: 'users', label: 'ผู้ใช้งาน', path: '/settings/users', icon: User },
       { id: 'user-groups', label: 'กลุ่มผู้ใช้งาน', path: '/settings/user-groups', icon: Users },
       { id: 'user-permissions', label: 'กำหนดสิทธิ์ผู้ใช้งาน', path: '/settings/user-permissions', icon: Award },
+      { id: 'approval-chain', label: 'ปรับปรุงสายอนุมัติใบจอง', path: '/settings/approval-chain', icon: GitBranch },
+      { id: 'cancel-approval-chain', label: 'ปรับปรุงสายอนุมัติยกเลิกใบจอง', path: '/settings/cancel-approval-chain', icon: GitBranch },
     ]
   },
   { 

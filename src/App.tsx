@@ -38,6 +38,8 @@ import BranchesPage from "@/pages/settings/BranchesPage";
 import UsersPage from "@/pages/settings/UsersPage";
 import UserGroupsPage from "@/pages/settings/UserGroupsPage";
 import UserPermissionsPage from "@/pages/settings/UserPermissionsPage";
+import SettingsApprovalChainPage from "@/pages/settings/SettingsApprovalChainPage";
+import SettingsCancelApprovalChainPage from "@/pages/settings/SettingsCancelApprovalChainPage";
 
 // Reports Pages
 import MonthlyReservationsPage from "@/pages/reports/MonthlyReservationsPage";
@@ -96,6 +98,8 @@ const App = () => (
               <Route path="/settings/users" element={<UsersPage />} />
               <Route path="/settings/user-groups" element={<UserGroupsPage />} />
               <Route path="/settings/user-permissions" element={<UserPermissionsPage />} />
+              <Route path="/settings/approval-chain" element={<SettingsApprovalChainPage />} />
+              <Route path="/settings/cancel-approval-chain" element={<SettingsCancelApprovalChainPage />} />
             </Route>
             {/* Print page outside MainLayout for clean printing */}
             <Route path="/reservations/:id/print" element={<ReservationPrint />} />

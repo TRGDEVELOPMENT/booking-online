@@ -48,6 +48,8 @@ interface UserWithRole {
   branch_id: string | null;
   supervisor_id: string | null;
   status: string;
+  username: string | null;
+  email: string | null;
   roles: string[];
 }
 

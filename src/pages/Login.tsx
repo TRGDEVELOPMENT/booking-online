@@ -46,8 +46,8 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      // Construct internal email from username + company
-      const internalEmail = `${username}@${company.toLowerCase()}.internal`;
+      // Construct internal email from username (company-independent)
+      const internalEmail = `${username}@app.internal`;
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: internalEmail,

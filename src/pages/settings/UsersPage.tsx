@@ -92,6 +92,7 @@ export default function UsersPage() {
     supervisor_id: '',
     status: 'active',
   });
+  const [roleWarningOpen, setRoleWarningOpen] = useState(false);
 
   const isAdmin = hasRole('user_admin') || hasRole('it');
 

@@ -418,12 +418,11 @@ export default function UsersPage() {
             {dialogMode === 'create' && (
               <>
                 <div className="space-y-2">
-                  <Label>อีเมล <span className="text-destructive">*</span></Label>
+                  <Label>รหัสพนักงาน <span className="text-destructive">*</span></Label>
                   <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
-                    placeholder="email@example.com"
+                    value={formData.username}
+                    onChange={(e) => setFormData(p => ({ ...p, username: e.target.value.trim() }))}
+                    placeholder="เช่น EMP001, somchai"
                   />
                 </div>
                 <div className="space-y-2">
@@ -435,6 +434,17 @@ export default function UsersPage() {
                   />
                 </div>
               </>
+            )}
+
+            <div className="space-y-2">
+              <Label>อีเมล (ไม่บังคับ)</Label>
+              <Input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
+                placeholder="email@example.com"
+              />
+            </div>
             )}
 
             <div className="space-y-2">

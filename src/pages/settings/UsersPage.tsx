@@ -176,7 +176,7 @@ export default function UsersPage() {
   };
 
   const handleCreateUser = async () => {
-    if (!formData.full_name || !formData.email || !formData.role) {
+    if (!formData.full_name || !formData.username || !formData.role) {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
@@ -189,13 +189,14 @@ export default function UsersPage() {
     try {
       const response = await supabase.functions.invoke('create-user', {
         body: {
-          email: formData.email,
+          username: formData.username,
           password: formData.password,
           full_name: formData.full_name,
           company_id: profile?.company_id,
           branch_id: formData.branch_id || null,
           role: formData.role,
           supervisor_id: formData.role === 'sale' ? formData.supervisor_id : null,
+          email: formData.email || null,
         },
       });
 

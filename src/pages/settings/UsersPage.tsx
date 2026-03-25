@@ -203,9 +203,6 @@ export default function UsersPage() {
       if (response.error) throw new Error(response.error.message || 'เกิดข้อผิดพลาด');
       const resData = response.data as any;
       if (resData?.error) {
-        if (resData.error.includes('already been registered')) {
-          throw new Error('อีเมลนี้ถูกใช้งานแล้วในระบบ กรุณาใช้อีเมลอื่น');
-        }
         throw new Error(resData.error);
       }
 

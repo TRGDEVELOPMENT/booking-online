@@ -150,13 +150,22 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                   </Link>
                 </td>
                 <td className="px-3 py-1.5 text-sm">
-                  {reservation.status === 'cancelled' ? (
-                    <span className="text-destructive font-medium">ยกเลิก</span>
-                  ) : (() => {
+                  {(() => {
                     const idx = getWorkflowIndex(reservation);
+                    if (idx === -3) {
+                      return <span className="font-medium" style={{ color: '#b51f19' }}>ยกเลิกแล้ว</span>;
+                    }
+                    if (idx === -2) {
+                      return <span className="font-medium" style={{ color: '#b51f19' }}>ยกเลิก</span>;
+                    }
                     const stage = workflowStages[idx] || workflowStages[0];
+                    const colorStyle = idx === 1 ? { color: '#02681f' }
+                      : idx === 3 ? { color: '#2b93d4' }
+                      : idx === 4 ? { color: '#2349bb' }
+                      : idx === 5 ? { color: '#2349bb' }
+                      : undefined;
                     return (
-                      <span className={cn('font-medium', stage.color)}>
+                      <span className={cn('font-medium', stage.color)} style={colorStyle}>
                         {stage.label}
                       </span>
                     );

@@ -218,6 +218,30 @@ export default function UsersPage() {
       return;
     }
 
+    // Check if role is changing
+    const currentUser = users.find(u => u.user_id === editingUserId);
+    const isRoleChanging = currentUser && currentUser.roles[0] !== formData.role;
+
+    if (isRoleChanging) {
+      // Check if user is referenced in reservation assignments
+      const { data: assignments } = await supabase
+        .from('reservation_assignments')
+        .select('id')
+        .eq('assigned_user_id', editingUserId)
+        .limit(1);
+
+      if (assignments && assignments.length > 0) {
+        setRoleWarningOpen(true);
+        return;
+      }
+    }
+
+    await executeEditUser();
+  };
+
+  const executeEditUser = async () => {
+    if (!editingUserId) return;
+    setRoleWarningOpen(false);
     setIsSubmitting(true);
     try {
       // Update profile

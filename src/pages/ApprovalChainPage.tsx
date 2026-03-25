@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { UserCheck, Loader2, Search, Filter } from 'lucide-react';
+import { Loader2, Search, Filter, Users } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -36,6 +34,7 @@ interface ReservationRow {
   review_status: string | null;
   approval_status: string | null;
   created_at: string;
+  created_by: string | null;
 }
 
 interface Assignment {
@@ -52,6 +51,19 @@ interface UserOption {
   role: string;
 }
 
+interface SalesTeam {
+  id: string;
+  team_name: string;
+  supervisor_id: string;
+  branch_id: string;
+  status: string;
+}
+
+interface SalesTeamMember {
+  team_id: string;
+  member_user_id: string;
+}
+
 const stageConfig = [
   { stage: 'cashier', label: 'แคชเชียร์', role: 'cashier' },
   { stage: 'review', label: 'หัวหน้าทีมขาย', role: 'sale_supervisor' },
@@ -66,9 +78,13 @@ export default function ApprovalChainPage() {
   const [users, setUsers] = useState<UserOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [branchFilter, setBranchFilter] = useState<string>('all');
   const [branches, setBranches] = useState<{ branch_id: string; branch_name: string }[]>([]);
   const [savingCell, setSavingCell] = useState<string | null>(null);
+
+  // Sales team states
+  const [salesTeams, setSalesTeams] = useState<SalesTeam[]>([]);
+  const [teamMembers, setTeamMembers] = useState<SalesTeamMember[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('all');
 
   const isAdmin = hasRole('user_admin') || hasRole('it');
 
@@ -77,10 +93,10 @@ export default function ApprovalChainPage() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Fetch reservations (non-cancelled, non-approved)
+        // Fetch reservations (non-cancelled)
         const { data: resData, error: resError } = await supabase
           .from('reservations')
-          .select('id, document_number, customer_name, branch_id, status, confirmation_status, review_status, approval_status, created_at')
+          .select('id, document_number, customer_name, branch_id, status, confirmation_status, review_status, approval_status, created_at, created_by')
           .eq('company_id', selectedCompany)
           .neq('status', 'cancelled')
           .order('created_at', { ascending: false });
@@ -95,7 +111,6 @@ export default function ApprovalChainPage() {
 
         if (assignError) throw assignError;
 
-        // Fetch user names for assignments
         if (assignData && assignData.length > 0) {
           const userIds = [...new Set(assignData.map(a => a.assigned_user_id))];
           const { data: profiles } = await supabase
@@ -149,6 +164,26 @@ export default function ApprovalChainPage() {
           .eq('status', 'active');
 
         setBranches(branchData || []);
+
+        // Fetch sales teams
+        const { data: teamsData } = await supabase
+          .from('sales_teams')
+          .select('id, team_name, supervisor_id, branch_id, status')
+          .eq('company_id', selectedCompany)
+          .eq('status', 'active');
+
+        setSalesTeams(teamsData || []);
+
+        // Fetch all team members
+        if (teamsData && teamsData.length > 0) {
+          const teamIds = teamsData.map(t => t.id);
+          const { data: membersData } = await supabase
+            .from('sales_team_members')
+            .select('team_id, member_user_id')
+            .in('team_id', teamIds);
+
+          setTeamMembers(membersData || []);
+        }
       } catch (err) {
         console.error('Error fetching data:', err);
         toast.error('ไม่สามารถโหลดข้อมูลได้');
@@ -164,9 +199,24 @@ export default function ApprovalChainPage() {
     return assignments.find(a => a.reservation_id === reservationId && a.stage === stage);
   };
 
+  const selectedTeam = salesTeams.find(t => t.id === selectedTeamId);
+
   const getUsersForRole = (role: string, branchId: string | null) => {
-    return users.filter(u => 
-      u.role === role && 
+    // If a team is selected, filter users based on team context
+    if (selectedTeam) {
+      if (role === 'sale_supervisor') {
+        // Only show the team's supervisor
+        return users.filter(u => u.role === role && u.user_id === selectedTeam.supervisor_id);
+      }
+      // For other roles, filter by team's branch
+      return users.filter(u =>
+        u.role === role &&
+        (!selectedTeam.branch_id || !u.branch_id || u.branch_id === selectedTeam.branch_id)
+      );
+    }
+    // No team selected - filter by reservation branch
+    return users.filter(u =>
+      u.role === role &&
       (!branchId || !u.branch_id || u.branch_id === branchId)
     );
   };
@@ -188,7 +238,6 @@ export default function ApprovalChainPage() {
 
       if (error) throw error;
 
-      // Update local state
       const user = users.find(u => u.user_id === userId);
       setAssignments(prev => {
         const filtered = prev.filter(a => !(a.reservation_id === reservationId && a.stage === stage));
@@ -217,13 +266,29 @@ export default function ApprovalChainPage() {
     return <Badge variant="secondary" className="text-[10px]">ร่าง</Badge>;
   };
 
+  // Get member user IDs for the selected team
+  const selectedTeamMemberIds = selectedTeamId !== 'all' && selectedTeam
+    ? [
+        selectedTeam.supervisor_id,
+        ...teamMembers.filter(m => m.team_id === selectedTeamId).map(m => m.member_user_id),
+      ]
+    : null;
+
   // Filter reservations
   const filtered = reservations.filter(r => {
-    const matchSearch = !searchTerm || 
+    const matchSearch = !searchTerm ||
       r.document_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.customer_name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchBranch = branchFilter === 'all' || r.branch_id === branchFilter;
-    return matchSearch && matchBranch;
+
+    // If a team is selected, filter by team's branch and creator
+    let matchTeam = true;
+    if (selectedTeamMemberIds) {
+      // Show reservations created by team members OR in same branch
+      matchTeam = (r.created_by && selectedTeamMemberIds.includes(r.created_by)) ||
+        r.branch_id === selectedTeam!.branch_id;
+    }
+
+    return matchSearch && matchTeam;
   });
 
   if (!isAdmin) {
@@ -239,15 +304,37 @@ export default function ApprovalChainPage() {
 
   return (
     <>
-      <Header 
-        title="ปรับปรุงสายอนุมัติใบจอง" 
-        subtitle="มอบหมายผู้รับผิดชอบในแต่ละขั้นตอนของใบจอง"
+      <Header
+        title="ปรับปรุงสายอนุมัติใบจอง"
+        subtitle="มอบหมายผู้รับผิดชอบในแต่ละขั้นตอนของใบจอง ตามทีมขาย"
       />
 
       <div className="flex-1 p-6 overflow-auto">
         <div className="max-w-7xl mx-auto space-y-4">
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3">
+            {/* Sales Team Selector */}
+            <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+              <SelectTrigger className="w-[260px]">
+                <Users className="w-4 h-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="เลือกทีมขาย" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <span className="text-muted-foreground">ทุกทีมขาย</span>
+                </SelectItem>
+                {salesTeams.map(t => {
+                  const branchName = branches.find(b => b.branch_id === t.branch_id)?.branch_name || t.branch_id;
+                  const supervisorName = users.find(u => u.user_id === t.supervisor_id)?.full_name || '';
+                  return (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.team_name} ({branchName})
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -257,19 +344,23 @@ export default function ApprovalChainPage() {
                 className="pl-9"
               />
             </div>
-            <Select value={branchFilter} onValueChange={setBranchFilter}>
-              <SelectTrigger className="w-[200px]">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="ทุกสาขา" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">ทุกสาขา</SelectItem>
-                {branches.map(b => (
-                  <SelectItem key={b.branch_id} value={b.branch_id}>{b.branch_name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
+
+          {/* Selected team info */}
+          {selectedTeam && (
+            <div className="rounded-lg border border-border bg-muted/30 p-3 flex flex-wrap items-center gap-3 text-sm">
+              <span className="font-medium">ทีม: {selectedTeam.team_name}</span>
+              <Badge variant="outline" className="text-xs">
+                สาขา: {branches.find(b => b.branch_id === selectedTeam.branch_id)?.branch_name || selectedTeam.branch_id}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                หัวหน้าทีม: {users.find(u => u.user_id === selectedTeam.supervisor_id)?.full_name || '-'}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                สมาชิก: {teamMembers.filter(m => m.team_id === selectedTeamId).length} คน
+              </Badge>
+            </div>
+          )}
 
           {/* Table */}
           {isLoading ? (

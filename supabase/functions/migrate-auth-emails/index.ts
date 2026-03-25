@@ -27,12 +27,11 @@ Deno.serve(async (req) => {
     if (profilesError) throw profilesError
 
     const results = []
-
-    // Get all auth users
     const { data: { users: authUsers } } = await supabase.auth.admin.listUsers({ perPage: 1000 })
 
     for (const profile of profiles || []) {
-      const expectedEmail = `${profile.username}@${profile.company_id.toLowerCase()}.internal`
+      // Use company-independent internal email
+      const expectedEmail = `${profile.username}@app.internal`
       const authUser = authUsers?.find(u => u.id === profile.user_id)
 
       if (!authUser) {
@@ -45,7 +44,6 @@ Deno.serve(async (req) => {
         continue
       }
 
-      // Update auth email
       const { error: updateError } = await supabase.auth.admin.updateUserById(
         profile.user_id,
         { email: expectedEmail }

@@ -1,68 +1,64 @@
 
 
-## สรุปความต้องการ
+## ปรับปรุง Flow การยกเลิกใบจอง — เพิ่ม branch_id ควบคุมสายอนุมัติ
 
-แยกหน้า "ปรับปรุงสายอนุมัติใบจอง" ออกเป็น 2 หน้าที่มีจุดประสงค์ต่างกัน:
+### แผนการดำเนินงาน
 
-1. **เมนูจัดการผู้ใช้งาน > ปรับปรุงสายอนุมัติใบจอง** (`/settings/approval-chain`)
-   - ตั้งค่า **เทมเพลตสายอนุมัติ** ระดับทีมขาย (ไม่ใช่ระดับใบจอง)
-   - เมื่อสร้างใบจองใหม่ในอนาคต ระบบจะดึงค่าจากเทมเพลตนี้ไปใช้อัตโนมัติ
-   - UI: เลือกทีมขาย → กำหนดผู้รับผิดชอบ 3 ขั้นตอน (แคชเชียร์, หัวหน้าทีมขาย, ผู้จัดการฝ่ายขาย) ให้ทั้งทีม
-
-2. **เมนูใบจองรถยนต์ > ปรับปรุงสายอนุมัติ** (`/reservations/approval-chain`)
-   - แก้ไขสายอนุมัติ **เฉพาะใบจองที่มีอยู่แล้ว** และยังไม่ได้รับการอนุมัติขั้นสุดท้าย
-   - UI: ตารางรายการใบจอง (เหมือนเดิม) พร้อม dropdown เลือกผู้รับผิดชอบแต่ละใบ
-
----
-
-## แผนการดำเนินงาน
-
-### 1. สร้างตาราง `team_approval_templates` (Database Migration)
-
-ตารางใหม่เก็บเทมเพลตสายอนุมัติระดับทีมขาย:
+#### 1. สร้างตาราง `team_cancel_approval_templates` (Database Migration)
 
 ```text
-team_approval_templates
+team_cancel_approval_templates
 ├── id (uuid, PK)
 ├── team_id (uuid, NOT NULL) — อ้างอิง sales_teams
-├── stage (text, NOT NULL) — 'cashier' / 'review' / 'approval'
+├── stage (text, NOT NULL) — 'cancel_review' / 'cancel_approval'
 ├── assigned_user_id (uuid, NOT NULL)
 ├── company_id (text, NOT NULL)
+├── branch_id (text, NOT NULL) — ดึงจาก sales_teams.branch_id เพื่อกรองตามสาขา
 ├── created_at / updated_at
 └── UNIQUE(team_id, stage)
 ```
 
-RLS: เหมือน `reservation_assignments` (admin/it สามารถ CRUD, authenticated สามารถ SELECT)
+RLS: เหมือน `team_approval_templates` (admin/it สามารถ CRUD, authenticated สามารถ SELECT) โดยกรอง `company_id`
 
-### 2. สร้างหน้า Settings Approval Chain ใหม่ (`/settings/approval-chain`)
+#### 2. ปรับหน้า Settings > ปรับปรุงสายอนุมัติยกเลิกใบจอง (`SettingsCancelApprovalChainPage.tsx`)
 
-แก้ไขไฟล์ `src/pages/settings/SettingsApprovalChainPage.tsx` ให้เป็นหน้าจัดการเทมเพลต:
+เขียนใหม่ให้เหมือน `SettingsApprovalChainPage.tsx`:
+- เลือกทีมขาย → แสดงข้อมูลทีม (สาขา, หัวหน้าทีม, สมาชิก)
+- กำหนดผู้รับผิดชอบ 2 ขั้นตอน:
+  - ตรวจสอบการยกเลิก (`cancel_review`) — role: `sale_supervisor`
+  - อนุมัติยกเลิก (`cancel_approval`) — role: `sale_manager`
+- **กรอง dropdown ผู้ใช้งานตาม branch_id ของทีมขาย**
+- บันทึกลง `team_cancel_approval_templates` พร้อม `branch_id` จากทีมที่เลือก
 
-- **UI**: เลือกทีมขาย → แสดง 3 ขั้นตอน (แคชเชียร์, หัวหน้าทีมขาย, ผู้จัดการฝ่ายขาย)
-- แต่ละขั้นตอนมี dropdown เลือกผู้ใช้งานที่มี role ตรงกัน (กรองตามสาขาของทีม)
-- บันทึกลง `team_approval_templates`
-- แสดงข้อมูลทีม (สาขา, หัวหน้าทีม, จำนวนสมาชิก)
-- ไม่แสดงรายการใบจอง (เพราะเป็นการตั้งค่าระดับทีม ไม่ใช่ระดับใบจอง)
+#### 3. สร้างหน้า ใบจองรถยนต์ > เปลี่ยนสายอนุมัติยกเลิกใบจอง (`CancelApprovalChainPage.tsx`)
 
-### 3. ปรับหน้า Reservation Approval Chain (`/reservations/approval-chain`)
+สร้างหน้าใหม่ (เหมือน `ApprovalChainPage.tsx`):
+- แสดงเฉพาะใบจองที่ `cancel_request_status = 'requested'` และ `cancel_approval_status != 'approved'`
+- ตาราง: เลขที่เอกสาร, ชื่อลูกค้า, สาขา, เหตุผลยกเลิก, สถานะ
+- 2 คอลัมน์ dropdown: ผู้ตรวจสอบ, ผู้อนุมัติ
+- **บันทึกลง `reservation_assignments` ด้วย stage `cancel_review` / `cancel_approval` พร้อม `branch_id` จากใบจอง**
 
-แก้ไข `src/pages/ApprovalChainPage.tsx`:
+#### 4. เพิ่มเมนูและ Route
 
-- **กรองเฉพาะใบจองที่ยังไม่อนุมัติ**: เพิ่มเงื่อนไข `approval_status != 'approved'`
-- ลบ Sales Team selector ออก (ไม่จำเป็น เพราะหน้านี้ทำงานระดับใบจองแต่ละใบ)
-- เปลี่ยน subtitle เป็น "ปรับปรุงผู้ตรวจสอบและอนุมัติใบจองแต่ละรายการ"
-- ยังคง dropdown เลือกผู้รับผิดชอบแต่ละใบจอง (upsert ลง `reservation_assignments` เหมือนเดิม)
-
-### 4. (อนาคต) Auto-assign เมื่อสร้างใบจองใหม่
-
-เมื่อสร้างใบจอง ระบบจะตรวจสอบว่าผู้สร้างอยู่ทีมขายใด → ดึงเทมเพลตจาก `team_approval_templates` → สร้าง `reservation_assignments` อัตโนมัติ (จะดำเนินการในขั้นตอนถัดไป)
+- เพิ่มเมนู "เปลี่ยนสายอนุมัติยกเลิกใบจอง" ในกลุ่มใบจองรถยนต์ (Sidebar)
+- เพิ่ม Route `/reservations/cancel-approval-chain` → `CancelApprovalChainPage`
 
 ---
 
-## รายละเอียดทางเทคนิค
+### รายละเอียดทางเทคนิค
 
 **ไฟล์ที่ต้องแก้ไข/สร้าง:**
-- `supabase/migrations/` — สร้างตาราง `team_approval_templates`
-- `src/pages/settings/SettingsApprovalChainPage.tsx` — เขียนใหม่เป็นหน้าจัดการเทมเพลตระดับทีม
-- `src/pages/ApprovalChainPage.tsx` — ลบ Sales Team filter, กรองเฉพาะใบจองที่ยังไม่อนุมัติ
+
+| ไฟล์ | การดำเนินการ |
+|---|---|
+| `supabase/migrations/` | สร้างตาราง `team_cancel_approval_templates` (มี `branch_id`) + RLS |
+| `src/pages/settings/SettingsCancelApprovalChainPage.tsx` | เขียนใหม่ — เทมเพลตระดับทีม พร้อม branch_id |
+| `src/pages/CancelApprovalChainPage.tsx` | สร้างใหม่ — เปลี่ยนสายอนุมัติรายใบจอง พร้อม branch_id |
+| `src/components/layout/Sidebar.tsx` | เพิ่มเมนู "เปลี่ยนสายอนุมัติยกเลิกใบจอง" |
+| `src/App.tsx` | เพิ่ม Route `/reservations/cancel-approval-chain` |
+
+**หลักการใช้ branch_id:**
+- ตาราง `team_cancel_approval_templates`: เก็บ `branch_id` จาก `sales_teams.branch_id` ตอนบันทึกเทมเพลต
+- ตาราง `reservation_assignments` (stage: `cancel_review`/`cancel_approval`): เก็บ `branch_id` จาก `reservations.branch_id` ตอนมอบหมายรายใบจอง
+- กรอง dropdown ผู้ใช้งานตาม `branch_id` เพื่อให้แสดงเฉพาะคนในสาขาเดียวกัน
 

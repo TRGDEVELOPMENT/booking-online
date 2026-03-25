@@ -335,6 +335,7 @@ export default function UsersPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[60px]">ลำดับ</TableHead>
+              <TableHead>รหัสพนักงาน</TableHead>
               <TableHead>ชื่อ-สกุล</TableHead>
               <TableHead>สาขา</TableHead>
               <TableHead>บทบาท</TableHead>

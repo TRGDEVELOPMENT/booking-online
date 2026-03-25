@@ -198,7 +198,7 @@ export default function UsersPage() {
   };
 
   const handleEditUser = async () => {
-    if (!editingUserId || !formData.full_name) {
+    if (!editingUserId || !formData.full_name || !formData.role) {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
@@ -209,17 +209,34 @@ export default function UsersPage() {
 
     setIsSubmitting(true);
     try {
+      // Update profile
       const { error } = await supabase
         .from('profiles')
         .update({
           full_name: formData.full_name,
-          branch_id: formData.branch_id || null,
+          branch_id: formData.role === 'it' ? null : (formData.branch_id || null),
           supervisor_id: formData.role === 'sale' ? formData.supervisor_id : null,
           status: formData.status,
         })
         .eq('user_id', editingUserId);
 
       if (error) throw error;
+
+      // Update role via edge function
+      const currentUser = users.find(u => u.user_id === editingUserId);
+      if (currentUser && currentUser.roles[0] !== formData.role) {
+        const response = await supabase.functions.invoke('create-user', {
+          body: {
+            action: 'update_role',
+            user_id: editingUserId,
+            role: formData.role,
+          },
+        });
+        if (response.error) {
+          console.error('Role update error:', response.error);
+          toast.warning('บันทึกข้อมูลแล้ว แต่ไม่สามารถเปลี่ยนบทบาทได้');
+        }
+      }
 
       toast.success('บันทึกข้อมูลสำเร็จ');
       setDialogOpen(false);

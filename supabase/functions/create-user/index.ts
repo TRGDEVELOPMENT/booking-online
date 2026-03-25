@@ -49,6 +49,38 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json()
+    const { action } = body
+
+    // Handle role update
+    if (action === 'update_role') {
+      const { user_id, role } = body
+      if (!user_id || !role) {
+        return new Response(JSON.stringify({ error: 'Missing user_id or role' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      // Delete existing roles
+      await supabase.from('user_roles').delete().eq('user_id', user_id)
+
+      // Insert new role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({ user_id, role })
+
+      if (roleError) {
+        return new Response(JSON.stringify({ error: roleError.message }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Default: create user
     const { email, password, full_name, company_id, branch_id, role, supervisor_id } = body
 
     if (!email || !password || !full_name || !company_id || !role) {

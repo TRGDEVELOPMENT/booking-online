@@ -379,7 +379,6 @@ export default function UsersPage() {
               <Select
                 value={formData.role}
                 onValueChange={(v) => setFormData(p => ({ ...p, role: v, supervisor_id: '', branch_id: (v === 'it' || v === 'user_admin') ? '' : p.branch_id }))}
-                disabled={dialogMode === 'edit'}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="เลือกบทบาท" />
@@ -390,9 +389,6 @@ export default function UsersPage() {
                   ))}
                 </SelectContent>
               </Select>
-              {dialogMode === 'edit' && (
-                <p className="text-[11px] text-muted-foreground">ไม่สามารถเปลี่ยนบทบาทได้ในโหมดแก้ไข</p>
-              )}
             </div>
 
             <div className="space-y-2">

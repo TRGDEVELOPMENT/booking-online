@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
     const results = []
 
     for (const user of testUsers) {
-      const internalEmail = `${user.username}@${user.company_id.toLowerCase()}.internal`
+      const internalEmail = `${user.username}@app.internal`
 
       // Check if user already exists
       const { data: existingUsers } = await supabase.auth.admin.listUsers()

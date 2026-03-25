@@ -17,16 +17,17 @@ import { branches } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 
 const workflowStages = [
-  { label: 'สร้างสัญญาจอง', color: 'text-slate-500' },
-  { label: 'ยืนยันสัญญาจอง', color: 'text-amber-600' },
+  { label: 'สร้างสัญญาจอง', color: 'text-foreground' },
+  { label: 'ยืนยันสัญญาจอง', color: '' },
   { label: 'ตรวจสอบการชำระเงิน', color: 'text-orange-600' },
-  { label: 'ตรวจสอบรายละเอียด', color: 'text-blue-600' },
-  { label: 'อนุมัติ', color: 'text-indigo-600' },
-  { label: 'พิมพ์/ลงนาม', color: 'text-green-600' },
+  { label: 'ตรวจสอบรายละเอียด', color: '' },
+  { label: 'อนุมัติ', color: '' },
+  { label: 'อนุมัติแล้ว', color: '' },
 ];
 
 function getWorkflowIndex(r: DatabaseReservation): number {
-  if (r.status === 'cancelled') return -1;
+  if (r.status === 'cancelled') return -2; // cancelled
+  if (r.cancel_approval_status === 'approved') return -3; // cancel approved
   if (r.approval_status === 'approved') return 5;
   if (r.review_status === 'reviewed') return 4;
   if (r.status === 'pending') return 2;
@@ -149,13 +150,22 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                   </Link>
                 </td>
                 <td className="px-3 py-1.5 text-sm">
-                  {reservation.status === 'cancelled' ? (
-                    <span className="text-destructive font-medium">ยกเลิก</span>
-                  ) : (() => {
+                  {(() => {
                     const idx = getWorkflowIndex(reservation);
+                    if (idx === -3) {
+                      return <span className="font-medium" style={{ color: '#b51f19' }}>ยกเลิกแล้ว</span>;
+                    }
+                    if (idx === -2) {
+                      return <span className="font-medium" style={{ color: '#b51f19' }}>ยกเลิก</span>;
+                    }
                     const stage = workflowStages[idx] || workflowStages[0];
+                    const colorStyle = idx === 1 ? { color: '#02681f' }
+                      : idx === 3 ? { color: '#2b93d4' }
+                      : idx === 4 ? { color: '#2349bb' }
+                      : idx === 5 ? { color: '#2349bb' }
+                      : undefined;
                     return (
-                      <span className={cn('font-medium', stage.color)}>
+                      <span className={cn('font-medium', stage.color)} style={colorStyle}>
                         {stage.label}
                       </span>
                     );

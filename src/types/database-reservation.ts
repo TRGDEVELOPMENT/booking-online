@@ -33,6 +33,7 @@ export interface DatabaseReservation {
   confirmed_at: string | null;
   review_status: string | null;
   approval_status: string | null;
+  cancel_approval_status: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

@@ -445,7 +445,6 @@ export default function UsersPage() {
                 placeholder="email@example.com"
               />
             </div>
-            )}
 
             <div className="space-y-2">
               <Label>บทบาท (Role) <span className="text-destructive">*</span></Label>

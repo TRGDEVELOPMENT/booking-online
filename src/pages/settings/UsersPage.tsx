@@ -148,6 +148,7 @@ export default function UsersPage() {
     setEditingUserId(null);
     setFormData({
       full_name: '',
+      username: '',
       email: '',
       password: 'Test1234!',
       branch_id: '',

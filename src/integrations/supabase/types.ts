@@ -400,6 +400,53 @@ export type Database = {
         }
         Relationships: []
       }
+      reservation_activity_logs: {
+        Row: {
+          action: string
+          action_label: string | null
+          branch_id: string | null
+          company_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          performed_by: string
+          performed_by_name: string | null
+          reservation_id: string
+        }
+        Insert: {
+          action: string
+          action_label?: string | null
+          branch_id?: string | null
+          company_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          performed_by: string
+          performed_by_name?: string | null
+          reservation_id: string
+        }
+        Update: {
+          action?: string
+          action_label?: string | null
+          branch_id?: string | null
+          company_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          performed_by?: string
+          performed_by_name?: string | null
+          reservation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservation_activity_logs_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservation_assignments: {
         Row: {
           assigned_at: string

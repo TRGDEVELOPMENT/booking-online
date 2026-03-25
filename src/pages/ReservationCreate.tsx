@@ -49,6 +49,7 @@ import type { FuelType, PurchaseType } from '@/types/reservation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { useReservationActivityLog } from '@/hooks/useReservationActivityLog';
 
 // Note: Payment section, Review section, and Approval section are hidden for 'sale' role
 
@@ -60,6 +61,9 @@ export default function ReservationCreate() {
   
   // Check if user is a sales advisor (hide certain sections)
   const isSaleRole = hasRole('sale');
+
+  // Activity log
+  const { logActivity } = useReservationActivityLog(undefined);
 
   // Loading state
   const [isSaving, setIsSaving] = useState(false);
@@ -404,6 +408,17 @@ export default function ReservationCreate() {
         if (savedCount > 0) {
           toast.success(`บันทึกเอกสารแนบ ${savedCount} ไฟล์สำเร็จ`);
         }
+      }
+
+      // Log activity
+      if (data?.id) {
+        await logActivity({
+          reservationId: data.id,
+          action: 'created',
+          companyId: selectedCompany,
+          branchId: selectedBranch || null,
+          details: { document_number: documentNumber },
+        });
       }
 
       toast.success('บันทึกใบจองสำเร็จ');

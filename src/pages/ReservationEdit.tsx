@@ -38,7 +38,9 @@ import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
 import FileUploadSection from '@/components/reservations/FileUploadSection';
 import { useReservationAttachments } from '@/hooks/useReservationAttachments';
 import { useReservationAssignments } from '@/hooks/useReservationAssignments';
+import { useReservationActivityLog } from '@/hooks/useReservationActivityLog';
 import { AdminAssignmentPanel } from '@/components/reservations/AdminAssignmentPanel';
+import { ActivityTimeline } from '@/components/reservations/ActivityTimeline';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -177,6 +179,9 @@ export default function ReservationEdit() {
     companyId: selectedCompany,
     branchId: selectedBranch || null,
   });
+
+  // Activity log
+  const { logs: activityLogs, isLoading: isLoadingLogs, logActivity } = useReservationActivityLog(id);
 
   // Fetch reservation data
   useEffect(() => {
@@ -500,6 +505,14 @@ export default function ReservationEdit() {
           toast.success(`บันทึกเอกสารแนบ ${savedCount} ไฟล์สำเร็จ`);
         }
       }
+
+      // Log activity
+      await logActivity({
+        reservationId: id,
+        action: 'updated',
+        companyId: selectedCompany,
+        branchId: selectedBranch || null,
+      });
 
       toast.success('บันทึกการแก้ไขสำเร็จ');
       navigate('/reservations');
@@ -1830,6 +1843,11 @@ export default function ReservationEdit() {
               </Button>
             </div>
             )}
+
+            {/* Activity Timeline */}
+            <div className="pointer-events-auto">
+              <ActivityTimeline logs={activityLogs} isLoading={isLoadingLogs} />
+            </div>
 
             {/* View-only back button */}
             {isViewOnly && (

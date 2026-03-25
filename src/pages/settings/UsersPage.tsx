@@ -261,6 +261,7 @@ export default function UsersPage() {
           branch_id: formData.role === 'it' ? null : (formData.branch_id || null),
           supervisor_id: formData.role === 'sale' ? formData.supervisor_id : null,
           status: formData.status,
+          email: formData.email || null,
         })
         .eq('user_id', editingUserId);
 

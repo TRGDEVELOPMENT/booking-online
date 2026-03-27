@@ -170,6 +170,12 @@ const allMenuItems: MenuItem[] = [
     path: '/docs' 
   },
   { 
+    id: 'requirement-spec', 
+    label: 'Requirement Spec', 
+    icon: BookOpen, 
+    path: '/requirement-spec' 
+  },
+  { 
     id: 'api-spec', 
     label: 'API Specification', 
     icon: BookOpen, 

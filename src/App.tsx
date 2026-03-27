@@ -112,6 +112,7 @@ const App = () => (
             {/* Documentation pages */}
             <Route path="/docs" element={<DocumentationPage />} />
             <Route path="/api-spec" element={<ApiSpecPage />} />
+            <Route path="/requirement-spec" element={<RequirementSpecPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

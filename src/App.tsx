@@ -52,6 +52,7 @@ import CancelledReservationsPage from "@/pages/reports/CancelledReservationsPage
 import DocumentationPage from "@/pages/DocumentationPage";
 import ApiSpecPage from "@/pages/ApiSpecPage";
 import RequirementSpecPage from "@/pages/RequirementSpecPage";
+import DesignDocPage from "@/pages/DesignDocPage";
 
 const queryClient = new QueryClient();
 

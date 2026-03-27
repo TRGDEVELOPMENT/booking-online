@@ -52,6 +52,7 @@ import CancelledReservationsPage from "@/pages/reports/CancelledReservationsPage
 import DocumentationPage from "@/pages/DocumentationPage";
 import ApiSpecPage from "@/pages/ApiSpecPage";
 import RequirementSpecPage from "@/pages/RequirementSpecPage";
+import DesignDocPage from "@/pages/DesignDocPage";
 
 const queryClient = new QueryClient();
 
@@ -113,6 +114,7 @@ const App = () => (
             <Route path="/docs" element={<DocumentationPage />} />
             <Route path="/api-spec" element={<ApiSpecPage />} />
             <Route path="/requirement-spec" element={<RequirementSpecPage />} />
+            <Route path="/design-doc" element={<DesignDocPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

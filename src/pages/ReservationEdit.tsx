@@ -1657,6 +1657,13 @@ export default function ReservationEdit() {
                               status: 'draft'
                             })
                             .eq('id', id);
+                          await logActivity({
+                            reservationId: id!,
+                            action: 'review_returned',
+                            details: { remark: reviewRemark, reviewed_at: now, reviewed_by: profile?.full_name || user?.email },
+                            companyId: selectedCompany,
+                            branchId: selectedBranch || null,
+                          });
                           setReviewStatus('returned');
                           setReviewedAt(now);
                           toast.success('ส่งกลับไปแก้ไขแล้ว');
@@ -1687,6 +1694,13 @@ export default function ReservationEdit() {
                               status: 'pending'
                             })
                             .eq('id', id);
+                          await logActivity({
+                            reservationId: id!,
+                            action: 'reviewed',
+                            details: { remark: reviewRemark, reviewed_at: now, reviewed_by: profile?.full_name || user?.email },
+                            companyId: selectedCompany,
+                            branchId: selectedBranch || null,
+                          });
                           setReviewStatus('reviewed');
                           setReviewedAt(now);
                           toast.success('บันทึกการตรวจสอบสำเร็จ');

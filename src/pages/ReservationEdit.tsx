@@ -80,6 +80,7 @@ export default function ReservationEdit() {
   
   // Check if in cashier mode
   const isCashierMode = !isViewOnly && (searchParams.get('mode') === 'cashier' || hasRole('cashier'));
+  const isCashier = hasRole('cashier');
   
   // Check if user is a sales advisor (hide certain sections)
   const isSaleRole = hasRole('sale');

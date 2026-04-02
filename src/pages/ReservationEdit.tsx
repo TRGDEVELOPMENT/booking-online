@@ -83,7 +83,8 @@ export default function ReservationEdit() {
   
   // Check if user is a sales advisor (hide certain sections)
   const isSaleRole = hasRole('sale');
-  const isAdmin = hasRole('user_admin') || hasRole('it');
+  const isIT = hasRole('it');
+  const isAdmin = hasRole('user_admin') || isIT;
 
   // Loading states
   const [isLoading, setIsLoading] = useState(true);

@@ -1356,17 +1356,33 @@ export default function ReservationEdit() {
             </div>
 
             {/* Section 9: Attachments */}
-            <FileUploadSection
-              files={attachments}
-              onFilesAdd={(files) => handleAddFiles(files)}
-              onFileRemove={handleRemoveFile}
-              onFileOpen={handleOpenFile}
-              disabled={isCashierMode}
-              isLoading={isLoadingAttachments}
-            />
+            <div className={cn(isCashier && !isIT && "pointer-events-none select-none")}>
+              <FileUploadSection
+                files={attachments}
+                onFilesAdd={(files) => handleAddFiles(files)}
+                onFileRemove={handleRemoveFile}
+                onFileOpen={handleOpenFile}
+                disabled={isCashierMode}
+                isLoading={isLoadingAttachments}
+              />
+            </div>
+            {/* Allow cashier to view/open attachment files */}
+            {isCashier && !isIT && attachments.length > 0 && (
+              <div className="flex flex-wrap gap-2 -mt-4 mb-2 px-4">
+                {attachments.filter(a => a.url || a.file).map(a => (
+                  <Button key={a.id} variant="outline" size="sm" className="gap-1 text-xs" onClick={() => handleOpenFile(a)}>
+                    <Paperclip className="w-3 h-3" />
+                    {a.name}
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            </div>
+            {/* End cashier read-only wrapper */}
 
             {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Show when sent for approval (pending) or approved */}
-            {(isIT || approvalStatus === 'approved' || (!isSaleRole && reservationStatus === 'pending')) && (
+            {(isIT || isCashier || approvalStatus === 'approved' || (!isSaleRole && reservationStatus === 'pending')) && (
             <div className="form-section border-2 border-primary/20 bg-primary/5">
               <div className="form-section-header flex items-center gap-2 text-primary">
                 <CreditCard className="w-5 h-5" />

@@ -72,7 +72,7 @@ export default function ReservationEdit() {
   const navigate = useNavigate();
   const location = useLocation();
   const { selectedCompany } = useOutletContext<{ selectedCompany: string }>();
-  const { user, hasRole } = useAuth();
+  const { user, profile, hasRole } = useAuth();
   const company = companies.find(c => c.id === selectedCompany);
   
   // Check if view-only mode (URL does NOT end with /edit)

@@ -1882,7 +1882,7 @@ export default function ReservationEdit() {
             )}
             
             {/* Action Buttons - Hidden in view-only mode */}
-            {!isViewOnly && !isCashierMode && (
+            {!isViewOnly && !isCashierMode && !isSaleSupervisor && (
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
               <Button 
                 variant="outline" 

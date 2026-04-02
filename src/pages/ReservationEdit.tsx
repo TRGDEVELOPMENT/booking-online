@@ -355,9 +355,59 @@ export default function ReservationEdit() {
 
   // Save payment details (without confirmation)
   const handleSavePaymentDetails = async () => {
+    if (!id) return;
     setIsSavingPayment(true);
     try {
-      // Save payment details without final confirmation
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from('reservations')
+        .update({
+          cashier_user_id: user?.id || null,
+          cashier_user_name: profile?.full_name || user?.email || null,
+          updated_at: now,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Log activity
+      await logActivity({
+        reservationId: id,
+        action: 'cashier_verified',
+        actionLabel: 'บันทึกรายละเอียดการชำระเงิน',
+        details: {
+          payment_type: paymentType,
+          payment_amount: paymentAmount,
+          payment_description: paymentDescription,
+          saved_at: now,
+          saved_by: profile?.full_name || user?.email,
+        },
+        companyId: selectedCompany,
+        branchId: selectedBranch || null,
+      });
+
+      // Save payment attachment if exists
+      if (paymentFile && id) {
+        const fileExt = paymentFile.name.split('.').pop() || 'file';
+        const filePath = `${selectedCompany}/${id}/payment-${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('reservation-attachments')
+          .upload(filePath, paymentFile, { cacheControl: '3600', upsert: false });
+
+        if (!uploadError) {
+          await supabase.from('reservation_attachments').insert({
+            reservation_id: id,
+            company_id: selectedCompany,
+            file_name: paymentFile.name,
+            file_path: filePath,
+            file_size: paymentFile.size,
+            file_type: paymentFile.type,
+            uploaded_by: user?.id,
+          });
+        }
+      }
+
       toast.success('บันทึกรายละเอียดการชำระเงินสำเร็จ');
     } catch (err) {
       console.error('Error saving payment details:', err);

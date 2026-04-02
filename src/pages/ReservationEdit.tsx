@@ -569,9 +569,10 @@ export default function ReservationEdit() {
              />
            )}
 
+           {/* Form Sections */}
+          <div className="space-y-6">
            {/* Cashier read-only wrapper for non-payment sections */}
            <div className={cn(isCashier && !isIT && "pointer-events-none select-none opacity-90")}>
-           <div className="space-y-6">
             {/* Section 1: Branch/Vehicle Type Selection */}
             <div className="form-section">
               <div className="form-section-header flex items-center gap-2">

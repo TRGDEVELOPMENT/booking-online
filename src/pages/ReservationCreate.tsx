@@ -61,6 +61,7 @@ export default function ReservationCreate() {
   
   // Check if user is a sales advisor (hide certain sections)
   const isSaleRole = hasRole('sale');
+  const isIT = hasRole('it');
 
   // Activity log
   const { logActivity } = useReservationActivityLog(undefined);
@@ -1014,7 +1015,7 @@ export default function ReservationCreate() {
             </div>
 
             {/* Section: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Only shown at payment verification stage (step3), hidden on create */}
-            {false && !isSaleRole && (
+            {isIT && !isSaleRole && (
             <div className="form-section border-2 border-primary/20 bg-primary/5">
               <div className="form-section-header flex items-center gap-2 text-primary">
                 <CreditCard className="w-5 h-5" />

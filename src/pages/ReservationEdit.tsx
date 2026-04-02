@@ -72,7 +72,7 @@ export default function ReservationEdit() {
   const navigate = useNavigate();
   const location = useLocation();
   const { selectedCompany } = useOutletContext<{ selectedCompany: string }>();
-  const { user, hasRole } = useAuth();
+  const { user, profile, hasRole } = useAuth();
   const company = companies.find(c => c.id === selectedCompany);
   
   // Check if view-only mode (URL does NOT end with /edit)
@@ -80,6 +80,7 @@ export default function ReservationEdit() {
   
   // Check if in cashier mode
   const isCashierMode = !isViewOnly && (searchParams.get('mode') === 'cashier' || hasRole('cashier'));
+  const isCashier = hasRole('cashier');
   
   // Check if user is a sales advisor (hide certain sections)
   const isSaleRole = hasRole('sale');
@@ -354,9 +355,59 @@ export default function ReservationEdit() {
 
   // Save payment details (without confirmation)
   const handleSavePaymentDetails = async () => {
+    if (!id) return;
     setIsSavingPayment(true);
     try {
-      // Save payment details without final confirmation
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from('reservations')
+        .update({
+          cashier_user_id: user?.id || null,
+          cashier_user_name: profile?.full_name || user?.email || null,
+          updated_at: now,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Log activity
+      await logActivity({
+        reservationId: id,
+        action: 'cashier_verified',
+        actionLabel: 'บันทึกรายละเอียดการชำระเงิน',
+        details: {
+          payment_type: paymentType,
+          payment_amount: paymentAmount,
+          payment_description: paymentDescription,
+          saved_at: now,
+          saved_by: profile?.full_name || user?.email,
+        },
+        companyId: selectedCompany,
+        branchId: selectedBranch || null,
+      });
+
+      // Save payment attachment if exists
+      if (paymentFile && id) {
+        const fileExt = paymentFile.name.split('.').pop() || 'file';
+        const filePath = `${selectedCompany}/${id}/payment-${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('reservation-attachments')
+          .upload(filePath, paymentFile, { cacheControl: '3600', upsert: false });
+
+        if (!uploadError) {
+          await supabase.from('reservation_attachments').insert({
+            reservation_id: id,
+            company_id: selectedCompany,
+            file_name: paymentFile.name,
+            file_path: filePath,
+            file_size: paymentFile.size,
+            file_type: paymentFile.type,
+            uploaded_by: user?.id,
+          });
+        }
+      }
+
       toast.success('บันทึกรายละเอียดการชำระเงินสำเร็จ');
     } catch (err) {
       console.error('Error saving payment details:', err);
@@ -570,6 +621,8 @@ export default function ReservationEdit() {
 
            {/* Form Sections */}
           <div className="space-y-6">
+           {/* Cashier read-only wrapper for non-payment sections */}
+           <div className={cn(isCashier && !isIT && "pointer-events-none select-none opacity-90")}>
             {/* Section 1: Branch/Vehicle Type Selection */}
             <div className="form-section">
               <div className="form-section-header flex items-center gap-2">
@@ -1354,17 +1407,33 @@ export default function ReservationEdit() {
             </div>
 
             {/* Section 9: Attachments */}
-            <FileUploadSection
-              files={attachments}
-              onFilesAdd={(files) => handleAddFiles(files)}
-              onFileRemove={handleRemoveFile}
-              onFileOpen={handleOpenFile}
-              disabled={isCashierMode}
-              isLoading={isLoadingAttachments}
-            />
+            <div className={cn(isCashier && !isIT && "pointer-events-none select-none")}>
+              <FileUploadSection
+                files={attachments}
+                onFilesAdd={(files) => handleAddFiles(files)}
+                onFileRemove={handleRemoveFile}
+                onFileOpen={handleOpenFile}
+                disabled={isCashierMode}
+                isLoading={isLoadingAttachments}
+              />
+            </div>
+            {/* Allow cashier to view/open attachment files */}
+            {isCashier && !isIT && attachments.length > 0 && (
+              <div className="flex flex-wrap gap-2 -mt-4 mb-2 px-4">
+                {attachments.filter(a => a.url || a.file).map(a => (
+                  <Button key={a.id} variant="outline" size="sm" className="gap-1 text-xs" onClick={() => handleOpenFile(a)}>
+                    <Paperclip className="w-3 h-3" />
+                    {a.name}
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            </div>
+            {/* End cashier read-only wrapper */}
 
             {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Show when sent for approval (pending) or approved */}
-            {(isIT || approvalStatus === 'approved' || (!isSaleRole && reservationStatus === 'pending')) && (
+            {(isIT || isCashier || approvalStatus === 'approved' || (!isSaleRole && reservationStatus === 'pending')) && (
             <div className="form-section border-2 border-primary/20 bg-primary/5">
               <div className="form-section-header flex items-center gap-2 text-primary">
                 <CreditCard className="w-5 h-5" />

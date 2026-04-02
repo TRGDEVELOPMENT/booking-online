@@ -85,6 +85,7 @@ export default function ReservationEdit() {
   // Check if user is a sales advisor (hide certain sections)
   const isSaleRole = hasRole('sale');
   const isIT = hasRole('it');
+  const isSaleSupervisor = hasRole('sale_supervisor');
   const isAdmin = hasRole('user_admin') || isIT;
 
   // Loading states
@@ -622,7 +623,7 @@ export default function ReservationEdit() {
            {/* Form Sections */}
           <div className="space-y-6">
            {/* Cashier read-only wrapper for non-payment sections */}
-           <div className={cn(isCashier && !isIT && "pointer-events-none select-none opacity-90")}>
+           <div className={cn((isCashier || isSaleSupervisor) && !isIT && "pointer-events-none select-none opacity-90")}>
             {/* Section 1: Branch/Vehicle Type Selection */}
             <div className="form-section">
               <div className="form-section-header flex items-center gap-2">
@@ -1407,7 +1408,7 @@ export default function ReservationEdit() {
             </div>
 
             {/* Section 9: Attachments */}
-            <div className={cn(isCashier && !isIT && "pointer-events-none select-none")}>
+            <div className={cn((isCashier || isSaleSupervisor) && !isIT && "pointer-events-none select-none")}>
               <FileUploadSection
                 files={attachments}
                 onFilesAdd={(files) => handleAddFiles(files)}
@@ -1418,7 +1419,7 @@ export default function ReservationEdit() {
               />
             </div>
             {/* Allow cashier to view/open attachment files */}
-            {isCashier && !isIT && attachments.length > 0 && (
+            {(isCashier || isSaleSupervisor) && !isIT && attachments.length > 0 && (
               <div className="flex flex-wrap gap-2 -mt-4 mb-2 px-4">
                 {attachments.filter(a => a.url || a.file).map(a => (
                   <Button key={a.id} variant="outline" size="sm" className="gap-1 text-xs" onClick={() => handleOpenFile(a)}>
@@ -1433,8 +1434,11 @@ export default function ReservationEdit() {
             {/* End cashier read-only wrapper */}
 
             {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Show when sent for approval (pending) or approved */}
-            {(isIT || isCashier || approvalStatus === 'approved' || (!isSaleRole && reservationStatus === 'pending')) && (
-            <div className="form-section border-2 border-primary/20 bg-primary/5">
+            {(isIT || isCashier || approvalStatus === 'approved' || (!isSaleRole && !isSaleSupervisor && reservationStatus === 'pending')) && (
+            <div className={cn(
+              "form-section border-2 border-primary/20 bg-primary/5",
+              isSaleSupervisor && !isIT && "pointer-events-none select-none opacity-90"
+            )}>
               <div className="form-section-header flex items-center gap-2 text-primary">
                 <CreditCard className="w-5 h-5" />
                 รายละเอียดการชำระเงิน (เฉพาะการเงิน)
@@ -1572,7 +1576,7 @@ export default function ReservationEdit() {
             )}
 
             {/* Section 11: ตรวจสอบใบจอง (หัวหน้าทีมขาย) - Show when in review step or approved */}
-            {(isIT || approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && (reviewStatus !== 'pending' || reservationStatus === 'pending'))) && (
+            {(isIT || isSaleSupervisor || approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && (reviewStatus !== 'pending' || reservationStatus === 'pending'))) && (
             <div className="form-section border-2 border-orange-500/20 bg-orange-50/50 dark:bg-orange-950/20">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
@@ -1653,6 +1657,13 @@ export default function ReservationEdit() {
                               status: 'draft'
                             })
                             .eq('id', id);
+                          await logActivity({
+                            reservationId: id!,
+                            action: 'review_returned',
+                            details: { remark: reviewRemark, reviewed_at: now, reviewed_by: profile?.full_name || user?.email },
+                            companyId: selectedCompany,
+                            branchId: selectedBranch || null,
+                          });
                           setReviewStatus('returned');
                           setReviewedAt(now);
                           toast.success('ส่งกลับไปแก้ไขแล้ว');
@@ -1683,6 +1694,13 @@ export default function ReservationEdit() {
                               status: 'pending'
                             })
                             .eq('id', id);
+                          await logActivity({
+                            reservationId: id!,
+                            action: 'reviewed',
+                            details: { remark: reviewRemark, reviewed_at: now, reviewed_by: profile?.full_name || user?.email },
+                            companyId: selectedCompany,
+                            branchId: selectedBranch || null,
+                          });
                           setReviewStatus('reviewed');
                           setReviewedAt(now);
                           toast.success('บันทึกการตรวจสอบสำเร็จ');
@@ -1704,7 +1722,7 @@ export default function ReservationEdit() {
             )}
 
             {/* Section 12: อนุมัติใบจอง (ผู้จัดการฝ่ายขาย) - Show when reviewed or approved */}
-            {(isIT || approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && reviewStatus === 'reviewed')) && (
+            {(isIT || (!isSaleSupervisor && (approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && reviewStatus === 'reviewed')))) && (
             <div className="form-section border-2 border-purple-500/20 bg-purple-50/50 dark:bg-purple-950/20">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-purple-700 dark:text-purple-400">
@@ -1864,7 +1882,7 @@ export default function ReservationEdit() {
             )}
             
             {/* Action Buttons - Hidden in view-only mode */}
-            {!isViewOnly && !isCashierMode && (
+            {!isViewOnly && !isCashierMode && !isSaleSupervisor && (
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
               <Button 
                 variant="outline" 

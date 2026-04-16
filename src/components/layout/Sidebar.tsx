@@ -379,14 +379,20 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
           <Select
             value={roles[0]?.role || ''}
             onValueChange={async (newRole) => {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (!user) return;
-              // Delete existing roles
-              await supabase.from('user_roles').delete().eq('user_id', user.id);
-              // Insert new role
-              await supabase.from('user_roles').insert({ user_id: user.id, role: newRole as any });
-              // Reload to apply
-              window.location.reload();
+              try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+                const res = await supabase.functions.invoke('switch-role', {
+                  body: { role: newRole },
+                });
+                if (res.error) {
+                  console.error('Switch role error:', res.error);
+                  return;
+                }
+                window.location.reload();
+              } catch (err) {
+                console.error('Switch role error:', err);
+              }
             }}
           >
             <SelectTrigger className="h-8 text-xs bg-sidebar-accent border-sidebar-border text-sidebar-foreground">

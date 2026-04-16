@@ -34,6 +34,7 @@ import {
   type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 import { companies } from '@/data/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -372,8 +373,42 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
           </ul>
         </nav>
 
+        {/* Role Switcher for Review */}
+        <div className="px-4 pt-4 pb-2 border-t border-sidebar-border">
+          <label className="text-xs text-sidebar-foreground/50 mb-1.5 block">สลับ Role (Review Mode)</label>
+          <Select
+            value={roles[0]?.role || ''}
+            onValueChange={async (newRole) => {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) return;
+              // Delete existing roles
+              await supabase.from('user_roles').delete().eq('user_id', user.id);
+              // Insert new role
+              await supabase.from('user_roles').insert({ user_id: user.id, role: newRole as any });
+              // Reload to apply
+              window.location.reload();
+            }}
+          >
+            <SelectTrigger className="h-8 text-xs bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[
+                { value: 'sale', label: 'ที่ปรึกษาการขาย (Sale)' },
+                { value: 'cashier', label: 'แคชเชียร์ (Cashier)' },
+                { value: 'sale_supervisor', label: 'หัวหน้าทีมขาย (Supervisor)' },
+                { value: 'sale_manager', label: 'ผจก.ฝ่ายขาย (Manager)' },
+                { value: 'user_admin', label: 'ผู้ดูแลระบบ (User Admin)' },
+                { value: 'it', label: 'IT Admin' },
+              ].map(r => (
+                <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* User Profile */}
-        <div className="p-4 border-t border-sidebar-border">
+        <div className="px-4 pb-4 pt-2">
           <div className="flex items-center gap-3 p-3 rounded-lg bg-sidebar-accent">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-vivid to-primary flex items-center justify-center text-white font-semibold">
               {profile?.full_name?.charAt(0) || 'U'}

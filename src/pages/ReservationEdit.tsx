@@ -599,7 +599,7 @@ export default function ReservationEdit() {
         subtitle={`${company?.code} - เลขที่: ${documentNumber}${isCashierMode ? ' (โหมดแคชเชียร์)' : ''}`}
       />
       
-       <div className={cn("flex-1 p-6 overflow-auto", isViewOnly && !isSaleSupervisor && !isCashier && !hasRole('sale_manager') && "pointer-events-none")}>
+       <div className={cn("flex-1 p-6 overflow-auto", isViewOnly && !isSaleSupervisor && !isCashier && !isSaleManager && "pointer-events-none")}>
         <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
           {/* Workflow Progress */}
           <WorkflowSteps currentStage={calculateWorkflowStage()} documentStatus={calculateDocumentStatus()} assignments={assignments} />
@@ -1577,7 +1577,7 @@ export default function ReservationEdit() {
             )}
 
             {/* Section 11: ตรวจสอบใบจอง (หัวหน้าทีมขาย) - Show when in review step or approved */}
-            {(isIT || isSaleSupervisor || approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && (reviewStatus !== 'pending' || reservationStatus === 'pending'))) && (
+            {(isIT || isSaleSupervisor || (!isSaleManager && (approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && (reviewStatus !== 'pending' || reservationStatus === 'pending'))))) && (
             <div className="form-section border-2 border-orange-500/20 bg-orange-50/50 dark:bg-orange-950/20">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
@@ -1723,7 +1723,7 @@ export default function ReservationEdit() {
             )}
 
             {/* Section 12: อนุมัติใบจอง (ผู้จัดการฝ่ายขาย) - Show when reviewed or approved */}
-            {(isIT || (!isSaleSupervisor && (approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && reviewStatus === 'reviewed')))) && (
+            {(isIT || isSaleManager || (!isSaleSupervisor && (approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && reviewStatus === 'reviewed')))) && (
             <div className="form-section border-2 border-purple-500/20 bg-purple-50/50 dark:bg-purple-950/20">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-purple-700 dark:text-purple-400">
@@ -1883,7 +1883,7 @@ export default function ReservationEdit() {
             )}
             
             {/* Action Buttons - Hidden in view-only mode */}
-            {!isViewOnly && !isCashierMode && !isSaleSupervisor && (
+            {!isViewOnly && !isCashierMode && !isSaleSupervisor && !isSaleManager && (
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
               <Button 
                 variant="outline" 

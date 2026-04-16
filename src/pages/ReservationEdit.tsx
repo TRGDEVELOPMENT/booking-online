@@ -86,6 +86,7 @@ export default function ReservationEdit() {
   const isSaleRole = hasRole('sale');
   const isIT = hasRole('it');
   const isSaleSupervisor = hasRole('sale_supervisor');
+  const isSaleManager = hasRole('sale_manager');
   const isAdmin = hasRole('user_admin') || isIT;
 
   // Loading states
@@ -184,7 +185,7 @@ export default function ReservationEdit() {
   });
 
   // Activity log
-  const { logs: activityLogs, isLoading: isLoadingLogs, logActivity } = useReservationActivityLog(id);
+  const { logs: activityLogs, isLoading: isLoadingLogs, logActivity, refetch: refetchLogs } = useReservationActivityLog(id);
 
   // Fetch reservation data
   useEffect(() => {
@@ -598,7 +599,7 @@ export default function ReservationEdit() {
         subtitle={`${company?.code} - เลขที่: ${documentNumber}${isCashierMode ? ' (โหมดแคชเชียร์)' : ''}`}
       />
       
-       <div className={cn("flex-1 p-6 overflow-auto", isViewOnly && !isSaleSupervisor && !isCashier && !hasRole('sale_manager') && "pointer-events-none")}>
+       <div className={cn("flex-1 p-6 overflow-auto", isViewOnly && !isSaleSupervisor && !isCashier && !isSaleManager && "pointer-events-none")}>
         <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
           {/* Workflow Progress */}
           <WorkflowSteps currentStage={calculateWorkflowStage()} documentStatus={calculateDocumentStatus()} assignments={assignments} />
@@ -1576,7 +1577,7 @@ export default function ReservationEdit() {
             )}
 
             {/* Section 11: ตรวจสอบใบจอง (หัวหน้าทีมขาย) - Show when in review step or approved */}
-            {(isIT || isSaleSupervisor || approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && (reviewStatus !== 'pending' || reservationStatus === 'pending'))) && (
+            {(isIT || isSaleSupervisor || (!isSaleManager && (approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && (reviewStatus !== 'pending' || reservationStatus === 'pending'))))) && (
             <div className="form-section border-2 border-orange-500/20 bg-orange-50/50 dark:bg-orange-950/20">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
@@ -1722,8 +1723,8 @@ export default function ReservationEdit() {
             )}
 
             {/* Section 12: อนุมัติใบจอง (ผู้จัดการฝ่ายขาย) - Show when reviewed or approved */}
-            {(isIT || (!isSaleSupervisor && (approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && reviewStatus === 'reviewed')))) && (
-            <div className="form-section border-2 border-purple-500/20 bg-purple-50/50 dark:bg-purple-950/20">
+            {(isIT || isSaleManager || (!isSaleSupervisor && (approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && reviewStatus === 'reviewed')))) && (
+            <div className="form-section border-2 border-purple-500/20 bg-purple-50/50 dark:bg-purple-950/20 pointer-events-auto">
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-purple-700 dark:text-purple-400">
                   <UserCheck className="w-5 h-5" />
@@ -1828,12 +1829,30 @@ export default function ReservationEdit() {
                               approval_remark: approvalRemark,
                               approved_by: user?.id,
                               approved_at: now,
-                              status: 'rejected'
+                              status: 'draft',
+                              review_status: 'pending',
+                              reviewed_at: null,
+                              reviewed_by: null,
+                              review_remark: null
                             })
                             .eq('id', id);
+
+                          // Activity log
+                          await supabase.from('reservation_activity_logs').insert({
+                            reservation_id: id!,
+                            action: 'approval_rejected',
+                            action_label: 'ไม่อนุมัติใบจอง',
+                            performed_by: user!.id,
+                            performed_by_name: profile?.full_name || '',
+                            company_id: selectedCompany,
+                            branch_id: selectedBranch || null,
+                            details: { remark: approvalRemark, status: 'rejected' }
+                          });
+
                           setApprovalStatus('rejected');
                           setApprovedAt(now);
                           toast.success('บันทึกการไม่อนุมัติแล้ว');
+                          refetchLogs();
                         } catch (err) {
                           toast.error('เกิดข้อผิดพลาด');
                         } finally {
@@ -1861,9 +1880,23 @@ export default function ReservationEdit() {
                               status: 'approved'
                             })
                             .eq('id', id);
+
+                          // Activity log
+                          await supabase.from('reservation_activity_logs').insert({
+                            reservation_id: id!,
+                            action: 'approval_approved',
+                            action_label: 'อนุมัติใบจอง',
+                            performed_by: user!.id,
+                            performed_by_name: profile?.full_name || '',
+                            company_id: selectedCompany,
+                            branch_id: selectedBranch || null,
+                            details: { remark: approvalRemark, status: 'approved' }
+                          });
+
                           setApprovalStatus('approved');
                           setApprovedAt(now);
                           toast.success('อนุมัติใบจองสำเร็จ');
+                          refetchLogs();
                         } catch (err) {
                           toast.error('เกิดข้อผิดพลาด');
                         } finally {
@@ -1882,7 +1915,7 @@ export default function ReservationEdit() {
             )}
             
             {/* Action Buttons - Hidden in view-only mode */}
-            {!isViewOnly && !isCashierMode && !isSaleSupervisor && (
+            {!isViewOnly && !isCashierMode && !isSaleSupervisor && !isSaleManager && (
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
               <Button 
                 variant="outline" 

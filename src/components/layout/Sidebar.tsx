@@ -413,29 +413,6 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
           </Select>
         </div>
 
-        {/* User Profile */}
-        <div className="px-4 pb-4 pt-2">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-sidebar-accent">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-vivid to-primary flex items-center justify-center text-white font-semibold">
-              {profile?.full_name?.charAt(0) || 'U'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">
-                {profile?.full_name || 'ผู้ใช้งาน'}
-              </p>
-              <p className="text-xs text-sidebar-foreground/60">
-                {roles[0] ? getRoleDisplayName(roles[0].role) : 'ไม่ระบุตำแหน่ง'}
-              </p>
-            </div>
-            <button 
-              onClick={handleLogout}
-              className="p-2 rounded-lg hover:bg-sidebar-border transition-colors text-sidebar-foreground/60 hover:text-sidebar-foreground"
-              title="ออกจากระบบ"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
       </aside>
     </>
   );

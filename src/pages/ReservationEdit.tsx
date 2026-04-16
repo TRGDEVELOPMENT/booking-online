@@ -1829,12 +1829,30 @@ export default function ReservationEdit() {
                               approval_remark: approvalRemark,
                               approved_by: user?.id,
                               approved_at: now,
-                              status: 'rejected'
+                              status: 'draft',
+                              review_status: 'pending',
+                              reviewed_at: null,
+                              reviewed_by: null,
+                              review_remark: null
                             })
                             .eq('id', id);
+
+                          // Activity log
+                          await supabase.from('reservation_activity_logs').insert({
+                            reservation_id: id!,
+                            action: 'approval_rejected',
+                            action_label: 'ไม่อนุมัติใบจอง',
+                            performed_by: user!.id,
+                            performed_by_name: profile?.full_name || '',
+                            company_id: selectedCompany,
+                            branch_id: selectedBranch || null,
+                            details: { remark: approvalRemark, status: 'rejected' }
+                          });
+
                           setApprovalStatus('rejected');
                           setApprovedAt(now);
                           toast.success('บันทึกการไม่อนุมัติแล้ว');
+                          refetchLogs();
                         } catch (err) {
                           toast.error('เกิดข้อผิดพลาด');
                         } finally {

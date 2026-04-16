@@ -1880,9 +1880,23 @@ export default function ReservationEdit() {
                               status: 'approved'
                             })
                             .eq('id', id);
+
+                          // Activity log
+                          await supabase.from('reservation_activity_logs').insert({
+                            reservation_id: id!,
+                            action: 'approval_approved',
+                            action_label: 'อนุมัติใบจอง',
+                            performed_by: user!.id,
+                            performed_by_name: profile?.full_name || '',
+                            company_id: selectedCompany,
+                            branch_id: selectedBranch || null,
+                            details: { remark: approvalRemark, status: 'approved' }
+                          });
+
                           setApprovalStatus('approved');
                           setApprovedAt(now);
                           toast.success('อนุมัติใบจองสำเร็จ');
+                          refetchLogs();
                         } catch (err) {
                           toast.error('เกิดข้อผิดพลาด');
                         } finally {

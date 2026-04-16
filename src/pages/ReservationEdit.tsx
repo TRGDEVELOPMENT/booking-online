@@ -185,7 +185,7 @@ export default function ReservationEdit() {
   });
 
   // Activity log
-  const { logs: activityLogs, isLoading: isLoadingLogs, logActivity } = useReservationActivityLog(id);
+  const { logs: activityLogs, isLoading: isLoadingLogs, logActivity, refetch: refetchLogs } = useReservationActivityLog(id);
 
   // Fetch reservation data
   useEffect(() => {

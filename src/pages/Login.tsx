@@ -166,7 +166,7 @@ export default function Login() {
 
           <div className="mt-6 pt-6 border-t border-border">
             <p className="text-sm text-muted-foreground text-center mb-3">
-              เข้าสู่ระบบด่วน (บัญชีทดสอบ)
+              เข้าสู่ระบบ (บัญชีทดสอบ)
             </p>
             <div className="grid grid-cols-2 gap-2">
               {[

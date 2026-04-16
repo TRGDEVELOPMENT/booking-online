@@ -34,6 +34,7 @@ import {
   type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 import { companies } from '@/data/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import {

@@ -166,16 +166,56 @@ export default function Login() {
 
           <div className="mt-6 pt-6 border-t border-border">
             <p className="text-sm text-muted-foreground text-center mb-3">
-              บัญชีทดสอบตาม Role
+              เข้าสู่ระบบด่วน (บัญชีทดสอบ)
             </p>
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p><strong>ที่ปรึกษาการขาย:</strong> sale</p>
-              <p><strong>แคชเชียร์:</strong> cashier</p>
-              <p><strong>หัวหน้าทีมขาย:</strong> supervisor</p>
-              <p><strong>ผู้จัดการฝ่ายขาย:</strong> manager</p>
-              <p><strong>ผู้ดูแลระบบ:</strong> useradmin</p>
-              <p><strong>IT:</strong> itadmin</p>
-              <p className="mt-2 text-center">รหัสผ่าน: <strong>Test1234!</strong></p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: 'ที่ปรึกษาการขาย', username: 'sale', icon: '👤' },
+                { label: 'แคชเชียร์', username: 'cashier', icon: '💰' },
+                { label: 'หัวหน้าทีมขาย', username: 'supervisor', icon: '👨‍💼' },
+                { label: 'ผจก.ฝ่ายขาย', username: 'manager', icon: '📋' },
+                { label: 'ผู้ดูแลระบบ', username: 'useradmin', icon: '🔧' },
+                { label: 'IT Admin', username: 'itadmin', icon: '💻' },
+              ].map((acc) => (
+                <Button
+                  key={acc.username}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs justify-start gap-1.5 h-9"
+                  disabled={isLoading}
+                  onClick={async () => {
+                    const targetCompany = company || 'BPK';
+                    if (!company) setCompany('BPK');
+                    setUsername(acc.username);
+                    setPassword('Test1234!');
+                    setIsLoading(true);
+                    try {
+                      const { data, error } = await supabase.auth.signInWithPassword({
+                        email: `${acc.username}@app.internal`,
+                        password: 'Test1234!',
+                      });
+                      if (error) {
+                        toast.error(`เข้าสู่ระบบไม่สำเร็จ: ${error.message}`);
+                        return;
+                      }
+                      if (data.user) {
+                        await supabase.from('profiles').update({ company_id: targetCompany }).eq('user_id', data.user.id);
+                        localStorage.setItem('selectedCompany', targetCompany);
+                        toast.success(`เข้าสู่ระบบเป็น ${acc.label} สำเร็จ`);
+                        navigate('/');
+                      }
+                    } catch {
+                      toast.error('เกิดข้อผิดพลาด');
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }}
+                >
+                  <span>{acc.icon}</span>
+                  {acc.label}
+                </Button>
+              ))}
             </div>
           </div>
         </CardContent>

@@ -86,6 +86,7 @@ export default function ReservationEdit() {
   const isSaleRole = hasRole('sale');
   const isIT = hasRole('it');
   const isSaleSupervisor = hasRole('sale_supervisor');
+  const isSaleManager = hasRole('sale_manager');
   const isAdmin = hasRole('user_admin') || isIT;
 
   // Loading states

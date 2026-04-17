@@ -417,7 +417,7 @@ export default function UsersPage() {
               <TableHead>ชื่อ-สกุล</TableHead>
               <TableHead>สาขา</TableHead>
               <TableHead>บทบาท</TableHead>
-              <TableHead>หัวหน้าทีมขาย</TableHead>
+              <TableHead>ทีมขาย / หัวหน้าทีม</TableHead>
               <TableHead className="w-[100px]">สถานะ</TableHead>
               {isAdmin && <TableHead className="w-[80px]">จัดการ</TableHead>}
             </TableRow>

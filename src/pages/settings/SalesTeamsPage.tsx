@@ -26,6 +26,7 @@ interface UserWithRole extends Profile {
 
 interface SalesTeam {
   id: string;
+  no: number;
   team_name: string;
   supervisor_id: string;
   branch_id: string;
@@ -81,7 +82,8 @@ export default function SalesTeamsPage() {
       .from('sales_teams')
       .select('*')
       .eq('company_id', companyId)
-      .order('created_at', { ascending: false });
+      .order('branch_id', { ascending: true })
+      .order('no', { ascending: true });
 
     if (teamsData) {
       setTeams(teamsData);
@@ -284,9 +286,9 @@ export default function SalesTeamsPage() {
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">ยังไม่มีทีมขาย</TableCell>
                 </TableRow>
               ) : (
-                teams.map((team, idx) => (
+                teams.map((team) => (
                   <TableRow key={team.id}>
-                    <TableCell>{idx + 1}</TableCell>
+                    <TableCell className="font-medium">{team.no}</TableCell>
                     <TableCell className="font-medium">{team.team_name}</TableCell>
                     <TableCell>{getBranchName(team.branch_id)}</TableCell>
                     <TableCell>{getUserName(team.supervisor_id)}</TableCell>

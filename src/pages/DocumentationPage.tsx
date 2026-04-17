@@ -350,7 +350,7 @@ export default function DocumentationPage() {
                 <tr><td className="border p-2">4</td><td className="border p-2 font-mono">reservation_assignments</td><td className="border p-2">ผู้รับผิดชอบแต่ละขั้นตอน</td><td className="border p-2 text-center">✅</td></tr>
                 <tr><td className="border p-2">5</td><td className="border p-2 font-mono">customers</td><td className="border p-2">ข้อมูลลูกค้า</td><td className="border p-2 text-center">✅</td></tr>
                 <tr><td className="border p-2">6</td><td className="border p-2 font-mono">profiles</td><td className="border p-2">ข้อมูลผู้ใช้</td><td className="border p-2 text-center">✅</td></tr>
-                <tr><td className="border p-2">7</td><td className="border p-2 font-mono">user_roles</td><td className="border p-2">บทบาทผู้ใช้</td><td className="border p-2 text-center">-</td></tr>
+                <tr><td className="border p-2">7</td><td className="border p-2 font-mono">user_roles</td><td className="border p-2">ตำแหน่งผู้ใช้</td><td className="border p-2 text-center">-</td></tr>
                 <tr><td className="border p-2">8</td><td className="border p-2 font-mono">branches</td><td className="border p-2">สาขา</td><td className="border p-2 text-center">✅</td></tr>
                 <tr><td className="border p-2">9</td><td className="border p-2 font-mono">sales_teams</td><td className="border p-2">ทีมขาย</td><td className="border p-2 text-center">✅</td></tr>
                 <tr><td className="border p-2">10</td><td className="border p-2 font-mono">sales_team_members</td><td className="border p-2">สมาชิกทีมขาย</td><td className="border p-2 text-center">-</td></tr>
@@ -385,7 +385,7 @@ export default function DocumentationPage() {
                 <tr><td className="border p-2 font-mono">generate_document_number(p_branch_id, p_company_id)</td><td className="border p-2">สร้างเลขที่เอกสารอัตโนมัติ</td></tr>
                 <tr><td className="border p-2 font-mono">get_next_customer_no(p_company_id)</td><td className="border p-2">ลำดับถัดไปของลูกค้า</td></tr>
                 <tr><td className="border p-2 font-mono">get_user_company_id(_user_id)</td><td className="border p-2">ดึง company_id ของผู้ใช้</td></tr>
-                <tr><td className="border p-2 font-mono">has_role(_user_id, _role)</td><td className="border p-2">ตรวจสอบบทบาทผู้ใช้ (Security Definer)</td></tr>
+                <tr><td className="border p-2 font-mono">has_role(_user_id, _role)</td><td className="border p-2">ตรวจสอบตำแหน่งผู้ใช้ (Security Definer)</td></tr>
               </tbody>
             </table>
           </div>

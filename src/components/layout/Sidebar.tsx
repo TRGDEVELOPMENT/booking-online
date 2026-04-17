@@ -297,7 +297,7 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 overflow-y-auto">
+        <nav className="flex-1 p-4 overflow-y-auto sidebar-scroll">
           <ul className="space-y-1">
             {filterMenuByRole(allMenuItems.filter(item => !isPublished || !devMenuIds.includes(item.id))).map(item => {
               const Icon = item.icon;

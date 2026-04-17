@@ -159,7 +159,7 @@ export default function UserGroupsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">กลุ่มผู้ใช้งาน</h1>
-        <p className="text-muted-foreground">แสดงและจัดการกลุ่มผู้ใช้งาน (Roles) ที่กำหนดในระบบ</p>
+        <p className="text-muted-foreground">แสดงและจัดการกลุ่มผู้ใช้งาน (Positions) ที่กำหนดในระบบ</p>
       </div>
 
       <div className="bg-card rounded-xl border border-border/50 overflow-hidden shadow-card">
@@ -262,7 +262,7 @@ export default function UserGroupsPage() {
                 rows={3}
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder="คำอธิบายสั้นๆ เกี่ยวกับบทบาทนี้"
+                placeholder="คำอธิบายสั้นๆ เกี่ยวกับตำแหน่งนี้"
               />
             </div>
           </div>

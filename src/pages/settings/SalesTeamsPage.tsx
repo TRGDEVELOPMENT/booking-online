@@ -82,7 +82,8 @@ export default function SalesTeamsPage() {
       .from('sales_teams')
       .select('*')
       .eq('company_id', companyId)
-      .order('created_at', { ascending: false });
+      .order('branch_id', { ascending: true })
+      .order('no', { ascending: true });
 
     if (teamsData) {
       setTeams(teamsData);

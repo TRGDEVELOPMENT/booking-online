@@ -261,8 +261,8 @@ export default function UsersPage() {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
-    if (formData.role === 'sale' && !formData.supervisor_id) {
-      toast.error('กรุณาเลือกหัวหน้าทีมขาย');
+    if (formData.role === 'sale' && !formData.team_id) {
+      toast.error('กรุณาเลือกทีมขาย');
       return;
     }
 
@@ -292,22 +292,60 @@ export default function UsersPage() {
     setRoleWarningOpen(false);
     setIsSubmitting(true);
     try {
+      // Derive supervisor_id from selected team for Sale role
+      const selectedTeam = salesTeams.find(t => t.id === formData.team_id);
+      const supervisorId = formData.role === 'sale' ? (selectedTeam?.supervisor_id || null) : null;
+      const teamId = formData.role === 'sale' ? (formData.team_id || null) : null;
+
       // Update profile
       const { error } = await supabase
         .from('profiles')
         .update({
           full_name: formData.full_name,
           branch_id: formData.role === 'it' ? null : (formData.branch_id || null),
-          supervisor_id: formData.role === 'sale' ? formData.supervisor_id : null,
+          supervisor_id: supervisorId,
+          team_id: teamId,
           status: formData.status,
           email: formData.email || null,
-        })
+        } as any)
         .eq('user_id', editingUserId);
 
       if (error) throw error;
 
-      // Update role via edge function
+      // Sync sales_team_members for Sale role
       const currentUser = users.find(u => u.user_id === editingUserId);
+      if (formData.role === 'sale') {
+        // Remove from old team if changed
+        if (currentUser?.team_id && currentUser.team_id !== teamId) {
+          await supabase.from('sales_team_members')
+            .delete()
+            .eq('member_user_id', editingUserId)
+            .eq('team_id', currentUser.team_id);
+        }
+        // Add to new team if not already a member
+        if (teamId) {
+          const { data: existing } = await supabase
+            .from('sales_team_members')
+            .select('id')
+            .eq('member_user_id', editingUserId)
+            .eq('team_id', teamId)
+            .maybeSingle();
+          if (!existing) {
+            await supabase.from('sales_team_members').insert({
+              team_id: teamId,
+              member_user_id: editingUserId,
+            });
+          }
+        }
+      } else if (currentUser?.team_id) {
+        // Role changed away from sale -> remove team membership
+        await supabase.from('sales_team_members')
+          .delete()
+          .eq('member_user_id', editingUserId)
+          .eq('team_id', currentUser.team_id);
+      }
+
+      // Update role via edge function
       if (currentUser && currentUser.roles[0] !== formData.role) {
         const response = await supabase.functions.invoke('create-user', {
           body: {

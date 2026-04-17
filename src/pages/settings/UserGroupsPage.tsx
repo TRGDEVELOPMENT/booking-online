@@ -74,7 +74,7 @@ export default function UserGroupsPage() {
         .from('user_groups')
         .insert(toInsert)
         .select();
-      (inserted || []).forEach((g) => existingByRole.set(g.role_id, g as UserGroup));
+      (inserted || []).forEach((g: any) => existingByRole.set(g.role_id, g as UserGroup));
     }
 
     // Build ordered list following DEFAULT_GROUPS order

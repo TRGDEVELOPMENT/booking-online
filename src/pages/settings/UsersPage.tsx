@@ -47,10 +47,18 @@ interface UserWithRole {
   company_id: string;
   branch_id: string | null;
   supervisor_id: string | null;
+  team_id: string | null;
   status: string;
   username: string | null;
   email: string | null;
   roles: string[];
+}
+
+interface SalesTeamOption {
+  id: string;
+  team_name: string;
+  branch_id: string;
+  supervisor_id: string;
 }
 
 const roleLabels: Record<string, string> = {
@@ -93,23 +101,27 @@ export default function UsersPage() {
     branch_id: '',
     role: '',
     supervisor_id: '',
+    team_id: '',
     status: 'active',
   });
   const [roleWarningOpen, setRoleWarningOpen] = useState(false);
 
   const isAdmin = hasRole('user_admin') || hasRole('it');
 
+  const [salesTeams, setSalesTeams] = useState<SalesTeamOption[]>([]);
+
   useEffect(() => {
     if (!profile?.company_id) return;
     fetchUsers();
     fetchBranches();
+    fetchSalesTeams();
   }, [profile?.company_id]);
 
   const fetchUsers = async () => {
     setLoading(true);
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('user_id, full_name, company_id, branch_id, supervisor_id, status, username, email')
+      .select('user_id, full_name, company_id, branch_id, supervisor_id, status, username, email, team_id')
       .eq('company_id', profile?.company_id || '');
 
     if (profiles) {
@@ -122,6 +134,7 @@ export default function UsersPage() {
           return {
             ...p,
             supervisor_id: (p as any).supervisor_id || null,
+            team_id: (p as any).team_id || null,
             status: (p as any).status || 'active',
             roles: rolesData?.map(r => r.role) || [],
           };
@@ -141,6 +154,17 @@ export default function UsersPage() {
     setBranches(data || []);
   };
 
+  const fetchSalesTeams = async () => {
+    const { data } = await supabase
+      .from('sales_teams')
+      .select('id, team_name, branch_id, supervisor_id')
+      .eq('company_id', profile?.company_id || '')
+      .eq('status', 'active')
+      .order('branch_id')
+      .order('team_name');
+    setSalesTeams((data || []) as SalesTeamOption[]);
+  };
+
   const supervisors = users.filter(u => u.roles.includes('sale_supervisor') && u.status === 'active');
 
   const openCreateDialog = () => {
@@ -154,6 +178,7 @@ export default function UsersPage() {
       branch_id: '',
       role: '',
       supervisor_id: '',
+      team_id: '',
       status: 'active',
     });
     setDialogOpen(true);
@@ -170,6 +195,7 @@ export default function UsersPage() {
       branch_id: user.branch_id || '',
       role: user.roles[0] || '',
       supervisor_id: user.supervisor_id || '',
+      team_id: user.team_id || '',
       status: user.status || 'active',
     });
     setDialogOpen(true);
@@ -180,10 +206,14 @@ export default function UsersPage() {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
-    if (formData.role === 'sale' && !formData.supervisor_id) {
-      toast.error('กรุณาเลือกหัวหน้าทีมขาย');
+    if (formData.role === 'sale' && !formData.team_id) {
+      toast.error('กรุณาเลือกทีมขาย');
       return;
     }
+
+    // Derive supervisor_id from selected team for Sale role
+    const selectedTeam = salesTeams.find(t => t.id === formData.team_id);
+    const supervisorId = formData.role === 'sale' ? (selectedTeam?.supervisor_id || null) : null;
 
     setIsSubmitting(true);
     try {
@@ -195,7 +225,7 @@ export default function UsersPage() {
           company_id: profile?.company_id,
           branch_id: formData.branch_id || null,
           role: formData.role,
-          supervisor_id: formData.role === 'sale' ? formData.supervisor_id : null,
+          supervisor_id: supervisorId,
           email: formData.email || null,
         },
       });
@@ -204,6 +234,15 @@ export default function UsersPage() {
       const resData = response.data as any;
       if (resData?.error) {
         throw new Error(resData.error);
+      }
+
+      // Persist team_id and add team membership for Sale role
+      if (formData.role === 'sale' && resData?.user_id && formData.team_id) {
+        await supabase.from('profiles').update({ team_id: formData.team_id } as any).eq('user_id', resData.user_id);
+        await supabase.from('sales_team_members').insert({
+          team_id: formData.team_id,
+          member_user_id: resData.user_id,
+        });
       }
 
       toast.success('สร้างผู้ใช้งานสำเร็จ');
@@ -222,8 +261,8 @@ export default function UsersPage() {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
-    if (formData.role === 'sale' && !formData.supervisor_id) {
-      toast.error('กรุณาเลือกหัวหน้าทีมขาย');
+    if (formData.role === 'sale' && !formData.team_id) {
+      toast.error('กรุณาเลือกทีมขาย');
       return;
     }
 
@@ -253,22 +292,60 @@ export default function UsersPage() {
     setRoleWarningOpen(false);
     setIsSubmitting(true);
     try {
+      // Derive supervisor_id from selected team for Sale role
+      const selectedTeam = salesTeams.find(t => t.id === formData.team_id);
+      const supervisorId = formData.role === 'sale' ? (selectedTeam?.supervisor_id || null) : null;
+      const teamId = formData.role === 'sale' ? (formData.team_id || null) : null;
+
       // Update profile
       const { error } = await supabase
         .from('profiles')
         .update({
           full_name: formData.full_name,
           branch_id: formData.role === 'it' ? null : (formData.branch_id || null),
-          supervisor_id: formData.role === 'sale' ? formData.supervisor_id : null,
+          supervisor_id: supervisorId,
+          team_id: teamId,
           status: formData.status,
           email: formData.email || null,
-        })
+        } as any)
         .eq('user_id', editingUserId);
 
       if (error) throw error;
 
-      // Update role via edge function
+      // Sync sales_team_members for Sale role
       const currentUser = users.find(u => u.user_id === editingUserId);
+      if (formData.role === 'sale') {
+        // Remove from old team if changed
+        if (currentUser?.team_id && currentUser.team_id !== teamId) {
+          await supabase.from('sales_team_members')
+            .delete()
+            .eq('member_user_id', editingUserId)
+            .eq('team_id', currentUser.team_id);
+        }
+        // Add to new team if not already a member
+        if (teamId) {
+          const { data: existing } = await supabase
+            .from('sales_team_members')
+            .select('id')
+            .eq('member_user_id', editingUserId)
+            .eq('team_id', teamId)
+            .maybeSingle();
+          if (!existing) {
+            await supabase.from('sales_team_members').insert({
+              team_id: teamId,
+              member_user_id: editingUserId,
+            });
+          }
+        }
+      } else if (currentUser?.team_id) {
+        // Role changed away from sale -> remove team membership
+        await supabase.from('sales_team_members')
+          .delete()
+          .eq('member_user_id', editingUserId)
+          .eq('team_id', currentUser.team_id);
+      }
+
+      // Update role via edge function
       if (currentUser && currentUser.roles[0] !== formData.role) {
         const response = await supabase.functions.invoke('create-user', {
           body: {
@@ -340,7 +417,7 @@ export default function UsersPage() {
               <TableHead>ชื่อ-สกุล</TableHead>
               <TableHead>สาขา</TableHead>
               <TableHead>บทบาท</TableHead>
-              <TableHead>หัวหน้าทีมขาย</TableHead>
+              <TableHead>ทีมขาย / หัวหน้าทีม</TableHead>
               <TableHead className="w-[100px]">สถานะ</TableHead>
               {isAdmin && <TableHead className="w-[80px]">จัดการ</TableHead>}
             </TableRow>
@@ -379,7 +456,14 @@ export default function UsersPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {user.roles.includes('sale') ? getSupervisorName(user.supervisor_id) : '-'}
+                    {user.roles.includes('sale')
+                      ? (() => {
+                          const t = salesTeams.find(st => st.id === user.team_id);
+                          if (!t) return '-';
+                          const supName = users.find(u2 => u2.user_id === t.supervisor_id)?.full_name;
+                          return supName ? `${t.team_name} (${supName})` : t.team_name;
+                        })()
+                      : '-'}
                   </TableCell>
                   <TableCell>
                     <Badge variant={user.status === 'active' ? 'default' : 'outline'} className="text-xs">
@@ -452,7 +536,7 @@ export default function UsersPage() {
               <Label>บทบาท (Role) <span className="text-destructive">*</span></Label>
               <Select
                 value={formData.role}
-                onValueChange={(v) => setFormData(p => ({ ...p, role: v, supervisor_id: '', branch_id: (v === 'it' || v === 'user_admin') ? '' : p.branch_id }))}
+                onValueChange={(v) => setFormData(p => ({ ...p, role: v, supervisor_id: '', team_id: '', branch_id: (v === 'it' || v === 'user_admin') ? '' : p.branch_id }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="เลือกบทบาท" />
@@ -473,7 +557,7 @@ export default function UsersPage() {
                   <p className="text-[11px] text-muted-foreground mt-1">IT Admin สามารถทำรายการได้ทุกสาขา</p>
                 </div>
               ) : (
-                <Select value={formData.branch_id} onValueChange={(v) => setFormData(p => ({ ...p, branch_id: v }))}>
+                <Select value={formData.branch_id} onValueChange={(v) => setFormData(p => ({ ...p, branch_id: v, team_id: '' }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกสาขา" />
                   </SelectTrigger>
@@ -489,34 +573,43 @@ export default function UsersPage() {
               )}
             </div>
 
-            {/* Supervisor selection - only for Sale role */}
-            {formData.role === 'sale' && (
-              <div className="space-y-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-                <Label className="text-amber-800 dark:text-amber-200">
-                  หัวหน้าทีมขาย (Sale Supervisor) <span className="text-destructive">*</span>
-                </Label>
-                <p className="text-[11px] text-muted-foreground">
-                  ใช้เป็นค่าเริ่มต้นในสายอนุมัติรายการจอง
-                </p>
-                <Select value={formData.supervisor_id} onValueChange={(v) => setFormData(p => ({ ...p, supervisor_id: v }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกหัวหน้าทีมขาย" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {supervisors.length === 0 ? (
-                      <div className="px-3 py-2 text-sm text-muted-foreground">ไม่พบหัวหน้าทีมขาย</div>
-                    ) : (
-                      supervisors.map(s => (
-                        <SelectItem key={s.user_id} value={s.user_id}>
-                          {s.full_name}
-                          {s.branch_id ? ` (${branches.find(b => b.branch_id === s.branch_id)?.branch_name || s.branch_id})` : ''}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            {/* Team selection - only for Sale role */}
+            {formData.role === 'sale' && (() => {
+              const branchTeams = salesTeams.filter(t => !formData.branch_id || t.branch_id === formData.branch_id);
+              return (
+                <div className="space-y-2 p-3 rounded-lg bg-accent/40 border border-border">
+                  <Label>
+                    ทีมขาย (Sales Team) <span className="text-destructive">*</span>
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    เลือกทีมขายที่พนักงานนี้สังกัด — หัวหน้าทีมจะถูกกำหนดเป็นค่าเริ่มต้นในสายอนุมัติรายการจอง
+                  </p>
+                  <Select
+                    value={formData.team_id}
+                    onValueChange={(v) => setFormData(p => ({ ...p, team_id: v }))}
+                    disabled={!formData.branch_id}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={formData.branch_id ? 'เลือกทีมขาย' : 'กรุณาเลือกสาขาก่อน'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {branchTeams.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">ไม่พบทีมขายในสาขานี้</div>
+                      ) : (
+                        branchTeams.map(t => {
+                          const supName = users.find(u => u.user_id === t.supervisor_id)?.full_name || '-';
+                          return (
+                            <SelectItem key={t.id} value={t.id}>
+                              {t.team_name} <span className="text-muted-foreground">— หัวหน้า: {supName}</span>
+                            </SelectItem>
+                          );
+                        })
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              );
+            })()}
 
             {/* Status - Radio Group */}
             <div className="space-y-2">

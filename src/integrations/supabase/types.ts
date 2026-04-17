@@ -368,6 +368,7 @@ export type Database = {
           id: string
           status: string
           supervisor_id: string | null
+          team_id: string | null
           updated_at: string
           user_id: string
           username: string | null
@@ -381,6 +382,7 @@ export type Database = {
           id?: string
           status?: string
           supervisor_id?: string | null
+          team_id?: string | null
           updated_at?: string
           user_id: string
           username?: string | null
@@ -394,11 +396,20 @@ export type Database = {
           id?: string
           status?: string
           supervisor_id?: string | null
+          team_id?: string | null
           updated_at?: string
           user_id?: string
           username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "sales_teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reservation_activity_logs: {
         Row: {

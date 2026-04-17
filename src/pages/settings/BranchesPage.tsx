@@ -146,7 +146,7 @@ export default function BranchesPage() {
           doc_prefix: formData.doc_prefix.trim() || null,
           company_id: profile.company_id,
           status: formData.status,
-        });
+        } as any);
 
       if (error) {
         if (error.code === '23505') {

@@ -47,10 +47,18 @@ interface UserWithRole {
   company_id: string;
   branch_id: string | null;
   supervisor_id: string | null;
+  team_id: string | null;
   status: string;
   username: string | null;
   email: string | null;
   roles: string[];
+}
+
+interface SalesTeamOption {
+  id: string;
+  team_name: string;
+  branch_id: string;
+  supervisor_id: string;
 }
 
 const roleLabels: Record<string, string> = {

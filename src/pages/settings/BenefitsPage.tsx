@@ -143,6 +143,7 @@ export default function BenefitsPage() {
           price: priceValue,
           status: formData.status,
           company_id: profile.company_id,
+          no: 0,
         });
 
         if (error) throw error;

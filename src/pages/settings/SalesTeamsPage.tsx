@@ -10,8 +10,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Users, UserPlus, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Users, UserPlus, X, Check, ChevronsUpDown } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 
 interface Profile {
   user_id: string;
@@ -62,6 +65,7 @@ export default function SalesTeamsPage() {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
+  const [memberPickerOpen, setMemberPickerOpen] = useState(false);
 
   const companyId = profile?.company_id || '';
 
@@ -386,32 +390,75 @@ export default function SalesTeamsPage() {
               {!formData.branch_id ? (
                 <p className="text-sm text-muted-foreground mt-1">กรุณาเลือกสาขาก่อน</p>
               ) : (
-                <div className="mt-2 border rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
-                  {getSales(formData.branch_id).length === 0 ? (
-                    <p className="text-sm text-muted-foreground">ไม่พบที่ปรึกษาการขายในสาขานี้</p>
+                <div className="mt-2 space-y-2">
+                  <Popover open={memberPickerOpen} onOpenChange={setMemberPickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={memberPickerOpen}
+                        className="w-full justify-between font-normal"
+                      >
+                        <span className="flex items-center gap-2 text-muted-foreground">
+                          <Plus className="w-4 h-4" />
+                          พิมพ์ชื่อเพื่อค้นหาและเพิ่มที่ปรึกษาการขาย
+                        </span>
+                        <ChevronsUpDown className="w-4 h-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" align="start">
+                      <Command>
+                        <CommandInput placeholder="พิมพ์ชื่อค้นหา..." />
+                        <CommandList>
+                          <CommandEmpty>ไม่พบที่ปรึกษาการขาย</CommandEmpty>
+                          <CommandGroup>
+                            {getSales(formData.branch_id)
+                              .filter(u => !selectedMembers.includes(u.user_id))
+                              .map(u => (
+                                <CommandItem
+                                  key={u.user_id}
+                                  value={u.full_name}
+                                  onSelect={() => {
+                                    toggleMember(u.user_id);
+                                  }}
+                                >
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  {u.full_name}
+                                </CommandItem>
+                              ))}
+                            {getSales(formData.branch_id).filter(u => !selectedMembers.includes(u.user_id)).length === 0 && (
+                              <div className="px-3 py-2 text-sm text-muted-foreground">เพิ่มครบทุกคนแล้ว</div>
+                            )}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+
+                  {selectedMembers.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">ยังไม่ได้เพิ่มที่ปรึกษาการขาย</p>
                   ) : (
-                    getSales(formData.branch_id).map(u => (
-                      <label key={u.user_id} className="flex items-center gap-2 cursor-pointer hover:bg-muted p-1 rounded">
-                        <input
-                          type="checkbox"
-                          checked={selectedMembers.includes(u.user_id)}
-                          onChange={() => toggleMember(u.user_id)}
-                          className="rounded"
-                        />
-                        <span className="text-sm">{u.full_name}</span>
-                      </label>
-                    ))
+                    <div className="border rounded-lg p-2 space-y-1 max-h-48 overflow-y-auto">
+                      {selectedMembers.map((uid, idx) => (
+                        <div key={uid} className="flex items-center justify-between gap-2 px-2 py-1.5 rounded hover:bg-muted">
+                          <span className="text-sm">
+                            <span className="text-muted-foreground mr-2">{idx + 1}.</span>
+                            {getUserName(uid)}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => toggleMember(uid)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
                   )}
-                </div>
-              )}
-              {selectedMembers.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {selectedMembers.map(uid => (
-                    <Badge key={uid} variant="secondary" className="text-xs gap-1">
-                      {getUserName(uid)}
-                      <X className="w-3 h-3 cursor-pointer" onClick={() => toggleMember(uid)} />
-                    </Badge>
-                  ))}
                 </div>
               )}
             </div>

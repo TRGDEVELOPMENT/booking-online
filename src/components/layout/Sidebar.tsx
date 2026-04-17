@@ -212,10 +212,8 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const toggleMenu = (menuId: string) => {
-    setExpandedMenus(prev => 
-      prev.includes(menuId) 
-        ? prev.filter(id => id !== menuId)
-        : [...prev, menuId]
+    setExpandedMenus(prev =>
+      prev.includes(menuId) ? [] : [menuId]
     );
   };
 

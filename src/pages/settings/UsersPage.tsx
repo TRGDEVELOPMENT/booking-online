@@ -101,6 +101,7 @@ export default function UsersPage() {
     branch_id: '',
     role: '',
     supervisor_id: '',
+    team_id: '',
     status: 'active',
   });
   const [roleWarningOpen, setRoleWarningOpen] = useState(false);

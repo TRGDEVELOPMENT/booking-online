@@ -113,11 +113,13 @@ export default function UsersPage() {
     fetchBranches();
   }, [profile?.company_id]);
 
+  const [salesTeams, setSalesTeams] = useState<SalesTeamOption[]>([]);
+
   const fetchUsers = async () => {
     setLoading(true);
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('user_id, full_name, company_id, branch_id, supervisor_id, status, username, email')
+      .select('user_id, full_name, company_id, branch_id, supervisor_id, status, username, email, team_id')
       .eq('company_id', profile?.company_id || '');
 
     if (profiles) {
@@ -130,6 +132,7 @@ export default function UsersPage() {
           return {
             ...p,
             supervisor_id: (p as any).supervisor_id || null,
+            team_id: (p as any).team_id || null,
             status: (p as any).status || 'active',
             roles: rolesData?.map(r => r.role) || [],
           };
@@ -147,6 +150,17 @@ export default function UsersPage() {
       .eq('company_id', profile?.company_id || '')
       .eq('status', 'active');
     setBranches(data || []);
+  };
+
+  const fetchSalesTeams = async () => {
+    const { data } = await supabase
+      .from('sales_teams')
+      .select('id, team_name, branch_id, supervisor_id')
+      .eq('company_id', profile?.company_id || '')
+      .eq('status', 'active')
+      .order('branch_id')
+      .order('team_name');
+    setSalesTeams((data || []) as SalesTeamOption[]);
   };
 
   const supervisors = users.filter(u => u.roles.includes('sale_supervisor') && u.status === 'active');

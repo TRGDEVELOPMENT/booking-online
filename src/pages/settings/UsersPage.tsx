@@ -536,7 +536,7 @@ export default function UsersPage() {
               <Label>บทบาท (Role) <span className="text-destructive">*</span></Label>
               <Select
                 value={formData.role}
-                onValueChange={(v) => setFormData(p => ({ ...p, role: v, supervisor_id: '', branch_id: (v === 'it' || v === 'user_admin') ? '' : p.branch_id }))}
+                onValueChange={(v) => setFormData(p => ({ ...p, role: v, supervisor_id: '', team_id: '', branch_id: (v === 'it' || v === 'user_admin') ? '' : p.branch_id }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="เลือกบทบาท" />
@@ -557,7 +557,7 @@ export default function UsersPage() {
                   <p className="text-[11px] text-muted-foreground mt-1">IT Admin สามารถทำรายการได้ทุกสาขา</p>
                 </div>
               ) : (
-                <Select value={formData.branch_id} onValueChange={(v) => setFormData(p => ({ ...p, branch_id: v }))}>
+                <Select value={formData.branch_id} onValueChange={(v) => setFormData(p => ({ ...p, branch_id: v, team_id: '' }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกสาขา" />
                   </SelectTrigger>
@@ -573,34 +573,43 @@ export default function UsersPage() {
               )}
             </div>
 
-            {/* Supervisor selection - only for Sale role */}
-            {formData.role === 'sale' && (
-              <div className="space-y-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-                <Label className="text-amber-800 dark:text-amber-200">
-                  หัวหน้าทีมขาย (Sale Supervisor) <span className="text-destructive">*</span>
-                </Label>
-                <p className="text-[11px] text-muted-foreground">
-                  ใช้เป็นค่าเริ่มต้นในสายอนุมัติรายการจอง
-                </p>
-                <Select value={formData.supervisor_id} onValueChange={(v) => setFormData(p => ({ ...p, supervisor_id: v }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกหัวหน้าทีมขาย" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {supervisors.length === 0 ? (
-                      <div className="px-3 py-2 text-sm text-muted-foreground">ไม่พบหัวหน้าทีมขาย</div>
-                    ) : (
-                      supervisors.map(s => (
-                        <SelectItem key={s.user_id} value={s.user_id}>
-                          {s.full_name}
-                          {s.branch_id ? ` (${branches.find(b => b.branch_id === s.branch_id)?.branch_name || s.branch_id})` : ''}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            {/* Team selection - only for Sale role */}
+            {formData.role === 'sale' && (() => {
+              const branchTeams = salesTeams.filter(t => !formData.branch_id || t.branch_id === formData.branch_id);
+              return (
+                <div className="space-y-2 p-3 rounded-lg bg-accent/40 border border-border">
+                  <Label>
+                    ทีมขาย (Sales Team) <span className="text-destructive">*</span>
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    เลือกทีมขายที่พนักงานนี้สังกัด — หัวหน้าทีมจะถูกกำหนดเป็นค่าเริ่มต้นในสายอนุมัติรายการจอง
+                  </p>
+                  <Select
+                    value={formData.team_id}
+                    onValueChange={(v) => setFormData(p => ({ ...p, team_id: v }))}
+                    disabled={!formData.branch_id}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={formData.branch_id ? 'เลือกทีมขาย' : 'กรุณาเลือกสาขาก่อน'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {branchTeams.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">ไม่พบทีมขายในสาขานี้</div>
+                      ) : (
+                        branchTeams.map(t => {
+                          const supName = users.find(u => u.user_id === t.supervisor_id)?.full_name || '-';
+                          return (
+                            <SelectItem key={t.id} value={t.id}>
+                              {t.team_name} <span className="text-muted-foreground">— หัวหน้า: {supName}</span>
+                            </SelectItem>
+                          );
+                        })
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              );
+            })()}
 
             {/* Status - Radio Group */}
             <div className="space-y-2">

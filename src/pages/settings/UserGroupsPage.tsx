@@ -59,7 +59,7 @@ export default function UserGroupsPage() {
     }
 
     // Merge with defaults: ensure every default role exists; insert missing ones
-    const existingByRole = new Map((data || []).map((g) => [g.role_id, g]));
+    const existingByRole = new Map<string, UserGroup>((data || []).map((g) => [g.role_id, g as UserGroup]));
     const missing = DEFAULT_GROUPS.filter((d) => !existingByRole.has(d.role_id));
 
     if (missing.length > 0 && canEdit) {

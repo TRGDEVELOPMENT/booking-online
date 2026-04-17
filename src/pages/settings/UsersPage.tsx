@@ -115,12 +115,14 @@ export default function UsersPage() {
   const isAdmin = hasRole('user_admin') || hasRole('it');
 
   const [salesTeams, setSalesTeams] = useState<SalesTeamOption[]>([]);
+  const [roleOptions, setRoleOptions] = useState<RoleOption[]>(DEFAULT_ROLE_OPTIONS);
 
   useEffect(() => {
     if (!profile?.company_id) return;
     fetchUsers();
     fetchBranches();
     fetchSalesTeams();
+    fetchRoleOptions();
   }, [profile?.company_id]);
 
   const fetchUsers = async () => {

@@ -138,12 +138,13 @@ export default function AccessoriesPage() {
         if (error) throw error;
         toast.success('แก้ไขข้อมูลสำเร็จ');
       } else {
-        const { error } = await supabase.from('accessories').insert({
+        const { error } = await supabase.from('accessories').insert([{
           description: formData.description,
           price: priceValue,
           status: formData.status,
           company_id: profile.company_id,
-        });
+          no: 0,
+        }]);
 
         if (error) throw error;
         toast.success('เพิ่มข้อมูลสำเร็จ');

@@ -282,6 +282,11 @@ export default function UsersPage() {
         });
       }
 
+      // Persist team_id for Supervisor role (no team membership row needed; supervisor is on sales_teams.supervisor_id)
+      if (formData.role === 'sale_supervisor' && resData?.user_id && formData.team_id) {
+        await supabase.from('profiles').update({ team_id: formData.team_id } as any).eq('user_id', resData.user_id);
+      }
+
       toast.success('สร้างผู้ใช้งานสำเร็จ');
       setDialogOpen(false);
       await fetchUsers();

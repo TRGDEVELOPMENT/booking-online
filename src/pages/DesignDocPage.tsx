@@ -153,10 +153,10 @@ const DesignDocPage = () => {
           <div>
             <h3 className="font-semibold mb-2 flex items-center gap-2"><Shield className="h-4 w-4" /> 2.3 Authentication & RBAC</h3>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li>บทบาทเก็บในตาราง <code className="text-xs bg-muted px-1 rounded">user_roles</code> แยกจาก profiles (ป้องกัน Privilege Escalation)</li>
+              <li>ตำแหน่งเก็บในตาราง <code className="text-xs bg-muted px-1 rounded">user_roles</code> แยกจาก profiles (ป้องกัน Privilege Escalation)</li>
               <li>ฟังก์ชัน <code className="text-xs bg-muted px-1 rounded">has_role()</code> เป็น Security Definer</li>
-              <li>6 บทบาท: it, user_admin, sale_manager, sale_supervisor, sale, cashier</li>
-              <li>Sidebar เมนูแสดง/ซ่อนตามบทบาท</li>
+              <li>6 ตำแหน่ง: it, user_admin, sale_manager, sale_supervisor, sale, cashier</li>
+              <li>Sidebar เมนูแสดง/ซ่อนตามตำแหน่ง</li>
             </ul>
           </div>
 

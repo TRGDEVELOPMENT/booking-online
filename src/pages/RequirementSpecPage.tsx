@@ -27,7 +27,7 @@ const RequirementSpecPage = () => {
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
               <li>เพื่อจัดการกระบวนการจองรถยนต์แบบครบวงจร (End-to-End Workflow)</li>
               <li>เพื่อรองรับการทำงานแบบ Multi-Company และ Multi-Branch</li>
-              <li>เพื่อควบคุมสิทธิ์การเข้าถึงตามบทบาท (Role-Based Access Control)</li>
+              <li>เพื่อควบคุมสิทธิ์การเข้าถึงตามตำแหน่ง (Role-Based Access Control)</li>
               <li>เพื่อสร้างระบบสายอนุมัติที่ยืดหยุ่นและปรับแต่งได้ตามทีมขายและสาขา</li>
               <li>เพื่อเก็บประวัติการดำเนินการ (Audit Trail) ทุกขั้นตอน</li>
             </ul>
@@ -40,7 +40,7 @@ const RequirementSpecPage = () => {
               <li>ระบบจัดการข้อมูลหลัก (Master Data) — รุ่นรถ สี ราคา ของแถม อุปกรณ์เสริม</li>
               <li>ระบบจัดการลูกค้า — ข้อมูลส่วนบุคคลและนิติบุคคล</li>
               <li>ระบบรายงาน — รายงานประจำเดือน รอการอนุมัติ ใบจองที่ยกเลิก</li>
-              <li>ระบบจัดการผู้ใช้งาน — บทบาท สิทธิ์ ทีมขาย สายอนุมัติ</li>
+              <li>ระบบจัดการผู้ใช้งาน — ตำแหน่ง สิทธิ์ ทีมขาย สายอนุมัติ</li>
             </ul>
           </div>
 
@@ -204,7 +204,7 @@ const RequirementSpecPage = () => {
                 ['4','reservation_assignments','สายอนุมัติรายใบจอง','company_id + branch_id'],
                 ['5','customers','ข้อมูลลูกค้า','company_id'],
                 ['6','profiles','ข้อมูลผู้ใช้','company_id'],
-                ['7','user_roles','บทบาทผู้ใช้','—'],
+                ['7','user_roles','ตำแหน่งผู้ใช้','—'],
                 ['8','models','รุ่นรถ','company_id'],
                 ['9','sub_models','รุ่นย่อย','company_id'],
                 ['10','vehicle_types','ชนิดรถ','company_id'],
@@ -238,7 +238,7 @@ const RequirementSpecPage = () => {
                 ['generate_document_number(p_branch_id, p_company_id)','สร้างเลขเอกสารอัตโนมัติ'],
                 ['get_next_customer_no(p_company_id)','ลำดับถัดไปของลูกค้า'],
                 ['get_user_company_id(_user_id)','ดึง company_id ของผู้ใช้'],
-                ['has_role(_user_id, _role)','ตรวจสอบบทบาทผู้ใช้ (Security Definer)'],
+                ['has_role(_user_id, _role)','ตรวจสอบตำแหน่งผู้ใช้ (Security Definer)'],
               ].map(([f,d]) => (
                 <TableRow key={f}><TableCell className="font-mono text-xs">{f}</TableCell><TableCell className="text-muted-foreground">{d}</TableCell></TableRow>
               ))}
@@ -257,7 +257,7 @@ const RequirementSpecPage = () => {
             <h3 className="font-semibold mb-2">4.1 Security</h3>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
               <li>Row Level Security (RLS) บังคับใช้ทุกตาราง — ข้อมูลแยกตาม company_id</li>
-              <li>บทบาทผู้ใช้เก็บในตาราง user_roles แยกจาก profiles เพื่อป้องกัน Privilege Escalation</li>
+              <li>ตำแหน่งผู้ใช้เก็บในตาราง user_roles แยกจาก profiles เพื่อป้องกัน Privilege Escalation</li>
               <li>ฟังก์ชัน has_role() เป็น Security Definer หลีกเลี่ยง RLS Recursive</li>
               <li>Activity Log เป็น Append-only ไม่สามารถลบหรือแก้ไขได้</li>
               <li>การยืนยันสัญญาจองผ่าน OTP หรือ Link พร้อมวันหมดอายุ</li>

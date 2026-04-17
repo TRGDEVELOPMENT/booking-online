@@ -393,7 +393,7 @@ export default function UsersPage() {
         });
         if (response.error) {
           console.error('Role update error:', response.error);
-          toast.warning('บันทึกข้อมูลแล้ว แต่ไม่สามารถเปลี่ยนบทบาทได้');
+          toast.warning('บันทึกข้อมูลแล้ว แต่ไม่สามารถเปลี่ยนตำแหน่งได้');
         }
       }
 
@@ -453,7 +453,7 @@ export default function UsersPage() {
               <TableHead>รหัสพนักงาน</TableHead>
               <TableHead>ชื่อ-สกุล</TableHead>
               <TableHead>สาขา</TableHead>
-              <TableHead>บทบาท</TableHead>
+              <TableHead>ตำแหน่ง</TableHead>
               <TableHead>ทีมขาย</TableHead>
               <TableHead className="w-[100px]">สถานะ</TableHead>
               {isAdmin && <TableHead className="w-[80px]">จัดการ</TableHead>}
@@ -570,13 +570,13 @@ export default function UsersPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>บทบาท (Role) <span className="text-destructive">*</span></Label>
+              <Label>ตำแหน่ง (Role) <span className="text-destructive">*</span></Label>
               <Select
                 value={formData.role}
                 onValueChange={(v) => setFormData(p => ({ ...p, role: v, supervisor_id: '', team_id: '', branch_id: (v === 'it' || v === 'user_admin') ? '' : p.branch_id }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="เลือกบทบาท" />
+                  <SelectValue placeholder="เลือกตำแหน่ง" />
                 </SelectTrigger>
                 <SelectContent>
                   {roleOptions

@@ -173,6 +173,35 @@ export default function UsersPage() {
     setSalesTeams((data || []) as SalesTeamOption[]);
   };
 
+  const fetchRoleOptions = async () => {
+    const { data, error } = await supabase
+      .from('user_groups')
+      .select('role_id, name, status')
+      .eq('company_id', profile?.company_id || '');
+
+    if (error || !data || data.length === 0) {
+      // Fallback to defaults if user_groups not yet seeded
+      setRoleOptions(DEFAULT_ROLE_OPTIONS);
+      return;
+    }
+
+    // Map to RoleOption preserving DEFAULT order; include any custom rows at the end
+    const byRole = new Map(data.map((g: any) => [g.role_id, g]));
+    const ordered: RoleOption[] = DEFAULT_ROLE_OPTIONS.map(d => {
+      const found = byRole.get(d.value) as any;
+      return found
+        ? { value: d.value, label: found.name || d.label, status: found.status || 'active' }
+        : d;
+    });
+    // Append any extra roles not in defaults
+    data.forEach((g: any) => {
+      if (!DEFAULT_ROLE_OPTIONS.some(d => d.value === g.role_id)) {
+        ordered.push({ value: g.role_id, label: g.name, status: g.status || 'active' });
+      }
+    });
+    setRoleOptions(ordered);
+  };
+
   const supervisors = users.filter(u => u.roles.includes('sale_supervisor') && u.status === 'active');
 
   const openCreateDialog = () => {

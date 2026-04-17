@@ -579,9 +579,16 @@ export default function UsersPage() {
                   <SelectValue placeholder="เลือกบทบาท" />
                 </SelectTrigger>
                 <SelectContent>
-                  {roleOptions.map(r => (
-                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
-                  ))}
+                  {roleOptions
+                    .filter(r => r.status === 'active' || r.value === formData.role)
+                    .map(r => (
+                      <SelectItem key={r.value} value={r.value}>
+                        {r.label}
+                        {r.status !== 'active' && (
+                          <span className="text-muted-foreground"> (ปิดใช้งาน)</span>
+                        )}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

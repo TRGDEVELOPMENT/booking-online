@@ -4,17 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Users, UserPlus, X, Check, ChevronsUpDown } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { cn } from '@/lib/utils';
 
 interface Profile {
   user_id: string;
@@ -38,18 +35,10 @@ interface SalesTeam {
   created_at: string;
 }
 
-interface SalesTeamMember {
-  id: string;
-  team_id: string;
-  member_user_id: string;
-  created_at: string;
-}
-
 export default function SalesTeamsPage() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const [teams, setTeams] = useState<SalesTeam[]>([]);
-  const [members, setMembers] = useState<Record<string, SalesTeamMember[]>>({});
   const [branches, setBranches] = useState<{ branch_id: string; branch_name: string }[]>([]);
   const [allUsers, setAllUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,10 +51,8 @@ export default function SalesTeamsPage() {
     branch_id: '',
     supervisor_id: '',
   });
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
-  const [memberPickerOpen, setMemberPickerOpen] = useState(false);
 
   const companyId = profile?.company_id || '';
 
@@ -91,16 +78,6 @@ export default function SalesTeamsPage() {
 
     if (teamsData) {
       setTeams(teamsData);
-      // Fetch members for all teams
-      const memberMap: Record<string, SalesTeamMember[]> = {};
-      for (const team of teamsData) {
-        const { data: membersData } = await supabase
-          .from('sales_team_members')
-          .select('*')
-          .eq('team_id', team.id);
-        memberMap[team.id] = membersData || [];
-      }
-      setMembers(memberMap);
     }
   };
 
@@ -114,7 +91,6 @@ export default function SalesTeamsPage() {
   };
 
   const fetchUsers = async () => {
-    // Get all profiles for this company
     const { data: profiles } = await supabase
       .from('profiles')
       .select('user_id, full_name, branch_id, status')
@@ -123,7 +99,6 @@ export default function SalesTeamsPage() {
 
     if (!profiles) return;
 
-    // Get roles for these users
     const { data: roles } = await supabase
       .from('user_roles')
       .select('user_id, role')
@@ -141,10 +116,6 @@ export default function SalesTeamsPage() {
     return allUsers.filter(u => u.role === 'sale_supervisor' && u.branch_id === branchId);
   };
 
-  const getSales = (branchId: string) => {
-    return allUsers.filter(u => u.role === 'sale' && u.branch_id === branchId);
-  };
-
   const getUserName = (userId: string) => {
     return allUsers.find(u => u.user_id === userId)?.full_name || '-';
   };
@@ -156,7 +127,6 @@ export default function SalesTeamsPage() {
   const openCreateDialog = () => {
     setEditingTeam(null);
     setFormData({ team_name: '', branch_id: '', supervisor_id: '' });
-    setSelectedMembers([]);
     setDialogOpen(true);
   };
 
@@ -167,7 +137,6 @@ export default function SalesTeamsPage() {
       branch_id: team.branch_id,
       supervisor_id: team.supervisor_id,
     });
-    setSelectedMembers(members[team.id]?.map(m => m.member_user_id) || []);
     setDialogOpen(true);
   };
 
@@ -178,7 +147,6 @@ export default function SalesTeamsPage() {
     }
 
     if (editingTeam) {
-      // Update team
       const { error } = await supabase
         .from('sales_teams')
         .update({
@@ -193,38 +161,20 @@ export default function SalesTeamsPage() {
         return;
       }
 
-      // Delete old members and insert new
-      await supabase.from('sales_team_members').delete().eq('team_id', editingTeam.id);
-      if (selectedMembers.length > 0) {
-        await supabase.from('sales_team_members').insert(
-          selectedMembers.map(uid => ({ team_id: editingTeam.id, member_user_id: uid }))
-        );
-      }
-
       toast({ title: 'อัปเดตทีมขายสำเร็จ' });
     } else {
-      // Create team
-      const { data: newTeam, error } = await supabase
+      const { error } = await supabase
         .from('sales_teams')
         .insert({
           team_name: formData.team_name,
           branch_id: formData.branch_id,
           supervisor_id: formData.supervisor_id,
           company_id: companyId,
-        })
-        .select()
-        .single();
+        });
 
-      if (error || !newTeam) {
-        toast({ title: 'เกิดข้อผิดพลาด', description: error?.message, variant: 'destructive' });
+      if (error) {
+        toast({ title: 'เกิดข้อผิดพลาด', description: error.message, variant: 'destructive' });
         return;
-      }
-
-      // Insert members
-      if (selectedMembers.length > 0) {
-        await supabase.from('sales_team_members').insert(
-          selectedMembers.map(uid => ({ team_id: newTeam.id, member_user_id: uid }))
-        );
       }
 
       toast({ title: 'สร้างทีมขายสำเร็จ' });
@@ -247,18 +197,12 @@ export default function SalesTeamsPage() {
     setDeletingTeamId(null);
   };
 
-  const toggleMember = (userId: string) => {
-    setSelectedMembers(prev =>
-      prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
-    );
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">ปรับปรุงทีมขาย</h1>
-          <p className="text-muted-foreground mt-1">จัดการทีมขายโดยกำหนดหัวหน้าทีมขายและที่ปรึกษาการขาย</p>
+          <p className="text-muted-foreground mt-1">จัดการทีมขายโดยกำหนดชื่อทีม สาขา และหัวหน้าทีมขาย</p>
         </div>
         <Button onClick={openCreateDialog}>
           <Plus className="w-4 h-4 mr-2" />
@@ -275,7 +219,6 @@ export default function SalesTeamsPage() {
                 <TableHead>ชื่อทีม</TableHead>
                 <TableHead>สาขา</TableHead>
                 <TableHead>หัวหน้าทีมขาย</TableHead>
-                <TableHead>ที่ปรึกษาการขาย</TableHead>
                 <TableHead>สถานะ</TableHead>
                 <TableHead className="w-24 text-center">จัดการ</TableHead>
               </TableRow>
@@ -283,11 +226,11 @@ export default function SalesTeamsPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">กำลังโหลด...</TableCell>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">กำลังโหลด...</TableCell>
                 </TableRow>
               ) : teams.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">ยังไม่มีทีมขาย</TableCell>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">ยังไม่มีทีมขาย</TableCell>
                 </TableRow>
               ) : (
                 teams.map((team) => (
@@ -296,18 +239,6 @@ export default function SalesTeamsPage() {
                     <TableCell className="font-medium">{team.team_name}</TableCell>
                     <TableCell>{getBranchName(team.branch_id)}</TableCell>
                     <TableCell>{getUserName(team.supervisor_id)}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {(members[team.id] || []).map(m => (
-                          <Badge key={m.id} variant="secondary" className="text-xs">
-                            {getUserName(m.member_user_id)}
-                          </Badge>
-                        ))}
-                        {(!members[team.id] || members[team.id].length === 0) && (
-                          <span className="text-muted-foreground text-sm">-</span>
-                        )}
-                      </div>
-                    </TableCell>
                     <TableCell>
                       <Badge variant={team.status === 'active' ? 'default' : 'secondary'}>
                         {team.status === 'active' ? 'ใช้งาน' : 'ไม่ใช้งาน'}
@@ -355,7 +286,7 @@ export default function SalesTeamsPage() {
               <Label>สาขา <span className="text-destructive">*</span></Label>
               <Select
                 value={formData.branch_id}
-                onValueChange={v => setFormData(p => ({ ...p, branch_id: v, supervisor_id: '', }))}
+                onValueChange={v => setFormData(p => ({ ...p, branch_id: v, supervisor_id: '' }))}
               >
                 <SelectTrigger><SelectValue placeholder="เลือกสาขา" /></SelectTrigger>
                 <SelectContent>
@@ -383,84 +314,6 @@ export default function SalesTeamsPage() {
                   )}
                 </SelectContent>
               </Select>
-            </div>
-
-            <div>
-              <Label>ที่ปรึกษาการขาย (Sale)</Label>
-              {!formData.branch_id ? (
-                <p className="text-sm text-muted-foreground mt-1">กรุณาเลือกสาขาก่อน</p>
-              ) : (
-                <div className="mt-2 space-y-2">
-                  <Popover open={memberPickerOpen} onOpenChange={setMemberPickerOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={memberPickerOpen}
-                        className="w-full justify-between font-normal"
-                      >
-                        <span className="flex items-center gap-2 text-muted-foreground">
-                          <Plus className="w-4 h-4" />
-                          พิมพ์ชื่อเพื่อค้นหาและเพิ่มที่ปรึกษาการขาย
-                        </span>
-                        <ChevronsUpDown className="w-4 h-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" align="start">
-                      <Command>
-                        <CommandInput placeholder="พิมพ์ชื่อค้นหา..." />
-                        <CommandList>
-                          <CommandEmpty>ไม่พบที่ปรึกษาการขาย</CommandEmpty>
-                          <CommandGroup>
-                            {getSales(formData.branch_id)
-                              .filter(u => !selectedMembers.includes(u.user_id))
-                              .map(u => (
-                                <CommandItem
-                                  key={u.user_id}
-                                  value={u.full_name}
-                                  onSelect={() => {
-                                    toggleMember(u.user_id);
-                                  }}
-                                >
-                                  <Plus className="mr-2 h-4 w-4" />
-                                  {u.full_name}
-                                </CommandItem>
-                              ))}
-                            {getSales(formData.branch_id).filter(u => !selectedMembers.includes(u.user_id)).length === 0 && (
-                              <div className="px-3 py-2 text-sm text-muted-foreground">เพิ่มครบทุกคนแล้ว</div>
-                            )}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-
-                  {selectedMembers.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">ยังไม่ได้เพิ่มที่ปรึกษาการขาย</p>
-                  ) : (
-                    <div className="border rounded-lg p-2 space-y-1 max-h-48 overflow-y-auto">
-                      {selectedMembers.map((uid, idx) => (
-                        <div key={uid} className="flex items-center justify-between gap-2 px-2 py-1.5 rounded hover:bg-muted">
-                          <span className="text-sm">
-                            <span className="text-muted-foreground mr-2">{idx + 1}.</span>
-                            {getUserName(uid)}
-                          </span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => toggleMember(uid)}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
           <DialogFooter>

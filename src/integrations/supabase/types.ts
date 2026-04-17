@@ -99,7 +99,7 @@ export type Database = {
           created_at?: string
           doc_prefix?: string | null
           id?: string
-          no?: never
+          no: number
           status?: string
           updated_at?: string
         }
@@ -110,7 +110,7 @@ export type Database = {
           created_at?: string
           doc_prefix?: string | null
           id?: string
-          no?: never
+          no?: number
           status?: string
           updated_at?: string
         }

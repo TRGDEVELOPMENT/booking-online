@@ -171,7 +171,7 @@ const functions: FunctionItem[] = [
     perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
 
   // Reports
-  { no: 21, name: 'รายงานใบจองประจำเดือน', category: 'Reports', responsible: 'ทุกบทบาท', description: 'สรุปใบจองตาม period, สถานะ, ยอดเงิน', riskLevel: 'medium', riskScore: 3, riskReason: 'ใช้ตัดสินใจทางธุรกิจ', icon: BarChart3,
+  { no: 21, name: 'รายงานใบจองประจำเดือน', category: 'Reports', responsible: 'ทุกตำแหน่ง', description: 'สรุปใบจองตาม period, สถานะ, ยอดเงิน', riskLevel: 'medium', riskScore: 3, riskReason: 'ใช้ตัดสินใจทางธุรกิจ', icon: BarChart3,
     devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Query Aggregation, Date Filter, Chart, Export Excel', weightLevel: 'minor', weightScore: 7,
     perf: { responseTime: '<3s', concurrentUsers: '10-20', availability: '99%', dataVolume: 'สูง', score: 3, level: 'medium', notes: 'Query Aggregation หลายพันรายการ ใช้เวลา' } },
   { no: 22, name: 'รายงานใบจองที่ยังไม่อนุมัติ', category: 'Reports', responsible: 'ผู้จัดการฝ่ายขาย', description: 'แสดงรายการค้างอนุมัติ', riskLevel: 'medium', riskScore: 3, riskReason: 'ถ้าไม่ follow up อาจสูญเสียการขาย', icon: BarChart3,

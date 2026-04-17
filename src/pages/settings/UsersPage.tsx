@@ -70,13 +70,19 @@ const roleLabels: Record<string, string> = {
   it: 'IT Admin',
 };
 
-const roleOptions = [
-  { value: 'sale', label: 'พนักงานขาย (Sale)' },
-  { value: 'cashier', label: 'แคชเชียร์ (Cashier)' },
-  { value: 'sale_supervisor', label: 'หัวหน้าทีมขาย (Sale Supervisor)' },
-  { value: 'sale_manager', label: 'ผู้จัดการฝ่ายขาย (Sale Manager)' },
-  { value: 'user_admin', label: 'ผู้ดูแลระบบ (User Admin)' },
-  { value: 'it', label: 'IT Admin' },
+interface RoleOption {
+  value: string;
+  label: string;
+  status: string;
+}
+
+const DEFAULT_ROLE_OPTIONS: RoleOption[] = [
+  { value: 'sale', label: 'พนักงานขาย (Sale)', status: 'active' },
+  { value: 'cashier', label: 'แคชเชียร์ (Cashier)', status: 'active' },
+  { value: 'sale_supervisor', label: 'หัวหน้าทีมขาย (Sale Supervisor)', status: 'active' },
+  { value: 'sale_manager', label: 'ผู้จัดการฝ่ายขาย (Sale Manager)', status: 'active' },
+  { value: 'user_admin', label: 'ผู้ดูแลระบบ (User Admin)', status: 'active' },
+  { value: 'it', label: 'IT Admin', status: 'active' },
 ];
 
 type DialogMode = 'create' | 'edit';

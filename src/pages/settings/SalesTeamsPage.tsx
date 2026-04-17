@@ -26,6 +26,7 @@ interface UserWithRole extends Profile {
 
 interface SalesTeam {
   id: string;
+  no: number;
   team_name: string;
   supervisor_id: string;
   branch_id: string;

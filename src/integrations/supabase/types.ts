@@ -30,7 +30,7 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
-          no?: number
+          no: number
           price?: number
           status?: string
           updated_at?: string

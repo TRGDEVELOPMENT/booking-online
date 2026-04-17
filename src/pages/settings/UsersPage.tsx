@@ -206,10 +206,14 @@ export default function UsersPage() {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
-    if (formData.role === 'sale' && !formData.supervisor_id) {
-      toast.error('กรุณาเลือกหัวหน้าทีมขาย');
+    if (formData.role === 'sale' && !formData.team_id) {
+      toast.error('กรุณาเลือกทีมขาย');
       return;
     }
+
+    // Derive supervisor_id from selected team for Sale role
+    const selectedTeam = salesTeams.find(t => t.id === formData.team_id);
+    const supervisorId = formData.role === 'sale' ? (selectedTeam?.supervisor_id || null) : null;
 
     setIsSubmitting(true);
     try {
@@ -221,7 +225,7 @@ export default function UsersPage() {
           company_id: profile?.company_id,
           branch_id: formData.branch_id || null,
           role: formData.role,
-          supervisor_id: formData.role === 'sale' ? formData.supervisor_id : null,
+          supervisor_id: supervisorId,
           email: formData.email || null,
         },
       });
@@ -230,6 +234,15 @@ export default function UsersPage() {
       const resData = response.data as any;
       if (resData?.error) {
         throw new Error(resData.error);
+      }
+
+      // Persist team_id and add team membership for Sale role
+      if (formData.role === 'sale' && resData?.user_id && formData.team_id) {
+        await supabase.from('profiles').update({ team_id: formData.team_id } as any).eq('user_id', resData.user_id);
+        await supabase.from('sales_team_members').insert({
+          team_id: formData.team_id,
+          member_user_id: resData.user_id,
+        });
       }
 
       toast.success('สร้างผู้ใช้งานสำเร็จ');

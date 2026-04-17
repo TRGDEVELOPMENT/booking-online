@@ -178,6 +178,7 @@ export default function UsersPage() {
       branch_id: '',
       role: '',
       supervisor_id: '',
+      team_id: '',
       status: 'active',
     });
     setDialogOpen(true);
@@ -194,6 +195,7 @@ export default function UsersPage() {
       branch_id: user.branch_id || '',
       role: user.roles[0] || '',
       supervisor_id: user.supervisor_id || '',
+      team_id: user.team_id || '',
       status: user.status || 'active',
     });
     setDialogOpen(true);

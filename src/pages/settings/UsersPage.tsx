@@ -337,7 +337,7 @@ export default function UsersPage() {
       // Derive supervisor_id from selected team for Sale role
       const selectedTeam = salesTeams.find(t => t.id === formData.team_id);
       const supervisorId = formData.role === 'sale' ? (selectedTeam?.supervisor_id || null) : null;
-      const teamId = formData.role === 'sale' ? (formData.team_id || null) : null;
+      const teamId = (formData.role === 'sale' || formData.role === 'sale_supervisor') ? (formData.team_id || null) : null;
 
       // Update profile
       const { error } = await supabase

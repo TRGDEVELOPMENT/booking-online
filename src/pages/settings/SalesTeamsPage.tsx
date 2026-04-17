@@ -65,6 +65,7 @@ export default function SalesTeamsPage() {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
+  const [memberPickerOpen, setMemberPickerOpen] = useState(false);
 
   const companyId = profile?.company_id || '';
 

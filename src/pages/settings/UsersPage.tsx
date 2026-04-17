@@ -456,7 +456,14 @@ export default function UsersPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {user.roles.includes('sale') ? getSupervisorName(user.supervisor_id) : '-'}
+                    {user.roles.includes('sale')
+                      ? (() => {
+                          const t = salesTeams.find(st => st.id === user.team_id);
+                          if (!t) return '-';
+                          const supName = users.find(u2 => u2.user_id === t.supervisor_id)?.full_name;
+                          return supName ? `${t.team_name} (${supName})` : t.team_name;
+                        })()
+                      : '-'}
                   </TableCell>
                   <TableCell>
                     <Badge variant={user.status === 'active' ? 'default' : 'outline'} className="text-xs">

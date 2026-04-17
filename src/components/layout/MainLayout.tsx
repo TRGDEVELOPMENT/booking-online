@@ -44,14 +44,14 @@ export function MainLayout() {
   }, [selectedCompany]);
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex items-start">
       <Sidebar 
         selectedCompany={selectedCompany} 
         onCompanyChange={setSelectedCompany} 
       />
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0">
         {/* Top Header Bar */}
-        <header className="h-12 flex items-center justify-end gap-2 sm:gap-3 px-3 sm:px-4 border-b border-border bg-card shrink-0 ml-0 lg:ml-0">
+        <header className="h-12 sticky top-0 z-30 flex items-center justify-end gap-2 sm:gap-3 px-3 sm:px-4 border-b border-border bg-card shrink-0">
           {/* Spacer for mobile hamburger button */}
           <div className="w-10 lg:hidden" />
           <div className="flex-1" />
@@ -75,7 +75,7 @@ export function MainLayout() {
           </button>
         </header>
 
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1">
           <Outlet context={{ selectedCompany, setSelectedCompany }} />
         </main>
       </div>

@@ -24,6 +24,7 @@ import {
 import { Header } from '@/components/layout/Header';
 import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
 import { CustomerSearchDialog, type Customer } from '@/components/reservations/CustomerSearchDialog';
+import { MasterItemPickerDialog, type MasterItemType } from '@/components/reservations/MasterItemPickerDialog';
 import FileUploadSection from '@/components/reservations/FileUploadSection';
 import { useReservationAttachments, type AttachmentFile } from '@/hooks/useReservationAttachments';
 import { Button } from '@/components/ui/button';

@@ -24,6 +24,7 @@ import {
 import { Header } from '@/components/layout/Header';
 import { WorkflowSteps } from '@/components/reservations/WorkflowSteps';
 import { CustomerSearchDialog, type Customer } from '@/components/reservations/CustomerSearchDialog';
+import { MasterItemPickerDialog, type MasterItemType } from '@/components/reservations/MasterItemPickerDialog';
 import FileUploadSection from '@/components/reservations/FileUploadSection';
 import { useReservationAttachments, type AttachmentFile } from '@/hooks/useReservationAttachments';
 import { Button } from '@/components/ui/button';
@@ -250,10 +251,19 @@ export default function ReservationCreate() {
     }
   };
 
-  const addItem = (type: 'freebies' | 'accessories' | 'benefits') => {
-    const newItem = { id: Date.now(), name: '', value: 0 };
-    if (type === 'freebies') setFreebies([...freebies, newItem]);
-    else if (type === 'accessories') setAccessories([...accessories, newItem]);
+  // Master item picker state
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerType, setPickerType] = useState<MasterItemType>('freebies');
+
+  const openPicker = (type: MasterItemType) => {
+    setPickerType(type);
+    setPickerOpen(true);
+  };
+
+  const handlePickerSelect = (item: { name: string; value: number }) => {
+    const newItem = { id: Date.now() + Math.random(), name: item.name, value: item.value };
+    if (pickerType === 'freebies') setFreebies([...freebies, newItem]);
+    else if (pickerType === 'accessories') setAccessories([...accessories, newItem]);
     else setBenefits([...benefits, newItem]);
   };
 
@@ -936,7 +946,7 @@ export default function ReservationCreate() {
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => addItem('freebies')} className="gap-1">
+                <Button variant="outline" size="sm" onClick={() => openPicker('freebies')} className="gap-1">
                   <Plus className="w-4 h-4" />
                   เพิ่มรายการ
                 </Button>
@@ -985,7 +995,7 @@ export default function ReservationCreate() {
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => addItem('accessories')} className="gap-1">
+                <Button variant="outline" size="sm" onClick={() => openPicker('accessories')} className="gap-1">
                   <Plus className="w-4 h-4" />
                   เพิ่มรายการ
                 </Button>
@@ -1034,7 +1044,7 @@ export default function ReservationCreate() {
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => addItem('benefits')} className="gap-1">
+                <Button variant="outline" size="sm" onClick={() => openPicker('benefits')} className="gap-1">
                   <Plus className="w-4 h-4" />
                   เพิ่มรายการ
                 </Button>
@@ -1204,6 +1214,14 @@ export default function ReservationCreate() {
         onOpenChange={setIsBuyerSearchOpen}
         onSelect={setSelectedBuyerCustomer}
         companyId={selectedCompany}
+      />
+
+      <MasterItemPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        type={pickerType}
+        companyId={selectedCompany}
+        onSelect={handlePickerSelect}
       />
     </>
   );

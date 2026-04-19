@@ -34,7 +34,6 @@ export default function BranchesPage() {
   const [formData, setFormData] = useState({
     branch_id: "",
     branch_name: "",
-    doc_prefix: "",
     status: "active",
   });
 

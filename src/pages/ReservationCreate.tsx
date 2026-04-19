@@ -995,7 +995,7 @@ export default function ReservationCreate() {
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => addItem('accessories')} className="gap-1">
+                <Button variant="outline" size="sm" onClick={() => openPicker('accessories')} className="gap-1">
                   <Plus className="w-4 h-4" />
                   เพิ่มรายการ
                 </Button>
@@ -1044,7 +1044,7 @@ export default function ReservationCreate() {
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => addItem('benefits')} className="gap-1">
+                <Button variant="outline" size="sm" onClick={() => openPicker('benefits')} className="gap-1">
                   <Plus className="w-4 h-4" />
                   เพิ่มรายการ
                 </Button>

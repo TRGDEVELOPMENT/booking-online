@@ -74,7 +74,6 @@ export default function BranchesPage() {
     setFormData({
       branch_id: item.branch_id,
       branch_name: item.branch_name,
-      doc_prefix: item.doc_prefix || "",
       status: item.status,
     });
     setIsDialogOpen(true);

@@ -42,7 +42,6 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   companies, 
-  branches, 
 } from '@/data/mockData';
 
 import { cn } from '@/lib/utils';

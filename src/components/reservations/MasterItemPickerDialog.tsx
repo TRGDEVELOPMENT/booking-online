@@ -43,7 +43,7 @@ const TITLE_MAP: Record<MasterItemType, string> = {
   benefits: 'ค้นหาสิทธิประโยชน์',
 };
 
-export function MasterItemPickerDialog({ open, onOpenChange, type, companyId, onSelect }: Props) {
+export function MasterItemPickerDialog({ open, onOpenChange, type, companyId, onSelect, excludeNames = [] }: Props) {
   const [items, setItems] = useState<MasterItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -72,10 +72,16 @@ export function MasterItemPickerDialog({ open, onOpenChange, type, companyId, on
   }, [open, companyId, type]);
 
   const filtered = useMemo(() => {
+    const excludeSet = new Set(
+      excludeNames.map((n) => (n || '').trim().toLowerCase()).filter(Boolean)
+    );
     const k = search.trim().toLowerCase();
-    if (!k) return items;
-    return items.filter((i) => i.description.toLowerCase().includes(k));
-  }, [items, search]);
+    return items.filter((i) => {
+      if (excludeSet.has(i.description.trim().toLowerCase())) return false;
+      if (k && !i.description.toLowerCase().includes(k)) return false;
+      return true;
+    });
+  }, [items, search, excludeNames]);
 
   const handlePick = (item: MasterItem) => {
     onSelect({ name: item.description, value: Number(item.price) || 0 });

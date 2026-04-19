@@ -16,6 +16,7 @@ import {
   UserCog,
   Shield,
   KeyRound,
+  CalendarDays,
   type LucideIcon
 } from 'lucide-react';
 
@@ -146,6 +147,15 @@ const settingsItems: SettingsItem[] = [
     description: 'จัดการข้อมูลสาขา และ Document Prefix',
     color: 'text-slate-600',
     bgColor: 'bg-slate-100 group-hover:bg-slate-600'
+  },
+  { 
+    id: 'installment-periods', 
+    label: 'ระยะเวลาผ่อน', 
+    icon: CalendarDays, 
+    path: '/settings/installment-periods',
+    description: 'จัดการระยะเวลาผ่อนชำระ เช่น 12, 24, 48 เดือน',
+    color: 'text-rose-600',
+    bgColor: 'bg-rose-100 group-hover:bg-rose-600'
   },
   { 
     id: 'users', 

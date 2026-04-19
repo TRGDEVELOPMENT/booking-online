@@ -42,6 +42,7 @@ import UserPermissionsPage from "@/pages/settings/UserPermissionsPage";
 import SettingsApprovalChainPage from "@/pages/settings/SettingsApprovalChainPage";
 import SettingsCancelApprovalChainPage from "@/pages/settings/SettingsCancelApprovalChainPage";
 import SalesTeamsPage from "@/pages/settings/SalesTeamsPage";
+import InstallmentPeriodsPage from "@/pages/settings/InstallmentPeriodsPage";
 
 // Reports Pages
 import MonthlyReservationsPage from "@/pages/reports/MonthlyReservationsPage";
@@ -106,6 +107,7 @@ const App = () => (
               <Route path="/settings/approval-chain" element={<SettingsApprovalChainPage />} />
               <Route path="/settings/cancel-approval-chain" element={<SettingsCancelApprovalChainPage />} />
               <Route path="/settings/sales-teams" element={<SalesTeamsPage />} />
+              <Route path="/settings/installment-periods" element={<InstallmentPeriodsPage />} />
             </Route>
             {/* Print page outside MainLayout for clean printing */}
             <Route path="/reservations/:id/print" element={<ReservationPrint />} />

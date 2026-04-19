@@ -162,6 +162,7 @@ const allMenuItems: MenuItem[] = [
       { id: 'benefits', label: 'สิทธิประโยชน์', path: '/settings/benefits', icon: Award },
       { id: 'surnames', label: 'คำนำหน้าชื่อ', path: '/settings/surnames', icon: User },
       { id: 'branches', label: 'สาขา', path: '/settings/branches', icon: Building2 },
+      { id: 'installment-periods', label: 'ระยะเวลาผ่อน', path: '/settings/installment-periods', icon: CalendarDays },
     ]
   },
   { 

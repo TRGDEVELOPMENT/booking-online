@@ -154,6 +154,9 @@ export default function ReservationEdit() {
   const [reviewedAt, setReviewedAt] = useState<string | null>(null);
   const [isSavingReview, setIsSavingReview] = useState(false);
 
+  // Cashier verification
+  const [cashierUserId, setCashierUserId] = useState<string | null>(null);
+
   // Approval (ผู้จัดการฝ่ายขาย)
   const [approvalStatus, setApprovalStatus] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [approvalRemark, setApprovalRemark] = useState('');

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Edit, Trash2, MoreHorizontal, Printer } from 'lucide-react';
+import { Eye, Edit, Trash2, MoreHorizontal, Printer, FileSignature, Wallet, ClipboardCheck, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,9 +11,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { DatabaseReservation } from '@/types/database-reservation';
 import { DatabaseStatusLabels } from '@/types/database-reservation';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { getCurrentStageRole, isActionableForRole } from '@/lib/reservationStage';
 
 const workflowStages = [
   { label: 'สร้างสัญญาจอง', color: 'text-foreground' },
@@ -51,6 +54,9 @@ const statusStyles: Record<string, string> = {
 };
 
 export function ReservationTable({ reservations, selectedIds, onSelectChange, pageSize = 15, branchMap = {} }: ReservationTableProps) {
+  const { roles, hasRole } = useAuth();
+  const currentRole = roles[0]?.role || '';
+  const isAdminViewer = hasRole('it') || hasRole('user_admin');
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(reservations.length / pageSize));
   const startIdx = (currentPage - 1) * pageSize;
@@ -200,18 +206,67 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                 </td>
                 <td className="px-3 py-1.5">
                   <div className="flex justify-center gap-0.5">
-                    <Link to={`/reservations/${reservation.id}`}>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-primary">
-                        <Eye className="w-3.5 h-3.5" />
-                      </Button>
-                    </Link>
-                    {reservation.status === 'draft' && (
-                      <Link to={`/reservations/${reservation.id}/edit`}>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary">
-                          <Edit className="w-3.5 h-3.5" />
-                        </Button>
-                      </Link>
-                    )}
+                    {(() => {
+                      const stageRole = getCurrentStageRole(reservation);
+                      // Admin viewers (IT / user_admin) → view-only
+                      if (isAdminViewer) {
+                        return (
+                          <Link to={`/reservations/${reservation.id}`}>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" title="ดูรายละเอียด">
+                              <Eye className="w-3.5 h-3.5" />
+                            </Button>
+                          </Link>
+                        );
+                      }
+
+                      const actionable = isActionableForRole(stageRole, currentRole);
+                      if (!actionable) {
+                        return (
+                          <Link to={`/reservations/${reservation.id}`}>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" title="ดูรายละเอียด">
+                              <Eye className="w-3.5 h-3.5" />
+                            </Button>
+                          </Link>
+                        );
+                      }
+
+                      // Actionable for current role — show role-specific action icon
+                      const actionMeta: Record<string, { Icon: typeof Eye; label: string; color: string }> = {
+                        sale: stageRole === 'done'
+                          ? { Icon: Printer, label: 'พิมพ์เอกสาร', color: 'text-emerald-600' }
+                          : { Icon: FileSignature, label: 'ดำเนินการสัญญาจอง', color: 'text-blue-600' },
+                        cashier: { Icon: Wallet, label: 'ตรวจสอบการชำระเงิน', color: 'text-orange-600' },
+                        sale_supervisor: { Icon: ClipboardCheck, label: 'ตรวจสอบรายละเอียด', color: 'text-sky-600' },
+                        sale_manager: { Icon: CheckCircle2, label: 'อนุมัติใบจอง', color: 'text-emerald-600' },
+                      };
+                      const meta = actionMeta[currentRole] || actionMeta.sale;
+                      const ActionIcon = meta.Icon;
+                      const targetPath = stageRole === 'done'
+                        ? `/reservations/${reservation.id}/print`
+                        : `/reservations/${reservation.id}/edit`;
+                      return (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Link to={targetPath}>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className={cn(
+                                    'h-7 w-7 relative ring-1 ring-current/20 hover:bg-current/10',
+                                    meta.color,
+                                  )}
+                                >
+                                  <ActionIcon className="w-3.5 h-3.5" />
+                                  <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                                </Button>
+                              </Link>
+                            </TooltipTrigger>
+                            <TooltipContent>{meta.label}</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      );
+                    })()}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground">

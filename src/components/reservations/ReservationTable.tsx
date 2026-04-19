@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { DatabaseReservation } from '@/types/database-reservation';
 import { DatabaseStatusLabels } from '@/types/database-reservation';
-import { branches } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 
 const workflowStages = [

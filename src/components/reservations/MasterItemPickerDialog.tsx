@@ -33,6 +33,8 @@ interface Props {
   type: MasterItemType;
   companyId: string;
   onSelect: (item: { name: string; value: number }) => void;
+  /** Names already selected — these will be excluded from the list */
+  excludeNames?: string[];
 }
 
 const TITLE_MAP: Record<MasterItemType, string> = {

@@ -191,7 +191,6 @@ export default function BranchesPage() {
               <TableHead className="w-[80px]">No.</TableHead>
               <TableHead className="w-[120px]">Branch ID</TableHead>
               <TableHead>Branch Name</TableHead>
-              <TableHead className="w-[140px]">Doc Prefix</TableHead>
               <TableHead className="w-[100px]">Status</TableHead>
               <TableHead className="w-[120px] text-center">จัดการ</TableHead>
             </TableRow>
@@ -215,7 +214,6 @@ export default function BranchesPage() {
                   <TableCell className="font-medium">{item.no}</TableCell>
                   <TableCell className="font-mono">{item.branch_id}</TableCell>
                   <TableCell>{item.branch_name}</TableCell>
-                  <TableCell className="font-mono text-muted-foreground">{item.doc_prefix || '-'}</TableCell>
                   <TableCell>
                     <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>
                       {item.status === 'active' ? 'Active' : 'Inactive'}

@@ -425,6 +425,8 @@ export default function ReservationEdit() {
 
       // Update local state to reflect cashier verification (advances workflow to step4)
       setCashierUserId(user?.id || null);
+      setCashierUserName(profile?.full_name || user?.email || null);
+      setCashierVerifiedAt(now);
 
       // Log activity
       await logActivity({

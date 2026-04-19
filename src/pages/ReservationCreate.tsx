@@ -308,7 +308,6 @@ export default function ReservationCreate() {
     else if (type === 'accessories') setAccessories(updateFn(accessories));
     else setBenefits(updateFn(benefits));
   };
-  const companyBranches = branches.filter(b => b.companyId === selectedCompany);
   const selectedSubmodelData = dbSubModels.find(s => s.id === selectedSubmodel);
 
   // Auto-select branch when company has only one branch (from DB)

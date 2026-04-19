@@ -1007,9 +1007,9 @@ export default function ReservationEdit() {
                       <SelectValue placeholder="เลือกรุ่นย่อย" />
                     </SelectTrigger>
                     <SelectContent>
-                      {standardSubmodels.map(sub => (
+                      {dbSubModels.map(sub => (
                         <SelectItem key={sub.id} value={sub.id}>
-                          {sub.name}
+                          {sub.description}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1020,23 +1020,16 @@ export default function ReservationEdit() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">
                   <Label>สี <span className="text-destructive">*</span></Label>
-                  <Select value={selectedColor} onValueChange={setSelectedColor}>
+                  <Select value={selectedColor} onValueChange={setSelectedColor} disabled={!selectedSubmodel}>
                     <SelectTrigger className="input-focus">
                       <SelectValue placeholder="เลือกสี" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="red">แดง</SelectItem>
-                      <SelectItem value="blue">น้ำเงิน</SelectItem>
-                      <SelectItem value="yellow">เหลือง</SelectItem>
-                      <SelectItem value="white">ขาว</SelectItem>
-                      <SelectItem value="black">ดำ</SelectItem>
-                      <SelectItem value="purple">ม่วง</SelectItem>
-                      <SelectItem value="green">เขียว</SelectItem>
-                      <SelectItem value="orange">ส้ม</SelectItem>
-                      <SelectItem value="brown">น้ำตาล</SelectItem>
-                      <SelectItem value="pink">ชมพู</SelectItem>
-                      <SelectItem value="skyblue">ฟ้า</SelectItem>
-                      <SelectItem value="gray">เทา</SelectItem>
+                      {dbColors.map(c => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.description}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

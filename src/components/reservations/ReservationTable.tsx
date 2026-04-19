@@ -41,6 +41,7 @@ interface ReservationTableProps {
   selectedIds: string[];
   onSelectChange: (ids: string[]) => void;
   pageSize?: number;
+  branchMap?: Record<string, string>;
 }
 
 const statusStyles: Record<string, string> = {

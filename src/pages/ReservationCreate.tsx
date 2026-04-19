@@ -108,6 +108,22 @@ export default function ReservationCreate() {
   const [dbModels, setDbModels] = useState<Array<{ id: string; description: string }>>([]);
   const [dbSubModels, setDbSubModels] = useState<Array<{ id: string; description: string }>>([]);
   const [dbColors, setDbColors] = useState<Array<{ id: string; description: string }>>([]);
+  const [dbInstallmentPeriods, setDbInstallmentPeriods] = useState<Array<{ id: string; description: string }>>([]);
+
+  // Fetch installment periods (active) for current company
+  useEffect(() => {
+    if (!selectedCompany) return;
+    const fetchPeriods = async () => {
+      const { data } = await supabase
+        .from('installment_periods')
+        .select('id, description')
+        .eq('status', 'active')
+        .eq('company_id', selectedCompany)
+        .order('no', { ascending: true });
+      if (data) setDbInstallmentPeriods(data);
+    };
+    fetchPeriods();
+  }, [selectedCompany]);
 
   // Fetch models from DB
   useEffect(() => {
@@ -839,11 +855,15 @@ export default function ReservationCreate() {
                           <SelectValue placeholder="เลือก" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="36">36 เดือน</SelectItem>
-                          <SelectItem value="48">48 เดือน</SelectItem>
-                          <SelectItem value="60">60 เดือน</SelectItem>
-                          <SelectItem value="72">72 เดือน</SelectItem>
-                          <SelectItem value="84">84 เดือน</SelectItem>
+                          {dbInstallmentPeriods.length === 0 ? (
+                            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                              ไม่มีข้อมูล กรุณาเพิ่มที่ ตั้งค่าระบบ &gt; ระยะเวลาผ่อน
+                            </div>
+                          ) : (
+                            dbInstallmentPeriods.map(p => (
+                              <SelectItem key={p.id} value={p.id}>{p.description}</SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                     </div>

@@ -175,6 +175,17 @@ export default function ReservationEdit() {
   const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
   const [accessories, setAccessories] = useState<Array<{ id: number; name: string; value: number }>>([]);
   const [benefits, setBenefits] = useState<Array<{ id: number; name: string; value: number }>>([]);
+
+  // DB-driven master data (mirror Create page)
+  const [dbBranches, setDbBranches] = useState<Array<{ branch_id: string; branch_name: string }>>([]);
+  const [dbModels, setDbModels] = useState<Array<{ id: string; description: string }>>([]);
+  const [dbSubModels, setDbSubModels] = useState<Array<{ id: string; description: string }>>([]);
+  const [dbColors, setDbColors] = useState<Array<{ id: string; description: string }>>([]);
+
+  // Original DB strings (used to match against master data once loaded)
+  const [pendingModelName, setPendingModelName] = useState<string | null>(null);
+  const [pendingSubmodelName, setPendingSubmodelName] = useState<string | null>(null);
+  const [pendingColorName, setPendingColorName] = useState<string | null>(null);
   
   // Attachments - using hook for real file storage
   const {

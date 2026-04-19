@@ -20,7 +20,6 @@ interface Branch {
   no: number;
   branch_id: string;
   branch_name: string;
-  doc_prefix: string | null;
   status: string;
   company_id: string;
 }

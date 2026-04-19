@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -38,6 +38,8 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { companies } from '@/data/mockData';
 import { useAuth } from '@/hooks/useAuth';
+import { getCurrentStageRole, isActionableForRole } from '@/lib/reservationStage';
+import type { DatabaseReservation } from '@/types/database-reservation';
 import {
   Select,
   SelectContent,
@@ -198,17 +200,40 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
   const navigate = useNavigate();
   const { profile, roles, signOut, hasRole } = useAuth();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['reservations']);
-  
+  const [actionableCount, setActionableCount] = useState(0);
+
   // Check if user is a cashier
   const isCashier = hasRole('cashier');
-  
+  const currentRole = roles[0]?.role || '';
+  const isAdminViewer = hasRole('it') || hasRole('user_admin');
+
+  // Fetch count of reservations awaiting action by the current role
+  useEffect(() => {
+    if (!selectedCompany || !currentRole || isAdminViewer) {
+      setActionableCount(0);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from('reservations')
+        .select('id, status, confirmation_status, review_status, approval_status, cancel_approval_status, cashier_user_id')
+        .eq('company_id', selectedCompany);
+      if (cancelled || error || !data) return;
+      const count = data.filter((r: any) => {
+        const stageRole = getCurrentStageRole(r as DatabaseReservation);
+        return isActionableForRole(stageRole, currentRole);
+      }).length;
+      setActionableCount(count);
+    })();
+    return () => { cancelled = true; };
+  }, [selectedCompany, currentRole, isAdminViewer, location.pathname]);
+
   // Filter subItems based on role
   const filterSubItemsByRole = (subItems?: SubItem[]) => {
     if (!subItems) return [];
     return subItems.filter(subItem => {
-      // If no role restriction, show to everyone
       if (!subItem.roles || subItem.roles.length === 0) return true;
-      // Check if user has any of the required roles
       return subItem.roles.some(role => hasRole(role as any));
     });
   };
@@ -338,12 +363,19 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
                                   to={subItem.path}
                                   onClick={() => setIsMobileOpen(false)}
                                   className={cn(
-                                    "sidebar-item text-sm",
+                                    "sidebar-item text-sm justify-between",
                                     location.pathname === subItem.path && "sidebar-item-active"
                                   )}
                                 >
-                                  {SubIcon && <SubIcon className="w-4 h-4" />}
-                                  {subItem.label}
+                                  <span className="flex items-center gap-3">
+                                    {SubIcon && <SubIcon className="w-4 h-4" />}
+                                    {subItem.label}
+                                  </span>
+                                  {subItem.id === 'list' && actionableCount > 0 && (
+                                    <span className="ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold leading-none">
+                                      {actionableCount > 99 ? '99+' : actionableCount}
+                                    </span>
+                                  )}
                                 </Link>
                               </li>
                             );

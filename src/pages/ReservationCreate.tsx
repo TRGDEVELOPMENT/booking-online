@@ -946,7 +946,7 @@ export default function ReservationCreate() {
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => addItem('freebies')} className="gap-1">
+                <Button variant="outline" size="sm" onClick={() => openPicker('freebies')} className="gap-1">
                   <Plus className="w-4 h-4" />
                   เพิ่มรายการ
                 </Button>

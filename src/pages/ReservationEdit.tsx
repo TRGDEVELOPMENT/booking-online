@@ -367,6 +367,83 @@ export default function ReservationEdit() {
     fetchReservation();
   }, [id, navigate]);
 
+  // Fetch DB master data: branches for current company
+  useEffect(() => {
+    if (!selectedCompany) { setDbBranches([]); return; }
+    supabase
+      .from('branches')
+      .select('branch_id, branch_name')
+      .eq('company_id', selectedCompany)
+      .eq('status', 'active')
+      .order('branch_id', { ascending: true })
+      .then(({ data }) => { if (data) setDbBranches(data); });
+  }, [selectedCompany]);
+
+  // Fetch all active models (shared across branches per company memory)
+  useEffect(() => {
+    supabase
+      .from('models')
+      .select('id, description')
+      .eq('status', 'active')
+      .order('description')
+      .then(({ data }) => { if (data) setDbModels(data); });
+  }, []);
+
+  // Resolve pending model name -> uuid once dbModels loaded
+  useEffect(() => {
+    if (!pendingModelName || dbModels.length === 0) return;
+    const m = dbModels.find(x => x.description === pendingModelName);
+    if (m) {
+      setSelectedModel(m.id);
+      setPendingModelName(null);
+    }
+  }, [pendingModelName, dbModels]);
+
+  // Fetch sub_models filtered by selected model (do NOT clear selection here, may be from initial load)
+  useEffect(() => {
+    if (!selectedModel) { setDbSubModels([]); return; }
+    supabase
+      .from('sub_models')
+      .select('id, description')
+      .eq('model_id', selectedModel)
+      .eq('status', 'active')
+      .order('description')
+      .then(({ data }) => { if (data) setDbSubModels(data); });
+  }, [selectedModel]);
+
+  // Resolve pending sub-model name -> uuid
+  useEffect(() => {
+    if (!pendingSubmodelName || dbSubModels.length === 0) return;
+    const s = dbSubModels.find(x => x.description === pendingSubmodelName);
+    if (s) {
+      setSelectedSubmodel(s.id);
+      setPendingSubmodelName(null);
+    }
+  }, [pendingSubmodelName, dbSubModels]);
+
+  // Fetch colors filtered by model + sub_model
+  useEffect(() => {
+    if (!selectedModel || !selectedSubmodel) { setDbColors([]); return; }
+    supabase
+      .from('colors')
+      .select('id, description')
+      .eq('model_id', selectedModel)
+      .eq('sub_model_id', selectedSubmodel)
+      .eq('status', 'active')
+      .order('description')
+      .then(({ data }) => { if (data) setDbColors(data); });
+  }, [selectedModel, selectedSubmodel]);
+
+  // Resolve pending color name -> uuid (color stored as description string in reservations.color)
+  useEffect(() => {
+    if (!pendingColorName || dbColors.length === 0) return;
+    const c = dbColors.find(x => x.description === pendingColorName);
+    if (c) {
+      setSelectedColor(c.id);
+      setPendingColorName(null);
+    }
+  }, [pendingColorName, dbColors]);
+
   // Master item picker state
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerType, setPickerType] = useState<MasterItemType>('freebies');

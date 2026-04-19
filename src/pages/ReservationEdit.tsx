@@ -318,6 +318,11 @@ export default function ReservationEdit() {
 
         // Cashier data
         setCashierUserId((data as any).cashier_user_id || null);
+        setCashierUserName((data as any).cashier_user_name || null);
+        // Use updated_at as proxy for cashier verified time if not stored separately
+        if ((data as any).cashier_user_id) {
+          setCashierVerifiedAt(data.updated_at);
+        }
 
         if (data.approval_status) {
           setApprovalStatus(data.approval_status as 'pending' | 'approved' | 'rejected');
@@ -327,6 +332,22 @@ export default function ReservationEdit() {
         }
         if (data.approved_at) {
           setApprovedAt(data.approved_at);
+        }
+
+        // Created info
+        setCreatedAt(data.created_at);
+
+        // Lookup actor names from profiles
+        const actorIds = [data.created_by, data.reviewed_by, data.approved_by].filter(Boolean) as string[];
+        if (actorIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id, full_name')
+            .in('user_id', actorIds);
+          const nameMap = new Map(profiles?.map((p: any) => [p.user_id, p.full_name]) || []);
+          if (data.created_by) setCreatedByName(nameMap.get(data.created_by) || null);
+          if (data.reviewed_by) setReviewedByName(nameMap.get(data.reviewed_by) || null);
+          if (data.approved_by) setApprovedByName(nameMap.get(data.approved_by) || null);
         }
       } catch (err) {
         console.error('Error:', err);

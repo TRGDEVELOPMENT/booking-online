@@ -156,12 +156,20 @@ export default function ReservationEdit() {
 
   // Cashier verification
   const [cashierUserId, setCashierUserId] = useState<string | null>(null);
+  const [cashierUserName, setCashierUserName] = useState<string | null>(null);
+  const [cashierVerifiedAt, setCashierVerifiedAt] = useState<string | null>(null);
 
   // Approval (ผู้จัดการฝ่ายขาย)
   const [approvalStatus, setApprovalStatus] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [approvalRemark, setApprovalRemark] = useState('');
   const [approvedAt, setApprovedAt] = useState<string | null>(null);
   const [isSavingApproval, setIsSavingApproval] = useState(false);
+
+  // Stage actor info (for WorkflowSteps display)
+  const [createdByName, setCreatedByName] = useState<string | null>(null);
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [reviewedByName, setReviewedByName] = useState<string | null>(null);
+  const [approvedByName, setApprovedByName] = useState<string | null>(null);
 
   // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์
   const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);

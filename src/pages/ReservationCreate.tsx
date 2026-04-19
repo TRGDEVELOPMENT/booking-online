@@ -520,9 +520,9 @@ export default function ReservationCreate() {
                       <SelectValue placeholder="เลือกสาขา" />
                     </SelectTrigger>
                     <SelectContent>
-                      {companyBranches.map(branch => (
-                        <SelectItem key={branch.id} value={branch.id}>
-                          {branch.name}
+                      {dbBranches.map(branch => (
+                        <SelectItem key={branch.branch_id} value={branch.branch_id}>
+                          {branch.branch_id} - {branch.branch_name}
                         </SelectItem>
                       ))}
                     </SelectContent>

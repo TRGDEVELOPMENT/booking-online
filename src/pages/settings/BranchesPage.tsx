@@ -111,7 +111,6 @@ export default function BranchesPage() {
         .update({
           branch_id: formData.branch_id.toUpperCase().trim(),
           branch_name: formData.branch_name.trim(),
-          doc_prefix: formData.doc_prefix.trim() || null,
           status: formData.status,
         })
         .eq('id', editingItem.id);

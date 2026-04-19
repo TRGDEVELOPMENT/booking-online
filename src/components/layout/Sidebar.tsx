@@ -363,12 +363,19 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
                                   to={subItem.path}
                                   onClick={() => setIsMobileOpen(false)}
                                   className={cn(
-                                    "sidebar-item text-sm",
+                                    "sidebar-item text-sm justify-between",
                                     location.pathname === subItem.path && "sidebar-item-active"
                                   )}
                                 >
-                                  {SubIcon && <SubIcon className="w-4 h-4" />}
-                                  {subItem.label}
+                                  <span className="flex items-center gap-3">
+                                    {SubIcon && <SubIcon className="w-4 h-4" />}
+                                    {subItem.label}
+                                  </span>
+                                  {subItem.id === 'list' && actionableCount > 0 && (
+                                    <span className="ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold leading-none">
+                                      {actionableCount > 99 ? '99+' : actionableCount}
+                                    </span>
+                                  )}
                                 </Link>
                               </li>
                             );

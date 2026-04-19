@@ -139,7 +139,6 @@ export default function BranchesPage() {
         .insert({
           branch_id: formData.branch_id.toUpperCase().trim(),
           branch_name: formData.branch_name.trim(),
-          doc_prefix: formData.doc_prefix.trim() || null,
           company_id: profile.company_id,
           status: formData.status,
         } as any);

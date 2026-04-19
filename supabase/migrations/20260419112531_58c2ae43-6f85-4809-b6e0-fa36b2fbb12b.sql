@@ -1,0 +1,1 @@
+ALTER TABLE public.branches DROP COLUMN IF EXISTS doc_prefix;

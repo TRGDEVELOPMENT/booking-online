@@ -61,6 +61,20 @@ export default function ReservationList() {
 
     if (selectedCompany) {
       fetchReservations();
+      // Load branches map (branch_id -> branch_name) from DB
+      supabase
+        .from('branches')
+        .select('branch_id, branch_name')
+        .eq('company_id', selectedCompany)
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error fetching branches:', error);
+            return;
+          }
+          const map: Record<string, string> = {};
+          (data || []).forEach((b: any) => { map[b.branch_id] = b.branch_name; });
+          setBranchMap(map);
+        });
     }
   }, [selectedCompany]);
 

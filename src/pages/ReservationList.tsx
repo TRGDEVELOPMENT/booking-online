@@ -199,6 +199,7 @@ export default function ReservationList() {
               reservations={filteredReservations}
               selectedIds={selectedIds}
               onSelectChange={setSelectedIds}
+              branchMap={branchMap}
             />
           )}
         </div>

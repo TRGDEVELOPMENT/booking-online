@@ -86,7 +86,6 @@ export type Database = {
           branch_name: string
           company_id: string
           created_at: string
-          doc_prefix: string | null
           id: string
           no: number
           status: string
@@ -97,7 +96,6 @@ export type Database = {
           branch_name: string
           company_id: string
           created_at?: string
-          doc_prefix?: string | null
           id?: string
           no: number
           status?: string
@@ -108,7 +106,6 @@ export type Database = {
           branch_name?: string
           company_id?: string
           created_at?: string
-          doc_prefix?: string | null
           id?: string
           no?: number
           status?: string

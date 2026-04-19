@@ -311,12 +311,12 @@ export default function ReservationCreate() {
   const companyBranches = branches.filter(b => b.companyId === selectedCompany);
   const selectedSubmodelData = dbSubModels.find(s => s.id === selectedSubmodel);
 
-  // Auto-select branch when company has only one branch
+  // Auto-select branch when company has only one branch (from DB)
   useEffect(() => {
-    if (companyBranches.length === 1 && !selectedBranch) {
-      setSelectedBranch(companyBranches[0].id);
+    if (dbBranches.length === 1 && !selectedBranch) {
+      setSelectedBranch(dbBranches[0].branch_id);
     }
-  }, [companyBranches, selectedBranch]);
+  }, [dbBranches, selectedBranch]);
 
   // Calculate net price
   const finalPrice = basePrice - discountAmount;

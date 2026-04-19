@@ -85,8 +85,7 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
 
   const getBranchName = (branchId: string | null) => {
     if (!branchId) return '-';
-    const branch = branches.find(b => b.id === branchId);
-    return branch?.name || branchId;
+    return branchMap[branchId] || branchId;
   };
 
   if (reservations.length === 0) {

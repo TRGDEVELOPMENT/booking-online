@@ -2140,6 +2140,7 @@ export default function ReservationEdit() {
         type={pickerType}
         companyId={selectedCompany}
         onSelect={handlePickerSelect}
+        excludeNames={(pickerType === 'freebies' ? freebies : pickerType === 'accessories' ? accessories : benefits).map((i) => i.name)}
       />
     </>
   );

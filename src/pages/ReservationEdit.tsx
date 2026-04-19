@@ -154,6 +154,9 @@ export default function ReservationEdit() {
   const [reviewedAt, setReviewedAt] = useState<string | null>(null);
   const [isSavingReview, setIsSavingReview] = useState(false);
 
+  // Cashier verification
+  const [cashierUserId, setCashierUserId] = useState<string | null>(null);
+
   // Approval (ผู้จัดการฝ่ายขาย)
   const [approvalStatus, setApprovalStatus] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [approvalRemark, setApprovalRemark] = useState('');
@@ -304,8 +307,10 @@ export default function ReservationEdit() {
         if (data.reviewed_at) {
           setReviewedAt(data.reviewed_at);
         }
-        
-        // Approval data
+
+        // Cashier data
+        setCashierUserId((data as any).cashier_user_id || null);
+
         if (data.approval_status) {
           setApprovalStatus(data.approval_status as 'pending' | 'approved' | 'rejected');
         }
@@ -388,6 +393,9 @@ export default function ReservationEdit() {
         .eq('id', id);
 
       if (error) throw error;
+
+      // Update local state to reflect cashier verification (advances workflow to step4)
+      setCashierUserId(user?.id || null);
 
       // Log activity
       await logActivity({
@@ -481,9 +489,12 @@ export default function ReservationEdit() {
     // If reviewed, waiting for approval → Step 5
     if (reviewStatus === 'reviewed') return 'step5';
     
-    // If confirmed, waiting for review → Step 4 (or Step 3 for cashier)
+    // If confirmed by customer:
+    //  - Until cashier verifies payment (cashier_user_id is set or status === 'pending') → Step 3 ตรวจสอบการชำระเงิน
+    //  - After cashier verifies → Step 4 ตรวจสอบรายละเอียด
     if (confirmationStatus === 'confirmed') {
-      return isCashierMode ? 'step3' : 'step4';
+      const cashierVerified = !!cashierUserId || reservationStatus === 'pending';
+      return cashierVerified ? 'step4' : 'step3';
     }
     
     // If OTP/Link sent → Step 2

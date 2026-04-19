@@ -661,7 +661,18 @@ export default function ReservationEdit() {
        <div className={cn("flex-1 p-6 overflow-auto", isViewOnly && !isSaleSupervisor && !isCashier && !isSaleManager && "pointer-events-none")}>
         <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
           {/* Workflow Progress */}
-          <WorkflowSteps currentStage={calculateWorkflowStage()} documentStatus={calculateDocumentStatus()} assignments={assignments} />
+          <WorkflowSteps
+            currentStage={calculateWorkflowStage()}
+            documentStatus={calculateDocumentStatus()}
+            assignments={assignments}
+            stepActors={{
+              step1: { name: createdByName, at: createdAt },
+              step2: { name: createdByName, at: confirmedAt },
+              step3: { name: cashierUserName, at: cashierVerifiedAt },
+              step4: { name: reviewedByName, at: reviewedAt },
+              step5: { name: approvedByName, at: approvedAt },
+            }}
+          />
 
            {/* Admin Assignment Panel - visible only to user_admin/it */}
            {isAdmin && id && (

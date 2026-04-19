@@ -65,7 +65,7 @@ export default function BranchesPage() {
 
   const handleAdd = () => {
     setEditingItem(null);
-    setFormData({ branch_id: "", branch_name: "", doc_prefix: "", status: "active" });
+    setFormData({ branch_id: "", branch_name: "", status: "active" });
     setIsDialogOpen(true);
   };
 

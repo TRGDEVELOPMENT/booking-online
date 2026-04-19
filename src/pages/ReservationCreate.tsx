@@ -849,7 +849,7 @@ export default function ReservationCreate() {
                       <Input type="number" placeholder="0" className="input-focus" />
                     </div>
                     <div className="space-y-2">
-                      <Label>ระยะเวลาผ่อน (เดือน)</Label>
+                      <Label>ระยะเวลาผ่อน (งวด)</Label>
                       <Select>
                         <SelectTrigger className="input-focus">
                           <SelectValue placeholder="เลือก" />

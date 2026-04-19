@@ -307,8 +307,10 @@ export default function ReservationEdit() {
         if (data.reviewed_at) {
           setReviewedAt(data.reviewed_at);
         }
-        
-        // Approval data
+
+        // Cashier data
+        setCashierUserId((data as any).cashier_user_id || null);
+
         if (data.approval_status) {
           setApprovalStatus(data.approval_status as 'pending' | 'approved' | 'rejected');
         }

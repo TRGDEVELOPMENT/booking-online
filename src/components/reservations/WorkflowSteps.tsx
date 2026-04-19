@@ -7,10 +7,16 @@ interface AssignmentInfo {
   assigned_user_name?: string;
 }
 
+interface StepActor {
+  name?: string | null;
+  at?: string | null;
+}
+
 interface WorkflowStepsProps {
   currentStage: WorkflowStage;
   documentStatus: DocumentStatus;
   assignments?: AssignmentInfo[];
+  stepActors?: Partial<Record<'step1' | 'step2' | 'step3' | 'step4' | 'step5' | 'step6', StepActor>>;
 }
 
 const steps = [
@@ -20,7 +26,7 @@ const steps = [
   { id: 'step4', label: 'ตรวจสอบรายละเอียด', shortLabel: 'ตรวจสอบ' },
   { id: 'step5', label: 'อนุมัติ', shortLabel: 'อนุมัติ' },
   { id: 'step6', label: 'พิมพ์/ลงนาม', shortLabel: 'พิมพ์' },
-];
+] as const;
 
 // Map step index to assignment stage
 const stepToAssignmentStage: Record<number, string> = {
@@ -29,7 +35,20 @@ const stepToAssignmentStage: Record<number, string> = {
   4: 'approval',  // step5: อนุมัติ
 };
 
-export function WorkflowSteps({ currentStage, documentStatus, assignments = [] }: WorkflowStepsProps) {
+function formatThaiDateTime(iso?: string | null): string | null {
+  if (!iso) return null;
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    const date = d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' });
+    const time = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return `${date} ${time}`;
+  } catch {
+    return null;
+  }
+}
+
+export function WorkflowSteps({ currentStage, documentStatus, assignments = [], stepActors = {} }: WorkflowStepsProps) {
   const currentIndex = steps.findIndex(s => s.id === currentStage);
   const isCancelled = documentStatus === 'cancelled' || currentStage === 'step7';
 
@@ -48,7 +67,7 @@ export function WorkflowSteps({ currentStage, documentStatus, assignments = [] }
 
   return (
     <div className="bg-card rounded-xl border border-border/50 p-6 shadow-card">
-      <div className="flex items-center justify-between relative">
+      <div className="flex items-start justify-between relative">
         {/* Progress Line */}
         <div className="absolute top-6 left-0 right-0 h-1 bg-muted">
           <div 
@@ -63,8 +82,16 @@ export function WorkflowSteps({ currentStage, documentStatus, assignments = [] }
           const isCurrent = index === currentIndex;
           const isPending = index > currentIndex;
 
+          const actor = stepActors[step.id as keyof typeof stepActors];
+          const assignmentStage = stepToAssignmentStage[index];
+          const assignment = assignmentStage ? assignments.find(a => a.stage === assignmentStage) : undefined;
+
+          // Prefer actor (who actually did it) when stage completed/current; fall back to assignment (who is assigned)
+          const showActor = (isCompleted || isCurrent) && (actor?.name || actor?.at);
+          const formattedTime = formatThaiDateTime(actor?.at);
+
           return (
-            <div key={step.id} className="relative z-10 flex flex-col items-center">
+            <div key={step.id} className="relative z-10 flex flex-col items-center flex-1 min-w-0 px-1">
               <div className={cn(
                 "w-12 h-12 rounded-full flex items-center justify-center border-4 transition-all duration-300",
                 isCompleted && "bg-green-500 border-green-500 text-white",
@@ -86,16 +113,31 @@ export function WorkflowSteps({ currentStage, documentStatus, assignments = [] }
                 <span className="hidden md:inline">{step.label}</span>
                 <span className="md:hidden">{step.shortLabel}</span>
               </p>
-              {/* Show assigned user name */}
-              {(() => {
-                const assignmentStage = stepToAssignmentStage[index];
-                const assignment = assignmentStage && assignments.find(a => a.stage === assignmentStage);
-                return assignment?.assigned_user_name ? (
-                  <p className="text-[10px] text-muted-foreground mt-0.5 text-center truncate max-w-[80px] md:max-w-[120px]" title={assignment.assigned_user_name}>
-                    👤 {assignment.assigned_user_name}
-                  </p>
-                ) : null;
-              })()}
+
+              {/* Actor name + timestamp (when stage completed or current) */}
+              {showActor && actor?.name ? (
+                <p
+                  className="text-[10px] md:text-xs text-foreground mt-1 text-center truncate max-w-[100px] md:max-w-[140px] font-medium"
+                  title={actor.name}
+                >
+                  👤 {actor.name}
+                </p>
+              ) : null}
+              {showActor && formattedTime ? (
+                <p className="text-[10px] text-muted-foreground mt-0.5 text-center whitespace-nowrap">
+                  🕒 {formattedTime}
+                </p>
+              ) : null}
+
+              {/* Fallback: show assigned (planned) user when no actor yet */}
+              {!showActor && assignment?.assigned_user_name ? (
+                <p
+                  className="text-[10px] text-muted-foreground mt-1 text-center truncate max-w-[100px] md:max-w-[140px]"
+                  title={assignment.assigned_user_name}
+                >
+                  👤 {assignment.assigned_user_name}
+                </p>
+              ) : null}
             </div>
           );
         })}

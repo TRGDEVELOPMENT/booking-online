@@ -156,12 +156,20 @@ export default function ReservationEdit() {
 
   // Cashier verification
   const [cashierUserId, setCashierUserId] = useState<string | null>(null);
+  const [cashierUserName, setCashierUserName] = useState<string | null>(null);
+  const [cashierVerifiedAt, setCashierVerifiedAt] = useState<string | null>(null);
 
   // Approval (ผู้จัดการฝ่ายขาย)
   const [approvalStatus, setApprovalStatus] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [approvalRemark, setApprovalRemark] = useState('');
   const [approvedAt, setApprovedAt] = useState<string | null>(null);
   const [isSavingApproval, setIsSavingApproval] = useState(false);
+
+  // Stage actor info (for WorkflowSteps display)
+  const [createdByName, setCreatedByName] = useState<string | null>(null);
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [reviewedByName, setReviewedByName] = useState<string | null>(null);
+  const [approvedByName, setApprovedByName] = useState<string | null>(null);
 
   // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์
   const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
@@ -310,6 +318,11 @@ export default function ReservationEdit() {
 
         // Cashier data
         setCashierUserId((data as any).cashier_user_id || null);
+        setCashierUserName((data as any).cashier_user_name || null);
+        // Use updated_at as proxy for cashier verified time if not stored separately
+        if ((data as any).cashier_user_id) {
+          setCashierVerifiedAt(data.updated_at);
+        }
 
         if (data.approval_status) {
           setApprovalStatus(data.approval_status as 'pending' | 'approved' | 'rejected');
@@ -319,6 +332,22 @@ export default function ReservationEdit() {
         }
         if (data.approved_at) {
           setApprovedAt(data.approved_at);
+        }
+
+        // Created info
+        setCreatedAt(data.created_at);
+
+        // Lookup actor names from profiles
+        const actorIds = [data.created_by, data.reviewed_by, data.approved_by].filter(Boolean) as string[];
+        if (actorIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id, full_name')
+            .in('user_id', actorIds);
+          const nameMap = new Map(profiles?.map((p: any) => [p.user_id, p.full_name]) || []);
+          if (data.created_by) setCreatedByName(nameMap.get(data.created_by) || null);
+          if (data.reviewed_by) setReviewedByName(nameMap.get(data.reviewed_by) || null);
+          if (data.approved_by) setApprovedByName(nameMap.get(data.approved_by) || null);
         }
       } catch (err) {
         console.error('Error:', err);
@@ -396,6 +425,8 @@ export default function ReservationEdit() {
 
       // Update local state to reflect cashier verification (advances workflow to step4)
       setCashierUserId(user?.id || null);
+      setCashierUserName(profile?.full_name || user?.email || null);
+      setCashierVerifiedAt(now);
 
       // Log activity
       await logActivity({
@@ -630,7 +661,18 @@ export default function ReservationEdit() {
        <div className={cn("flex-1 p-6 overflow-auto", isViewOnly && !isSaleSupervisor && !isCashier && !isSaleManager && "pointer-events-none")}>
         <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
           {/* Workflow Progress */}
-          <WorkflowSteps currentStage={calculateWorkflowStage()} documentStatus={calculateDocumentStatus()} assignments={assignments} />
+          <WorkflowSteps
+            currentStage={calculateWorkflowStage()}
+            documentStatus={calculateDocumentStatus()}
+            assignments={assignments}
+            stepActors={{
+              step1: { name: createdByName, at: createdAt },
+              step2: { name: createdByName, at: confirmedAt },
+              step3: { name: cashierUserName, at: cashierVerifiedAt },
+              step4: { name: reviewedByName, at: reviewedAt },
+              step5: { name: approvedByName, at: approvedAt },
+            }}
+          />
 
            {/* Admin Assignment Panel - visible only to user_admin/it */}
            {isAdmin && id && (

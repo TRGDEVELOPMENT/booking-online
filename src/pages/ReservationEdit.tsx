@@ -175,6 +175,17 @@ export default function ReservationEdit() {
   const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
   const [accessories, setAccessories] = useState<Array<{ id: number; name: string; value: number }>>([]);
   const [benefits, setBenefits] = useState<Array<{ id: number; name: string; value: number }>>([]);
+
+  // DB-driven master data (mirror Create page)
+  const [dbBranches, setDbBranches] = useState<Array<{ branch_id: string; branch_name: string }>>([]);
+  const [dbModels, setDbModels] = useState<Array<{ id: string; description: string }>>([]);
+  const [dbSubModels, setDbSubModels] = useState<Array<{ id: string; description: string }>>([]);
+  const [dbColors, setDbColors] = useState<Array<{ id: string; description: string }>>([]);
+
+  // Original DB strings (used to match against master data once loaded)
+  const [pendingModelName, setPendingModelName] = useState<string | null>(null);
+  const [pendingSubmodelName, setPendingSubmodelName] = useState<string | null>(null);
+  const [pendingColorName, setPendingColorName] = useState<string | null>(null);
   
   // Attachments - using hook for real file storage
   const {
@@ -231,27 +242,26 @@ export default function ReservationEdit() {
         setSelectedBU(data.vehicle_type || '');
         setBookingCustomerType((data.customer_type as CustomerType) || 'individual');
         
-        // Parse customer name (format: "คำนำหน้าชื่อ นามสกุล")
-        const nameParts = data.customer_name.split(' ');
-        if (nameParts.length >= 2) {
-          // Try to extract title
-          const titles = ['นาย', 'นาง', 'นางสาว', 'บริษัท'];
-          let title = '';
-          let firstName = nameParts[0];
-          
-          for (const t of titles) {
-            if (nameParts[0].startsWith(t)) {
-              title = t;
-              firstName = nameParts[0].substring(t.length);
-              break;
-            }
+        // Parse customer name (format: "{title}{firstName} {lastName...}")
+        const fullName = data.customer_name || '';
+        const titles = ['นางสาว', 'นาย', 'นาง', 'บริษัท']; // longest first
+        let title = '';
+        let remaining = fullName;
+        for (const t of titles) {
+          if (fullName.startsWith(t)) {
+            title = t;
+            remaining = fullName.substring(t.length).trim();
+            break;
           }
-          
-          setBookingTitle(title);
-          setBookingFirstName(firstName);
+        }
+        const nameParts = remaining.split(' ').filter(Boolean);
+        setBookingTitle(title);
+        if (nameParts.length >= 2) {
+          setBookingFirstName(nameParts[0]);
           setBookingLastName(nameParts.slice(1).join(' '));
         } else {
-          setBookingFirstName(data.customer_name);
+          setBookingFirstName(remaining);
+          setBookingLastName('');
         }
         
         setBookingIdNo(data.customer_id_card || '');
@@ -267,14 +277,11 @@ export default function ReservationEdit() {
           setBuyerPhone(data.buyer_phone || '');
         }
         
-        // Vehicle - find model by name
-        const model = vehicleModels.find(m => m.name === data.model);
-        if (model) setSelectedModel(model.id);
-        
-        const submodel = standardSubmodels.find(s => s.name === data.submodel);
-        if (submodel) setSelectedSubmodel(submodel.id);
-        
-        setSelectedColor(data.color || '');
+        // Vehicle - keep DB strings; resolve to UUIDs once master data loads
+        setPendingModelName(data.model || null);
+        setPendingSubmodelName(data.submodel || null);
+        setPendingColorName(data.color || null);
+
         setSelectedFuelType((data.fuel_type as FuelType) || 'ICE');
         
         // Pricing
@@ -359,6 +366,83 @@ export default function ReservationEdit() {
 
     fetchReservation();
   }, [id, navigate]);
+
+  // Fetch DB master data: branches for current company
+  useEffect(() => {
+    if (!selectedCompany) { setDbBranches([]); return; }
+    supabase
+      .from('branches')
+      .select('branch_id, branch_name')
+      .eq('company_id', selectedCompany)
+      .eq('status', 'active')
+      .order('branch_id', { ascending: true })
+      .then(({ data }) => { if (data) setDbBranches(data); });
+  }, [selectedCompany]);
+
+  // Fetch all active models (shared across branches per company memory)
+  useEffect(() => {
+    supabase
+      .from('models')
+      .select('id, description')
+      .eq('status', 'active')
+      .order('description')
+      .then(({ data }) => { if (data) setDbModels(data); });
+  }, []);
+
+  // Resolve pending model name -> uuid once dbModels loaded
+  useEffect(() => {
+    if (!pendingModelName || dbModels.length === 0) return;
+    const m = dbModels.find(x => x.description === pendingModelName);
+    if (m) {
+      setSelectedModel(m.id);
+      setPendingModelName(null);
+    }
+  }, [pendingModelName, dbModels]);
+
+  // Fetch sub_models filtered by selected model (do NOT clear selection here, may be from initial load)
+  useEffect(() => {
+    if (!selectedModel) { setDbSubModels([]); return; }
+    supabase
+      .from('sub_models')
+      .select('id, description')
+      .eq('model_id', selectedModel)
+      .eq('status', 'active')
+      .order('description')
+      .then(({ data }) => { if (data) setDbSubModels(data); });
+  }, [selectedModel]);
+
+  // Resolve pending sub-model name -> uuid
+  useEffect(() => {
+    if (!pendingSubmodelName || dbSubModels.length === 0) return;
+    const s = dbSubModels.find(x => x.description === pendingSubmodelName);
+    if (s) {
+      setSelectedSubmodel(s.id);
+      setPendingSubmodelName(null);
+    }
+  }, [pendingSubmodelName, dbSubModels]);
+
+  // Fetch colors filtered by model + sub_model
+  useEffect(() => {
+    if (!selectedModel || !selectedSubmodel) { setDbColors([]); return; }
+    supabase
+      .from('colors')
+      .select('id, description')
+      .eq('model_id', selectedModel)
+      .eq('sub_model_id', selectedSubmodel)
+      .eq('status', 'active')
+      .order('description')
+      .then(({ data }) => { if (data) setDbColors(data); });
+  }, [selectedModel, selectedSubmodel]);
+
+  // Resolve pending color name -> uuid (color stored as description string in reservations.color)
+  useEffect(() => {
+    if (!pendingColorName || dbColors.length === 0) return;
+    const c = dbColors.find(x => x.description === pendingColorName);
+    if (c) {
+      setSelectedColor(c.id);
+      setPendingColorName(null);
+    }
+  }, [pendingColorName, dbColors]);
 
   // Master item picker state
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -503,8 +587,9 @@ export default function ReservationEdit() {
     }
   };
 
-  const companyBranches = branches.filter(b => b.companyId === selectedCompany);
-  const companyModels = vehicleModels.filter(m => m.companyId === selectedCompany);
+  // Branches & models now sourced from DB; keep aliases for minimal diff
+  const companyBranches = dbBranches.map(b => ({ id: b.branch_id, name: b.branch_name }));
+  const companyModels = dbModels.map(m => ({ id: m.id, name: m.description }));
 
   // Calculate net price
   const finalPrice = basePrice - discountAmount;
@@ -571,8 +656,9 @@ export default function ReservationEdit() {
 
     try {
       const customerName = `${bookingTitle}${bookingFirstName} ${bookingLastName}`;
-      const modelName = vehicleModels.find(m => m.id === selectedModel)?.name || '';
-      const submodelName = standardSubmodels.find(s => s.id === selectedSubmodel)?.name || '';
+      const modelName = dbModels.find(m => m.id === selectedModel)?.description || '';
+      const submodelName = dbSubModels.find(s => s.id === selectedSubmodel)?.description || '';
+      const colorName = dbColors.find(c => c.id === selectedColor)?.description || '';
 
       const updateData = {
         branch_id: selectedBranch,
@@ -587,7 +673,7 @@ export default function ReservationEdit() {
         vehicle_type: selectedBU || null,
         model: modelName || null,
         submodel: submodelName || null,
-        color: selectedColor || null,
+        color: colorName || null,
         fuel_type: selectedFuelType || null,
         list_price: basePrice,
         discount: discountAmount,
@@ -921,9 +1007,9 @@ export default function ReservationEdit() {
                       <SelectValue placeholder="เลือกรุ่นย่อย" />
                     </SelectTrigger>
                     <SelectContent>
-                      {standardSubmodels.map(sub => (
+                      {dbSubModels.map(sub => (
                         <SelectItem key={sub.id} value={sub.id}>
-                          {sub.name}
+                          {sub.description}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -934,23 +1020,16 @@ export default function ReservationEdit() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">
                   <Label>สี <span className="text-destructive">*</span></Label>
-                  <Select value={selectedColor} onValueChange={setSelectedColor}>
+                  <Select value={selectedColor} onValueChange={setSelectedColor} disabled={!selectedSubmodel}>
                     <SelectTrigger className="input-focus">
                       <SelectValue placeholder="เลือกสี" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="red">แดง</SelectItem>
-                      <SelectItem value="blue">น้ำเงิน</SelectItem>
-                      <SelectItem value="yellow">เหลือง</SelectItem>
-                      <SelectItem value="white">ขาว</SelectItem>
-                      <SelectItem value="black">ดำ</SelectItem>
-                      <SelectItem value="purple">ม่วง</SelectItem>
-                      <SelectItem value="green">เขียว</SelectItem>
-                      <SelectItem value="orange">ส้ม</SelectItem>
-                      <SelectItem value="brown">น้ำตาล</SelectItem>
-                      <SelectItem value="pink">ชมพู</SelectItem>
-                      <SelectItem value="skyblue">ฟ้า</SelectItem>
-                      <SelectItem value="gray">เทา</SelectItem>
+                      {dbColors.map(c => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.description}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

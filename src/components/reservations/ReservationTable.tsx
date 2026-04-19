@@ -230,14 +230,14 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                         );
                       }
 
-                      // Actionable for current role — show role-specific action icon
-                      const actionMeta: Record<string, { Icon: typeof Eye; label: string; color: string }> = {
+                      // Actionable for current role — show role-specific action icon (highly visible)
+                      const actionMeta: Record<string, { Icon: typeof Eye; label: string; bg: string; ring: string }> = {
                         sale: stageRole === 'done'
-                          ? { Icon: Printer, label: 'พิมพ์เอกสาร', color: 'text-emerald-600' }
-                          : { Icon: FileSignature, label: 'ดำเนินการสัญญาจอง', color: 'text-blue-600' },
-                        cashier: { Icon: Wallet, label: 'ตรวจสอบการชำระเงิน', color: 'text-orange-600' },
-                        sale_supervisor: { Icon: ClipboardCheck, label: 'ตรวจสอบรายละเอียด', color: 'text-sky-600' },
-                        sale_manager: { Icon: CheckCircle2, label: 'อนุมัติใบจอง', color: 'text-emerald-600' },
+                          ? { Icon: Printer, label: 'พิมพ์เอกสาร', bg: 'bg-emerald-500 hover:bg-emerald-600 text-white', ring: 'ring-emerald-300' }
+                          : { Icon: FileSignature, label: 'ดำเนินการสัญญาจอง', bg: 'bg-blue-500 hover:bg-blue-600 text-white', ring: 'ring-blue-300' },
+                        cashier: { Icon: Wallet, label: 'ตรวจสอบการชำระเงิน', bg: 'bg-orange-500 hover:bg-orange-600 text-white', ring: 'ring-orange-300' },
+                        sale_supervisor: { Icon: ClipboardCheck, label: 'ตรวจสอบรายละเอียด', bg: 'bg-sky-500 hover:bg-sky-600 text-white', ring: 'ring-sky-300' },
+                        sale_manager: { Icon: CheckCircle2, label: 'อนุมัติใบจอง', bg: 'bg-emerald-500 hover:bg-emerald-600 text-white', ring: 'ring-emerald-300' },
                       };
                       const meta = actionMeta[currentRole] || actionMeta.sale;
                       const ActionIcon = meta.Icon;
@@ -250,19 +250,19 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                             <TooltipTrigger asChild>
                               <Link to={targetPath}>
                                 <Button
-                                  variant="ghost"
                                   size="icon"
                                   className={cn(
-                                    'h-7 w-7 relative ring-1 ring-current/20 hover:bg-current/10',
-                                    meta.color,
+                                    'h-8 w-8 relative shadow-sm ring-2 ring-offset-1',
+                                    meta.bg,
+                                    meta.ring,
                                   )}
                                 >
-                                  <ActionIcon className="w-3.5 h-3.5" />
-                                  <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                                  <ActionIcon className="w-4 h-4" />
+                                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-background animate-pulse" />
                                 </Button>
                               </Link>
                             </TooltipTrigger>
-                            <TooltipContent>{meta.label}</TooltipContent>
+                            <TooltipContent>⚡ {meta.label}</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       );

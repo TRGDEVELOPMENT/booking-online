@@ -1215,6 +1215,14 @@ export default function ReservationCreate() {
         onSelect={setSelectedBuyerCustomer}
         companyId={selectedCompany}
       />
+
+      <MasterItemPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        type={pickerType}
+        companyId={selectedCompany}
+        onSelect={handlePickerSelect}
+      />
     </>
   );
 }

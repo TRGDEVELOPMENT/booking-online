@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -38,6 +38,8 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { companies } from '@/data/mockData';
 import { useAuth } from '@/hooks/useAuth';
+import { getCurrentStageRole, isActionableForRole } from '@/lib/reservationStage';
+import type { DatabaseReservation } from '@/types/database-reservation';
 import {
   Select,
   SelectContent,

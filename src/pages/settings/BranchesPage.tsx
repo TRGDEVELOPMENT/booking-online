@@ -198,13 +198,13 @@ export default function BranchesPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   กำลังโหลด...
                 </TableCell>
               </TableRow>
             ) : filteredItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>
@@ -269,19 +269,6 @@ export default function BranchesPage() {
                 placeholder="กรอกชื่อสาขา"
                 maxLength={100}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="doc_prefix">Document Prefix (สำหรับ Generate เลขที่เอกสาร)</Label>
-              <Input
-                id="doc_prefix"
-                value={formData.doc_prefix}
-                onChange={(e) => setFormData({ ...formData, doc_prefix: e.target.value.toUpperCase() })}
-                placeholder="เช่น BPKRS, LRARS"
-                className="font-mono uppercase"
-              />
-              <p className="text-xs text-muted-foreground">
-                ใช้เป็น Prefix ในการ Generate เลขที่เอกสาร เช่น LRARS-260300001
-              </p>
             </div>
             <div className="space-y-3">
               <Label>Status</Label>

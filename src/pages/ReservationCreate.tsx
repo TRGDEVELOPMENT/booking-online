@@ -42,7 +42,6 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   companies, 
-  branches, 
 } from '@/data/mockData';
 
 import { cn } from '@/lib/utils';
@@ -110,6 +109,26 @@ export default function ReservationCreate() {
   const [dbSubModels, setDbSubModels] = useState<Array<{ id: string; description: string }>>([]);
   const [dbColors, setDbColors] = useState<Array<{ id: string; description: string }>>([]);
   const [dbInstallmentPeriods, setDbInstallmentPeriods] = useState<Array<{ id: string; description: string }>>([]);
+  const [dbBranches, setDbBranches] = useState<Array<{ branch_id: string; branch_name: string }>>([]);
+
+  // Fetch branches (active) for current company — uses 3-char branch_id as value
+  useEffect(() => {
+    setSelectedBranch('');
+    if (!selectedCompany) {
+      setDbBranches([]);
+      return;
+    }
+    const fetchBranches = async () => {
+      const { data } = await supabase
+        .from('branches')
+        .select('branch_id, branch_name')
+        .eq('company_id', selectedCompany)
+        .eq('status', 'active')
+        .order('branch_id', { ascending: true });
+      if (data) setDbBranches(data);
+    };
+    fetchBranches();
+  }, [selectedCompany]);
 
   // Fetch installment periods (active) for current company
   useEffect(() => {
@@ -288,15 +307,14 @@ export default function ReservationCreate() {
     else if (type === 'accessories') setAccessories(updateFn(accessories));
     else setBenefits(updateFn(benefits));
   };
-  const companyBranches = branches.filter(b => b.companyId === selectedCompany);
   const selectedSubmodelData = dbSubModels.find(s => s.id === selectedSubmodel);
 
-  // Auto-select branch when company has only one branch
+  // Auto-select branch when company has only one branch (from DB)
   useEffect(() => {
-    if (companyBranches.length === 1 && !selectedBranch) {
-      setSelectedBranch(companyBranches[0].id);
+    if (dbBranches.length === 1 && !selectedBranch) {
+      setSelectedBranch(dbBranches[0].branch_id);
     }
-  }, [companyBranches, selectedBranch]);
+  }, [dbBranches, selectedBranch]);
 
   // Calculate net price
   const finalPrice = basePrice - discountAmount;
@@ -500,9 +518,9 @@ export default function ReservationCreate() {
                       <SelectValue placeholder="เลือกสาขา" />
                     </SelectTrigger>
                     <SelectContent>
-                      {companyBranches.map(branch => (
-                        <SelectItem key={branch.id} value={branch.id}>
-                          {branch.name}
+                      {dbBranches.map(branch => (
+                        <SelectItem key={branch.branch_id} value={branch.branch_id}>
+                          {branch.branch_id} - {branch.branch_name}
                         </SelectItem>
                       ))}
                     </SelectContent>

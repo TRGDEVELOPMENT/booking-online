@@ -50,7 +50,7 @@ const statusStyles: Record<string, string> = {
   cancelled: 'status-cancelled',
 };
 
-export function ReservationTable({ reservations, selectedIds, onSelectChange, pageSize = 15 }: ReservationTableProps) {
+export function ReservationTable({ reservations, selectedIds, onSelectChange, pageSize = 15, branchMap = {} }: ReservationTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(reservations.length / pageSize));
   const startIdx = (currentPage - 1) * pageSize;

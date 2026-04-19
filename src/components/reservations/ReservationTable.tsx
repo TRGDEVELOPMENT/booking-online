@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { DatabaseReservation } from '@/types/database-reservation';
 import { DatabaseStatusLabels } from '@/types/database-reservation';
-import { branches } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 
 const workflowStages = [
@@ -42,6 +41,7 @@ interface ReservationTableProps {
   selectedIds: string[];
   onSelectChange: (ids: string[]) => void;
   pageSize?: number;
+  branchMap?: Record<string, string>;
 }
 
 const statusStyles: Record<string, string> = {
@@ -50,7 +50,7 @@ const statusStyles: Record<string, string> = {
   cancelled: 'status-cancelled',
 };
 
-export function ReservationTable({ reservations, selectedIds, onSelectChange, pageSize = 15 }: ReservationTableProps) {
+export function ReservationTable({ reservations, selectedIds, onSelectChange, pageSize = 15, branchMap = {} }: ReservationTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(reservations.length / pageSize));
   const startIdx = (currentPage - 1) * pageSize;
@@ -85,8 +85,7 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
 
   const getBranchName = (branchId: string | null) => {
     if (!branchId) return '-';
-    const branch = branches.find(b => b.id === branchId);
-    return branch?.name || branchId;
+    return branchMap[branchId] || branchId;
   };
 
   if (reservations.length === 0) {

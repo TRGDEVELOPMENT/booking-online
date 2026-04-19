@@ -17,6 +17,7 @@ export default function ReservationList() {
   const [reservations, setReservations] = useState<DatabaseReservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [branchMap, setBranchMap] = useState<Record<string, string>>({});
   const [filters, setFilters] = useState({
     branch: 'all',
     status: 'all',
@@ -60,6 +61,20 @@ export default function ReservationList() {
 
     if (selectedCompany) {
       fetchReservations();
+      // Load branches map (branch_id -> branch_name) from DB
+      supabase
+        .from('branches')
+        .select('branch_id, branch_name')
+        .eq('company_id', selectedCompany)
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error fetching branches:', error);
+            return;
+          }
+          const map: Record<string, string> = {};
+          (data || []).forEach((b: any) => { map[b.branch_id] = b.branch_name; });
+          setBranchMap(map);
+        });
     }
   }, [selectedCompany]);
 
@@ -184,6 +199,7 @@ export default function ReservationList() {
               reservations={filteredReservations}
               selectedIds={selectedIds}
               onSelectChange={setSelectedIds}
+              branchMap={branchMap}
             />
           )}
         </div>

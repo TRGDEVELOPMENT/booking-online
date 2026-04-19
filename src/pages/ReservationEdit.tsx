@@ -394,6 +394,9 @@ export default function ReservationEdit() {
 
       if (error) throw error;
 
+      // Update local state to reflect cashier verification (advances workflow to step4)
+      setCashierUserId(user?.id || null);
+
       // Log activity
       await logActivity({
         reservationId: id,

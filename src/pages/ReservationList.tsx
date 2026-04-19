@@ -17,6 +17,7 @@ export default function ReservationList() {
   const [reservations, setReservations] = useState<DatabaseReservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [branchMap, setBranchMap] = useState<Record<string, string>>({});
   const [filters, setFilters] = useState({
     branch: 'all',
     status: 'all',

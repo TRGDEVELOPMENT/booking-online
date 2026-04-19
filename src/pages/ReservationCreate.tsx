@@ -1211,15 +1211,8 @@ export default function ReservationCreate() {
                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   บันทึก
                 </Button>
-                <Button 
-                  className="btn-primary-gradient gap-2"
-                  onClick={handleSaveDraft}
-                  disabled={isSaving}
-                >
-                  {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'ส่งเอกสาร'}
-                  {!isSaving && <ArrowRight className="w-4 h-4" />}
-                </Button>
               </div>
+
             </div>
           </div>
         </div>

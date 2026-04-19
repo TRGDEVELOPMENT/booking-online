@@ -110,6 +110,26 @@ export default function ReservationCreate() {
   const [dbSubModels, setDbSubModels] = useState<Array<{ id: string; description: string }>>([]);
   const [dbColors, setDbColors] = useState<Array<{ id: string; description: string }>>([]);
   const [dbInstallmentPeriods, setDbInstallmentPeriods] = useState<Array<{ id: string; description: string }>>([]);
+  const [dbBranches, setDbBranches] = useState<Array<{ branch_id: string; branch_name: string }>>([]);
+
+  // Fetch branches (active) for current company — uses 3-char branch_id as value
+  useEffect(() => {
+    setSelectedBranch('');
+    if (!selectedCompany) {
+      setDbBranches([]);
+      return;
+    }
+    const fetchBranches = async () => {
+      const { data } = await supabase
+        .from('branches')
+        .select('branch_id, branch_name')
+        .eq('company_id', selectedCompany)
+        .eq('status', 'active')
+        .order('branch_id', { ascending: true });
+      if (data) setDbBranches(data);
+    };
+    fetchBranches();
+  }, [selectedCompany]);
 
   // Fetch installment periods (active) for current company
   useEffect(() => {

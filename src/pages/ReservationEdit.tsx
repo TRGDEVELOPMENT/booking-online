@@ -587,8 +587,9 @@ export default function ReservationEdit() {
     }
   };
 
-  const companyBranches = branches.filter(b => b.companyId === selectedCompany);
-  const companyModels = vehicleModels.filter(m => m.companyId === selectedCompany);
+  // Branches & models now sourced from DB; keep aliases for minimal diff
+  const companyBranches = dbBranches.map(b => ({ id: b.branch_id, name: b.branch_name }));
+  const companyModels = dbModels.map(m => ({ id: m.id, name: m.description }));
 
   // Calculate net price
   const finalPrice = basePrice - discountAmount;
@@ -655,8 +656,9 @@ export default function ReservationEdit() {
 
     try {
       const customerName = `${bookingTitle}${bookingFirstName} ${bookingLastName}`;
-      const modelName = vehicleModels.find(m => m.id === selectedModel)?.name || '';
-      const submodelName = standardSubmodels.find(s => s.id === selectedSubmodel)?.name || '';
+      const modelName = dbModels.find(m => m.id === selectedModel)?.description || '';
+      const submodelName = dbSubModels.find(s => s.id === selectedSubmodel)?.description || '';
+      const colorName = dbColors.find(c => c.id === selectedColor)?.description || '';
 
       const updateData = {
         branch_id: selectedBranch,
@@ -671,7 +673,7 @@ export default function ReservationEdit() {
         vehicle_type: selectedBU || null,
         model: modelName || null,
         submodel: submodelName || null,
-        color: selectedColor || null,
+        color: colorName || null,
         fuel_type: selectedFuelType || null,
         list_price: basePrice,
         discount: discountAmount,

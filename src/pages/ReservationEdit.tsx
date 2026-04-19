@@ -336,6 +336,13 @@ export default function ReservationEdit() {
   };
 
   const handlePickerSelect = (item: { name: string; value: number }) => {
+    const currentList = pickerType === 'freebies' ? freebies : pickerType === 'accessories' ? accessories : benefits;
+    const key = item.name.trim().toLowerCase();
+    const isDuplicate = currentList.some((i) => (i.name || '').trim().toLowerCase() === key);
+    if (isDuplicate) {
+      toast.error('รายการนี้ถูกเลือกแล้ว ไม่สามารถเพิ่มซ้ำได้');
+      return;
+    }
     const newItem = { id: Date.now() + Math.random(), name: item.name, value: item.value };
     if (pickerType === 'freebies') setFreebies([...freebies, newItem]);
     else if (pickerType === 'accessories') setAccessories([...accessories, newItem]);

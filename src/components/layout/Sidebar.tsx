@@ -200,17 +200,40 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
   const navigate = useNavigate();
   const { profile, roles, signOut, hasRole } = useAuth();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['reservations']);
-  
+  const [actionableCount, setActionableCount] = useState(0);
+
   // Check if user is a cashier
   const isCashier = hasRole('cashier');
-  
+  const currentRole = roles[0]?.role || '';
+  const isAdminViewer = hasRole('it') || hasRole('user_admin');
+
+  // Fetch count of reservations awaiting action by the current role
+  useEffect(() => {
+    if (!selectedCompany || !currentRole || isAdminViewer) {
+      setActionableCount(0);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from('reservations')
+        .select('id, status, confirmation_status, review_status, approval_status, cancel_approval_status, cashier_user_id')
+        .eq('company_id', selectedCompany);
+      if (cancelled || error || !data) return;
+      const count = data.filter((r: any) => {
+        const stageRole = getCurrentStageRole(r as DatabaseReservation);
+        return isActionableForRole(stageRole, currentRole);
+      }).length;
+      setActionableCount(count);
+    })();
+    return () => { cancelled = true; };
+  }, [selectedCompany, currentRole, isAdminViewer, location.pathname]);
+
   // Filter subItems based on role
   const filterSubItemsByRole = (subItems?: SubItem[]) => {
     if (!subItems) return [];
     return subItems.filter(subItem => {
-      // If no role restriction, show to everyone
       if (!subItem.roles || subItem.roles.length === 0) return true;
-      // Check if user has any of the required roles
       return subItem.roles.some(role => hasRole(role as any));
     });
   };

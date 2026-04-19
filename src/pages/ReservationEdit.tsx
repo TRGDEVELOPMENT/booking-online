@@ -242,27 +242,26 @@ export default function ReservationEdit() {
         setSelectedBU(data.vehicle_type || '');
         setBookingCustomerType((data.customer_type as CustomerType) || 'individual');
         
-        // Parse customer name (format: "คำนำหน้าชื่อ นามสกุล")
-        const nameParts = data.customer_name.split(' ');
-        if (nameParts.length >= 2) {
-          // Try to extract title
-          const titles = ['นาย', 'นาง', 'นางสาว', 'บริษัท'];
-          let title = '';
-          let firstName = nameParts[0];
-          
-          for (const t of titles) {
-            if (nameParts[0].startsWith(t)) {
-              title = t;
-              firstName = nameParts[0].substring(t.length);
-              break;
-            }
+        // Parse customer name (format: "{title}{firstName} {lastName...}")
+        const fullName = data.customer_name || '';
+        const titles = ['นางสาว', 'นาย', 'นาง', 'บริษัท']; // longest first
+        let title = '';
+        let remaining = fullName;
+        for (const t of titles) {
+          if (fullName.startsWith(t)) {
+            title = t;
+            remaining = fullName.substring(t.length).trim();
+            break;
           }
-          
-          setBookingTitle(title);
-          setBookingFirstName(firstName);
+        }
+        const nameParts = remaining.split(' ').filter(Boolean);
+        setBookingTitle(title);
+        if (nameParts.length >= 2) {
+          setBookingFirstName(nameParts[0]);
           setBookingLastName(nameParts.slice(1).join(' '));
         } else {
-          setBookingFirstName(data.customer_name);
+          setBookingFirstName(remaining);
+          setBookingLastName('');
         }
         
         setBookingIdNo(data.customer_id_card || '');
@@ -278,14 +277,11 @@ export default function ReservationEdit() {
           setBuyerPhone(data.buyer_phone || '');
         }
         
-        // Vehicle - find model by name
-        const model = vehicleModels.find(m => m.name === data.model);
-        if (model) setSelectedModel(model.id);
-        
-        const submodel = standardSubmodels.find(s => s.name === data.submodel);
-        if (submodel) setSelectedSubmodel(submodel.id);
-        
-        setSelectedColor(data.color || '');
+        // Vehicle - keep DB strings; resolve to UUIDs once master data loads
+        setPendingModelName(data.model || null);
+        setPendingSubmodelName(data.submodel || null);
+        setPendingColorName(data.color || null);
+
         setSelectedFuelType((data.fuel_type as FuelType) || 'ICE');
         
         // Pricing

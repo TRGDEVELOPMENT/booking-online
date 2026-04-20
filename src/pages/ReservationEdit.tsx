@@ -29,7 +29,9 @@ import {
   UserCheck,
   RotateCcw,
   XCircle,
-  ThumbsUp
+  ThumbsUp,
+  AlertCircle,
+  Wallet
 } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Badge } from '@/components/ui/badge';

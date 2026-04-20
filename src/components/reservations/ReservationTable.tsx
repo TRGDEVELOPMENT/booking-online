@@ -32,7 +32,9 @@ function getWorkflowIndex(r: DatabaseReservation): number {
   if (r.cancel_approval_status === 'approved') return -3; // cancel approved
   if (r.approval_status === 'approved') return 5;
   if (r.review_status === 'reviewed') return 4;
-  if (r.status === 'pending') return 2;
+  // Cashier verified payment -> stage moves to "ตรวจสอบรายละเอียด" (supervisor)
+  if ((r as any).cashier_user_id) return 3;
+  // Customer confirmed but cashier hasn't verified yet -> "ตรวจสอบการชำระเงิน"
   if (r.confirmation_status === 'confirmed') return 2;
   if (r.status === 'draft' && !r.confirmation_status) return 0;
   if (r.confirmation_status === 'pending') return 1;

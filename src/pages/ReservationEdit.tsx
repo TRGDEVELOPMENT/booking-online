@@ -984,6 +984,41 @@ export default function ReservationEdit() {
              />
            )}
 
+           {/* Rejection / Return-for-revision notice (Sale role only) */}
+           {isSaleRole && isReturnedForRevision && (
+             <div className="mb-4 rounded-md border border-rose-300 bg-rose-50 dark:border-rose-800 dark:bg-rose-950/40 p-4">
+               <div className="flex items-start gap-3">
+                 <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 mt-0.5 flex-shrink-0" />
+                 <div className="flex-1 space-y-1">
+                   <p className="text-sm font-semibold text-rose-800 dark:text-rose-200">
+                     {returnedFromCashier && 'ใบจองถูกส่งกลับโดยเจ้าหน้าที่การเงิน (แคชเชียร์)'}
+                     {returnedFromSupervisor && 'ใบจองถูกส่งกลับโดยหัวหน้าทีมขาย'}
+                     {returnedFromManager && 'ใบจองถูกปฏิเสธโดยผู้จัดการฝ่ายขาย'}
+                   </p>
+                   <p className="text-xs text-rose-700 dark:text-rose-300">
+                     กรุณาตรวจสอบเหตุผลด้านล่าง แก้ไขข้อมูล แล้วส่งขออนุมัติอีกครั้ง
+                   </p>
+                   {(returnedFromManager ? approvalRemark : displayedReviewRemark) ? (
+                     <div className="mt-2 rounded border border-rose-200 dark:border-rose-800 bg-white dark:bg-rose-950/60 p-2.5">
+                       <p className="text-[11px] uppercase tracking-wide text-rose-600 dark:text-rose-400 mb-1">
+                         เหตุผล / หมายเหตุ
+                         {returnedFromManager && approvedByName ? ` จาก ${approvedByName}` : ''}
+                         {(returnedFromCashier || returnedFromSupervisor) && reviewedByName ? ` จาก ${reviewedByName}` : ''}
+                       </p>
+                       <p className="text-sm text-rose-900 dark:text-rose-100 whitespace-pre-wrap">
+                         {returnedFromManager ? approvalRemark : displayedReviewRemark}
+                       </p>
+                     </div>
+                   ) : (
+                     <p className="text-sm italic text-rose-700/80 dark:text-rose-300/80 mt-1">
+                       (ไม่มีหมายเหตุระบุไว้)
+                     </p>
+                   )}
+                 </div>
+               </div>
+             </div>
+           )}
+
            {/* Form Sections */}
           <div className="space-y-6">
            {/* Cashier read-only wrapper for non-payment sections (also locks all sections when cashier returned for revision) */}

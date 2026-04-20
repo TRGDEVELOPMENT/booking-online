@@ -2012,6 +2012,7 @@ export default function ReservationEdit() {
                           setReviewStatus('returned');
                           setReviewedAt(now);
                           toast.success('ส่งกลับไปแก้ไขแล้ว');
+                          navigate('/reservations');
                         } catch (err) {
                           toast.error('เกิดข้อผิดพลาด');
                         } finally {
@@ -2049,6 +2050,7 @@ export default function ReservationEdit() {
                           setReviewStatus('reviewed');
                           setReviewedAt(now);
                           toast.success('บันทึกการตรวจสอบสำเร็จ');
+                          navigate('/reservations');
                         } catch (err) {
                           toast.error('เกิดข้อผิดพลาด');
                         } finally {

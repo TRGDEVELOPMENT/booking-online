@@ -927,11 +927,16 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 2: Booking Customer */}
-            <div className="form-section">
+            {/* Section 2: Booking Customer - locked when supervisor returned for revision */}
+            <div className={cn(
+              "form-section",
+              isSaleRole && reviewStatus === 'returned' && "pointer-events-none select-none opacity-90"
+            )}>
               <div className="form-section-header flex items-center gap-2">
                 <User className="w-5 h-5" />
-                ข้อมูลผู้จองรถ
+                ข้อมูลผู้จองรถ {isSaleRole && reviewStatus === 'returned' && (
+                  <Badge variant="outline" className="ml-2 bg-muted text-muted-foreground">View Only</Badge>
+                )}
               </div>
               
               {/* Customer Type */}

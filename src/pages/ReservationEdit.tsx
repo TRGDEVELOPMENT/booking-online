@@ -1433,20 +1433,20 @@ export default function ReservationEdit() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className={cn(
-                  "space-y-2 transition-all",
+                  "space-y-1.5",
                   // When cashier returned for revision, lift the parent lock so sale can edit the deposit only
-                  (isSaleRole && returnedFromCashier) && "pointer-events-auto select-auto opacity-100 ring-4 ring-amber-500 rounded-lg p-4 -m-1 bg-gradient-to-br from-amber-50 to-amber-100/60 dark:from-amber-950/40 dark:to-amber-900/30 shadow-lg shadow-amber-500/30 animate-pulse"
+                  (isSaleRole && returnedFromCashier) && "pointer-events-auto select-auto opacity-100 ring-2 ring-amber-500 rounded-md p-2 -m-0.5 bg-amber-50 dark:bg-amber-950/30"
                 )}>
                   <Label className={cn(
-                    "flex items-center gap-2",
-                    (isSaleRole && returnedFromCashier) && "text-amber-800 dark:text-amber-200 font-bold text-base"
+                    "flex items-center gap-1.5",
+                    (isSaleRole && returnedFromCashier) && "text-amber-800 dark:text-amber-200 font-semibold"
                   )}>
                     {(isSaleRole && returnedFromCashier) && (
-                      <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                      <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                     )}
                     เงินจอง
                     {(isSaleRole && returnedFromCashier) && (
-                      <span className="ml-1 text-xs bg-amber-600 text-white px-2 py-0.5 rounded-full font-semibold shadow">
+                      <span className="ml-1 text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-medium">
                         แก้ไขที่นี่
                       </span>
                     )}
@@ -1462,15 +1462,9 @@ export default function ReservationEdit() {
                     placeholder="0"
                     className={cn(
                       "input-focus",
-                      (isSaleRole && returnedFromCashier) && "border-amber-500 border-2 bg-white dark:bg-amber-950/50 text-lg font-semibold text-amber-900 dark:text-amber-100 focus-visible:ring-amber-500"
+                      (isSaleRole && returnedFromCashier) && "border-amber-500 bg-white dark:bg-amber-950/50 font-semibold text-amber-900 dark:text-amber-100 focus-visible:ring-amber-500"
                     )}
                   />
-                  {(isSaleRole && returnedFromCashier) && (
-                    <p className="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-1 mt-1">
-                      <AlertCircle className="w-3 h-3" />
-                      แคชเชียร์ส่งกลับเพื่อให้แก้ไขจำนวนเงินจอง
-                    </p>
-                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>วันที่คาดว่าจะรับรถ</Label>

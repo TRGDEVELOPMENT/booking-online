@@ -603,10 +603,7 @@ export default function ReservationEdit() {
       });
 
       toast.success('บันทึกยืนยันรับเงินจองสำเร็จ');
-
-      if (isCashierMode) {
-        navigate('/reservations/pending-payment');
-      }
+      navigate('/reservations/pending-payment');
     } catch (err) {
       console.error('Error saving payment:', err);
       toast.error('เกิดข้อผิดพลาดในการบันทึก');

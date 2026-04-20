@@ -955,8 +955,11 @@ export default function ReservationEdit() {
 
            {/* Form Sections */}
           <div className="space-y-6">
-           {/* Cashier read-only wrapper for non-payment sections */}
-           <div className={cn((isCashier || isSaleSupervisor) && !isIT && "pointer-events-none select-none opacity-90")}>
+           {/* Cashier read-only wrapper for non-payment sections (also locks all sections when cashier returned for revision) */}
+           <div className={cn(
+             ((isCashier || isSaleSupervisor) && !isIT) && "pointer-events-none select-none opacity-90",
+             (isSaleRole && returnedFromCashier) && "pointer-events-none select-none opacity-90"
+           )}>
             {/* Section 1: Branch/Vehicle Type Selection */}
             <div className="form-section">
               <div className="form-section-header flex items-center gap-2">

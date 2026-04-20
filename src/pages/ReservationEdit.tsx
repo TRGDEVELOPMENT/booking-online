@@ -497,32 +497,25 @@ export default function ReservationEdit() {
     }
   };
 
-  // Save payment details (without confirmation)
+  // Save payment details ONLY (does NOT advance workflow stage; cashier can keep editing)
   const handleSavePaymentDetails = async () => {
     if (!id) return;
     setIsSavingPayment(true);
     try {
       const now = new Date().toISOString();
+
+      // Just bump updated_at; do NOT set cashier_user_id (that happens on confirm)
       const { error } = await supabase
         .from('reservations')
-        .update({
-          cashier_user_id: user?.id || null,
-          cashier_user_name: profile?.full_name || user?.email || null,
-          updated_at: now,
-        })
+        .update({ updated_at: now })
         .eq('id', id);
 
       if (error) throw error;
 
-      // Update local state to reflect cashier verification (advances workflow to step4)
-      setCashierUserId(user?.id || null);
-      setCashierUserName(profile?.full_name || user?.email || null);
-      setCashierVerifiedAt(now);
-
-      // Log activity
+      // Log activity (saved details only)
       await logActivity({
         reservationId: id,
-        action: 'cashier_verified',
+        action: 'updated',
         actionLabel: 'บันทึกรายละเอียดการชำระเงิน',
         details: {
           payment_type: paymentType,
@@ -539,7 +532,7 @@ export default function ReservationEdit() {
       if (paymentFile && id) {
         const fileExt = paymentFile.name.split('.').pop() || 'file';
         const filePath = `${selectedCompany}/${id}/payment-${Date.now()}.${fileExt}`;
-        
+
         const { error: uploadError } = await supabase.storage
           .from('reservation-attachments')
           .upload(filePath, paymentFile, { cacheControl: '3600', upsert: false });
@@ -554,6 +547,7 @@ export default function ReservationEdit() {
             file_type: paymentFile.type,
             uploaded_by: user?.id,
           });
+          setPaymentFile(null);
         }
       }
 
@@ -566,8 +560,9 @@ export default function ReservationEdit() {
     }
   };
 
-  // Save payment with confirmation
+  // Confirm payment received → set cashier_user_id and advance workflow to Step 4
   const handleSavePayment = async () => {
+    if (!id) return;
     if (paymentAmount <= 0) {
       toast.error('กรุณากรอกจำนวนเงิน');
       return;
@@ -575,14 +570,40 @@ export default function ReservationEdit() {
 
     setIsSavingPayment(true);
     try {
-      // For now, just show success - actual implementation would save to database
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from('reservations')
+        .update({
+          cashier_user_id: user?.id || null,
+          cashier_user_name: profile?.full_name || user?.email || null,
+          updated_at: now,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Advance workflow locally
+      setCashierUserId(user?.id || null);
+      setCashierUserName(profile?.full_name || user?.email || null);
+      setCashierVerifiedAt(now);
+
+      await logActivity({
+        reservationId: id,
+        action: 'cashier_verified',
+        actionLabel: 'ยืนยันการรับเงิน',
+        details: {
+          payment_type: paymentType,
+          payment_amount: paymentAmount,
+          payment_description: paymentDescription,
+          confirmed_at: now,
+          confirmed_by: profile?.full_name || user?.email,
+        },
+        companyId: selectedCompany,
+        branchId: selectedBranch || null,
+      });
+
       toast.success('บันทึกยืนยันรับเงินจองสำเร็จ');
-      // Reset form after saving
-      setPaymentAmount(0);
-      setPaymentDescription('');
-      setPaymentFile(null);
-      
-      // Navigate back to pending payment list for cashier
+
       if (isCashierMode) {
         navigate('/reservations/pending-payment');
       }

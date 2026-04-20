@@ -1831,7 +1831,7 @@ export default function ReservationEdit() {
                 </div>
 
                 {/* Save Payment Buttons */}
-                <div className="flex items-center gap-3 pt-4 border-t border-border">
+                <div className="flex items-center gap-3 pt-4 border-t border-border flex-wrap">
                   {/* บันทึกรายละเอียด button */}
                   <Button 
                     variant="outline"
@@ -1845,6 +1845,20 @@ export default function ReservationEdit() {
                       <Save className="w-4 h-4" />
                     )}
                     บันทึกรายละเอียด
+                  </Button>
+                  {/* ส่งกลับเพื่อแก้ไข button */}
+                  <Button 
+                    variant="outline"
+                    onClick={handleReturnPayment}
+                    disabled={isSavingPayment}
+                    className="gap-2 border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-400"
+                  >
+                    {isSavingPayment ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RotateCcw className="w-4 h-4" />
+                    )}
+                    ส่งกลับเพื่อแก้ไข
                   </Button>
                   {/* บันทึกยืนยันรับเงินจอง button */}
                   <Button 

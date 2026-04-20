@@ -730,6 +730,42 @@ export default function ReservationEdit() {
     }
   };
 
+  // Submit reservation for approval — transitions status from 'confirmed' to 'pending'
+  const handleSubmitForApproval = async () => {
+    if (!id) return;
+    if (confirmationStatus !== 'confirmed') {
+      toast.error('กรุณายืนยันสัญญาจองก่อนส่งขออนุมัติ');
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('reservations')
+        .update({ status: 'pending' })
+        .eq('id', id);
+      if (error) {
+        toast.error('เกิดข้อผิดพลาดในการส่งขออนุมัติ: ' + error.message);
+        return;
+      }
+      setReservationStatus('pending');
+      await logActivity({
+        reservationId: id,
+        action: 'submitted_for_approval',
+        actionLabel: 'ส่งขออนุมัติ',
+        details: { submitted_by: profile?.full_name || user?.email, submitted_at: new Date().toISOString() },
+        companyId: selectedCompany,
+        branchId: selectedBranch || null,
+      });
+      toast.success('ส่งขออนุมัติสำเร็จ');
+      navigate('/reservations');
+    } catch (err) {
+      console.error('Error:', err);
+      toast.error('เกิดข้อผิดพลาดในการส่งขออนุมัติ');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <>
@@ -2127,7 +2163,7 @@ export default function ReservationEdit() {
                       ? "btn-primary-gradient" 
                       : "bg-muted text-muted-foreground cursor-not-allowed"
                   )}
-                  onClick={handleSave}
+                  onClick={handleSubmitForApproval}
                   disabled={isSaving || confirmationStatus !== 'confirmed'}
                   title={confirmationStatus !== 'confirmed' ? 'กรุณายืนยันสัญญาจองก่อนส่งขออนุมัติ' : ''}
                 >

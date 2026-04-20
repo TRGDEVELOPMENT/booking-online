@@ -1256,12 +1256,18 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 6: ยืนยันสัญญาจอง */}
-            <div className="form-section border-2 border-green-500/20 bg-green-50/50 dark:bg-green-950/20">
+            {/* Section 6: ยืนยันสัญญาจอง - locked when supervisor returned for revision */}
+            <div className={cn(
+              "form-section border-2 border-green-500/20 bg-green-50/50 dark:bg-green-950/20",
+              isSaleRole && reviewStatus === 'returned' && "pointer-events-none select-none opacity-90"
+            )}>
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
                   <ShieldCheck className="w-5 h-5" />
                   ยืนยันสัญญาจอง
+                  {isSaleRole && reviewStatus === 'returned' && (
+                    <Badge variant="outline" className="ml-2 bg-muted text-muted-foreground">View Only</Badge>
+                  )}
                 </div>
                 {/* Status Badge */}
                 {confirmationStatus === 'pending' && (

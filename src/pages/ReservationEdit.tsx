@@ -2157,7 +2157,7 @@ export default function ReservationEdit() {
             </div>
 
             {/* View-only back button */}
-            {isViewOnly && (
+            {effectiveViewOnly && (
             <div className="flex items-center pt-4 border-t border-border pointer-events-auto">
               <Button 
                 variant="outline" 

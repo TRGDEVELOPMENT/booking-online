@@ -615,6 +615,51 @@ export default function ReservationEdit() {
     }
   };
 
+  // Cashier returns reservation to sale for revision (Step 3 → back to Step 1/2)
+  const handleReturnPayment = async () => {
+    if (!id) return;
+    if (!paymentDescription.trim()) {
+      toast.error('กรุณากรอกเหตุผลในการส่งกลับเพื่อแก้ไข');
+      return;
+    }
+    setIsSavingPayment(true);
+    try {
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from('reservations')
+        .update({
+          status: 'draft',
+          confirmation_status: 'pending',
+          confirmation_method: null,
+          confirmed_at: null,
+          updated_at: now,
+        })
+        .eq('id', id);
+      if (error) throw error;
+
+      await logActivity({
+        reservationId: id,
+        action: 'review_returned',
+        actionLabel: 'ส่งกลับเพื่อแก้ไข (แคชเชียร์)',
+        details: {
+          reason: paymentDescription,
+          returned_at: now,
+          returned_by: profile?.full_name || user?.email,
+        },
+        companyId: selectedCompany,
+        branchId: selectedBranch || null,
+      });
+
+      toast.success('ส่งกลับเพื่อแก้ไขเรียบร้อย');
+      if (isCashierMode) navigate('/reservations/pending-payment');
+    } catch (err) {
+      console.error('Error returning payment:', err);
+      toast.error('เกิดข้อผิดพลาดในการส่งกลับ');
+    } finally {
+      setIsSavingPayment(false);
+    }
+  };
+
   // Branches & models now sourced from DB; keep aliases for minimal diff
   const companyBranches = dbBranches.map(b => ({ id: b.branch_id, name: b.branch_name }));
   const companyModels = dbModels.map(m => ({ id: m.id, name: m.description }));

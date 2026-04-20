@@ -1355,6 +1355,61 @@ export default function ReservationEdit() {
                 </RadioGroup>
               </div>
 
+              {purchaseType === 'finance' && (
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-100 dark:border-blue-900">
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-3">ข้อมูลสินเชื่อ</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>เงินดาวน์</Label>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        value={downPayment > 0 ? downPayment.toLocaleString() : ''}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/\D/g, '');
+                          setDownPayment(v ? Number(v) : 0);
+                        }}
+                        placeholder="0"
+                        className="input-focus"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>ยอดจัดไฟแนนซ์</Label>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        value={financeAmount > 0 ? financeAmount.toLocaleString() : ''}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/\D/g, '');
+                          setFinanceAmount(v ? Number(v) : 0);
+                        }}
+                        placeholder="0"
+                        className="input-focus"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>ระยะเวลาผ่อน (งวด)</Label>
+                      <Select value={installmentPeriodId} onValueChange={setInstallmentPeriodId}>
+                        <SelectTrigger className="input-focus">
+                          <SelectValue placeholder="เลือก" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {dbInstallmentPeriods.length === 0 ? (
+                            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                              ไม่มีข้อมูล กรุณาเพิ่มที่ ตั้งค่าระบบ &gt; ระยะเวลาผ่อน
+                            </div>
+                          ) : (
+                            dbInstallmentPeriods.map(p => (
+                              <SelectItem key={p.id} value={p.id}>{p.description}</SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className={cn(
                   "space-y-2",

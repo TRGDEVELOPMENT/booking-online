@@ -865,19 +865,26 @@ export default function ReservationEdit() {
       const updatePayload: Record<string, any> = {
         status: 'pending',
         // Always preserve confirmation_status='confirmed' (no re-confirm on resubmit)
-        // Reset review_status if it was 'returned' so workflow can move forward
-        review_status: reviewStatus === 'returned' ? 'pending' : reviewStatus,
         // Persist deposit_amount in case cashier returned for editing it
         deposit_amount: depositAmount,
       };
-      // Reset manager rejection so workflow can re-enter approval stage
-      if (wasReturnedFromManager) {
+
+      // Any resubmission after a return → route back to "ตรวจสอบการชำระเงิน" (cashier stage)
+      // by clearing cashier verification + downstream review/approval flags.
+      if (wasResubmission) {
+        updatePayload.cashier_user_id = null;
+        updatePayload.cashier_user_name = null;
+        updatePayload.review_status = 'pending';
+        updatePayload.review_remark = null;
+        updatePayload.reviewed_at = null;
+        updatePayload.reviewed_by = null;
         updatePayload.approval_status = 'pending';
         updatePayload.approval_remark = null;
-      }
-      // Clear the cashier remark tag once the document is resubmitted
-      if (wasReturnedFromCashier || wasReturnedFromSupervisor) {
-        updatePayload.review_remark = null;
+        updatePayload.approved_at = null;
+        updatePayload.approved_by = null;
+      } else {
+        // Non-resubmission: keep prior behavior
+        updatePayload.review_status = reviewStatus === 'returned' ? 'pending' : reviewStatus;
       }
 
       const { error } = await supabase

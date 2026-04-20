@@ -214,7 +214,7 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
       return;
     }
     let cancelled = false;
-    (async () => {
+    const fetchCount = async () => {
       const { data, error } = await supabase
         .from('reservations')
         .select('id, status, confirmation_status, review_status, approval_status, cancel_approval_status, cashier_user_id')
@@ -225,8 +225,23 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
         return isActionableForRole(stageRole, currentRole);
       }).length;
       setActionableCount(count);
-    })();
-    return () => { cancelled = true; };
+    };
+    fetchCount();
+
+    // Realtime: refresh badge whenever any reservation in this company changes
+    const channel = supabase
+      .channel(`sidebar-reservations-${selectedCompany}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reservations', filter: `company_id=eq.${selectedCompany}` },
+        () => { fetchCount(); }
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
   }, [selectedCompany, currentRole, isAdminViewer, location.pathname]);
 
   // Filter subItems based on role

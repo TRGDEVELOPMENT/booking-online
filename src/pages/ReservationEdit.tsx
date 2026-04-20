@@ -894,21 +894,42 @@ export default function ReservationEdit() {
           />
 
           {/* Returned-for-revision banner (Sale role) */}
-          {isSaleRole && reviewStatus === 'returned' && (
-            <div className="p-4 rounded-lg border-2 border-orange-300 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-700">
+          {isSaleRole && isReturnedForRevision && (
+            <div className={cn(
+              "p-4 rounded-lg border-2",
+              returnedFromCashier
+                ? "border-amber-400 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700"
+                : "border-orange-300 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-700"
+            )}>
               <div className="flex items-start gap-3">
-                <RotateCcw className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                <RotateCcw className={cn(
+                  "w-5 h-5 mt-0.5 flex-shrink-0",
+                  returnedFromCashier ? "text-amber-600 dark:text-amber-400" : "text-orange-600 dark:text-orange-400"
+                )} />
                 <div className="flex-1">
-                  <p className="font-semibold text-orange-800 dark:text-orange-300">
-                    เอกสารถูกส่งกลับเพื่อแก้ไข (โดยหัวหน้าทีมขาย)
+                  <p className={cn(
+                    "font-semibold",
+                    returnedFromCashier ? "text-amber-800 dark:text-amber-300" : "text-orange-800 dark:text-orange-300"
+                  )}>
+                    {returnedFromCashier && 'เอกสารถูกส่งกลับเพื่อแก้ไข (โดยแคชเชียร์) — แก้ไขได้เฉพาะ "จำนวนเงินจอง"'}
+                    {returnedFromSupervisor && 'เอกสารถูกส่งกลับเพื่อแก้ไข (โดยหัวหน้าทีมขาย)'}
+                    {returnedFromManager && 'เอกสารถูกส่งกลับเพื่อแก้ไข (โดยผู้จัดการฝ่ายขาย)'}
                   </p>
-                  {reviewRemark && (
-                    <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
-                      เหตุผล: {reviewRemark}
+                  {(displayedReviewRemark || (returnedFromManager && approvalRemark)) && (
+                    <p className={cn(
+                      "text-sm mt-1",
+                      returnedFromCashier ? "text-amber-700 dark:text-amber-300" : "text-orange-700 dark:text-orange-300"
+                    )}>
+                      เหตุผล: {returnedFromManager ? approvalRemark : displayedReviewRemark}
                     </p>
                   )}
-                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
-                    กรุณาแก้ไขรายละเอียดใบจอง แล้วกดส่งขออนุมัติอีกครั้ง (ส่วน "ข้อมูลผู้จองรถ" และ "ยืนยันสัญญาจอง" ไม่สามารถแก้ไขได้)
+                  <p className={cn(
+                    "text-xs mt-2",
+                    returnedFromCashier ? "text-amber-600 dark:text-amber-400" : "text-orange-600 dark:text-orange-400"
+                  )}>
+                    {returnedFromCashier
+                      ? 'กรุณาแก้ไข "จำนวนเงินจอง" แล้วกดส่งขออนุมัติอีกครั้ง — ระบบจะส่งกลับไปที่แคชเชียร์โดยตรง (ข้ามขั้นยืนยันสัญญาจอง)'
+                      : 'กรุณาแก้ไขรายละเอียดใบจอง แล้วกดส่งขออนุมัติอีกครั้ง (ข้ามขั้นยืนยันสัญญาจอง)'}
                   </p>
                 </div>
               </div>
@@ -973,14 +994,14 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 2: Booking Customer - locked when supervisor returned for revision */}
+            {/* Section 2: Booking Customer - locked when any stage returned for revision */}
             <div className={cn(
               "form-section",
-              isSaleRole && reviewStatus === 'returned' && "pointer-events-none select-none opacity-90"
+              isSaleRole && isReturnedForRevision && "pointer-events-none select-none opacity-90"
             )}>
               <div className="form-section-header flex items-center gap-2">
                 <User className="w-5 h-5" />
-                ข้อมูลผู้จองรถ {isSaleRole && reviewStatus === 'returned' && (
+                ข้อมูลผู้จองรถ {isSaleRole && isReturnedForRevision && (
                   <Badge variant="outline" className="ml-2 bg-muted text-muted-foreground">View Only</Badge>
                 )}
               </div>
@@ -1302,16 +1323,16 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 6: ยืนยันสัญญาจอง - locked when supervisor returned for revision */}
+            {/* Section 6: ยืนยันสัญญาจอง - locked when returned for revision OR already confirmed (no re-confirm on resubmit) */}
             <div className={cn(
               "form-section border-2 border-green-500/20 bg-green-50/50 dark:bg-green-950/20",
-              isSaleRole && reviewStatus === 'returned' && "pointer-events-none select-none opacity-90"
+              isSaleRole && (isReturnedForRevision || confirmationStatus === 'confirmed') && "pointer-events-none select-none opacity-90"
             )}>
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
                   <ShieldCheck className="w-5 h-5" />
                   ยืนยันสัญญาจอง
-                  {isSaleRole && reviewStatus === 'returned' && (
+                  {isSaleRole && (isReturnedForRevision || confirmationStatus === 'confirmed') && (
                     <Badge variant="outline" className="ml-2 bg-muted text-muted-foreground">View Only</Badge>
                   )}
                 </div>

@@ -1377,9 +1377,11 @@ export default function ReservationEdit() {
                             const now = new Date().toISOString();
                             setConfirmationStatus('confirmed');
                             setConfirmedAt(now);
+                            setReservationStatus('confirmed');
                             await supabase
                               .from('reservations')
                               .update({ 
+                                status: 'confirmed',
                                 confirmation_status: 'confirmed',
                                 confirmation_method: 'link',
                                 confirmed_at: now

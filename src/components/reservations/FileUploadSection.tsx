@@ -38,12 +38,41 @@ export default function FileUploadSection({
   onFilesAdd,
   onFileRemove,
   onFileOpen,
+  onFileDownload,
   disabled = false,
   isLoading = false,
   accept = "image/*,.pdf,.doc,.docx,.xls,.xlsx",
   maxFiles = 10,
   maxSizeMB = 10
 }: FileUploadSectionProps) {
+
+  const handleDownload = async (file: AttachmentFile) => {
+    if (onFileDownload) {
+      onFileDownload(file);
+      return;
+    }
+    try {
+      let blob: Blob;
+      if (file.file) {
+        blob = file.file;
+      } else if (file.url) {
+        const res = await fetch(file.url);
+        blob = await res.blob();
+      } else {
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download failed:', err);
+    }
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 

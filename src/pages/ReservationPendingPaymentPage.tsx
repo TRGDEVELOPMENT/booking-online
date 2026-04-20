@@ -173,7 +173,14 @@ export default function ReservationPendingPaymentPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredReservations.map((res, index) => (
-                    <TableRow key={res.id} className="hover:bg-muted/30">
+                    <TableRow
+                      key={res.id}
+                      className={
+                        resubmittedFromCashier[res.id]
+                          ? "bg-amber-50 hover:bg-amber-100/70 dark:bg-amber-950/30 dark:hover:bg-amber-950/50 border-l-4 border-l-amber-500"
+                          : "hover:bg-muted/30"
+                      }
+                    >
                       <TableCell className="text-center text-muted-foreground">
                         {index + 1}
                       </TableCell>
@@ -182,6 +189,12 @@ export default function ReservationPendingPaymentPage() {
                         <div className="text-xs text-muted-foreground">
                           {new Date(res.created_at).toLocaleDateString('th-TH')}
                         </div>
+                        {resubmittedFromCashier[res.id] && (
+                          <Badge variant="outline" className="mt-1 bg-amber-100 text-amber-800 border-amber-400 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-600">
+                            <RotateCcw className="w-3 h-3 mr-1" />
+                            ส่งกลับมาแก้ไข — จำนวนเงินจอง
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-400">
@@ -214,13 +227,16 @@ export default function ReservationPendingPaymentPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <DollarSign className="w-4 h-4 text-muted-foreground" />
-                          <span className="font-semibold">
+                          <DollarSign className={resubmittedFromCashier[res.id] ? "w-4 h-4 text-amber-600" : "w-4 h-4 text-muted-foreground"} />
+                          <span className={resubmittedFromCashier[res.id] ? "font-bold text-amber-700 dark:text-amber-300" : "font-semibold"}>
                             {res.deposit_amount 
                               ? `฿${res.deposit_amount.toLocaleString()}` 
                               : '-'}
                           </span>
                         </div>
+                        {resubmittedFromCashier[res.id] && (
+                          <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">แก้ไขแล้ว</div>
+                        )}
                       </TableCell>
                       <TableCell className="text-center">
                         <Button

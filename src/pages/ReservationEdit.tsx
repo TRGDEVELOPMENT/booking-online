@@ -612,7 +612,10 @@ export default function ReservationEdit() {
     }
   };
 
-  // Cashier returns reservation to sale for revision (Step 3 → back to Step 1/2)
+  // Cashier returns reservation to sale for revision (Step 3 → back to Step 1)
+  // Sale will only be allowed to edit the deposit (จำนวนเงินจอง) field.
+  // Customer confirmation is preserved (no re-confirm needed) and on resubmit the
+  // workflow returns straight to the cashier (Step 3).
   const handleReturnPayment = async () => {
     if (!id) return;
     if (!paymentDescription.trim()) {
@@ -622,13 +625,18 @@ export default function ReservationEdit() {
     setIsSavingPayment(true);
     try {
       const now = new Date().toISOString();
+      // Tag the remark so the sale role knows this came from cashier (deposit-only edit)
+      const taggedRemark = `[DEPOSIT_RETURN] ${paymentDescription.trim()}`;
       const { error } = await supabase
         .from('reservations')
         .update({
           status: 'draft',
-          confirmation_status: 'pending',
-          confirmation_method: null,
-          confirmed_at: null,
+          // Preserve customer confirmation – do NOT reset confirmation_status
+          review_status: 'returned',
+          review_remark: taggedRemark,
+          // Clear cashier verification so resubmit lands back at Step 3
+          cashier_user_id: null,
+          cashier_user_name: null,
           updated_at: now,
         })
         .eq('id', id);
@@ -637,11 +645,13 @@ export default function ReservationEdit() {
       await logActivity({
         reservationId: id,
         action: 'review_returned',
-        actionLabel: 'ส่งกลับเพื่อแก้ไข (แคชเชียร์)',
+        actionLabel: 'ส่งกลับเพื่อแก้ไข (แคชเชียร์ - แก้ไขจำนวนเงินจอง)',
         details: {
           reason: paymentDescription,
           returned_at: now,
           returned_by: profile?.full_name || user?.email,
+          returned_from_stage: 'cashier',
+          editable_field: 'deposit_amount',
         },
         companyId: selectedCompany,
         branchId: selectedBranch || null,
@@ -663,6 +673,14 @@ export default function ReservationEdit() {
 
   // Calculate net price
   const finalPrice = basePrice - discountAmount;
+
+  // Detect which stage returned the reservation for revision (drives section locking + banner)
+  const returnedFromCashier = reviewStatus === 'returned' && !cashierUserId;
+  const returnedFromSupervisor = reviewStatus === 'returned' && !!cashierUserId;
+  const returnedFromManager = approvalStatus === 'rejected';
+  const isReturnedForRevision = returnedFromCashier || returnedFromSupervisor || returnedFromManager;
+  // Strip the [DEPOSIT_RETURN] tag we added when displaying the cashier remark
+  const displayedReviewRemark = (reviewRemark || '').replace(/^\[DEPOSIT_RETURN\]\s*/, '');
 
   // Calculate workflow stage based on status
   const calculateWorkflowStage = (): WorkflowStage => {
@@ -796,7 +814,10 @@ export default function ReservationEdit() {
     }
   };
 
-  // Submit reservation for approval — transitions status from 'confirmed' to 'pending'
+  // Submit reservation for approval — transitions status from 'confirmed' to 'pending'.
+  // On a resubmission after any stage returned for revision (cashier / supervisor / manager),
+  // we keep `confirmation_status='confirmed'` so the customer is NOT asked to re-confirm,
+  // and we reset the relevant review/approval flags so the workflow advances to the right next stage.
   const handleSubmitForApproval = async () => {
     if (!id) return;
     if (confirmationStatus !== 'confirmed') {
@@ -805,14 +826,32 @@ export default function ReservationEdit() {
     }
     setIsSaving(true);
     try {
+      const wasReturnedFromCashier = returnedFromCashier;
+      const wasReturnedFromSupervisor = returnedFromSupervisor;
+      const wasReturnedFromManager = returnedFromManager;
+      const wasResubmission = wasReturnedFromCashier || wasReturnedFromSupervisor || wasReturnedFromManager;
+
+      const updatePayload: Record<string, any> = {
+        status: 'pending',
+        // Always preserve confirmation_status='confirmed' (no re-confirm on resubmit)
+        // Reset review_status if it was 'returned' so workflow can move forward
+        review_status: reviewStatus === 'returned' ? 'pending' : reviewStatus,
+        // Persist deposit_amount in case cashier returned for editing it
+        deposit_amount: depositAmount,
+      };
+      // Reset manager rejection so workflow can re-enter approval stage
+      if (wasReturnedFromManager) {
+        updatePayload.approval_status = 'pending';
+        updatePayload.approval_remark = null;
+      }
+      // Clear the cashier remark tag once the document is resubmitted
+      if (wasReturnedFromCashier || wasReturnedFromSupervisor) {
+        updatePayload.review_remark = null;
+      }
+
       const { error } = await supabase
         .from('reservations')
-        .update({
-          status: 'pending',
-          // If this is a resubmission after supervisor returned for revision,
-          // reset review_status so the workflow advances again
-          review_status: reviewStatus === 'returned' ? 'pending' : reviewStatus,
-        })
+        .update(updatePayload)
         .eq('id', id);
       if (error) {
         toast.error('เกิดข้อผิดพลาดในการส่งขออนุมัติ: ' + error.message);
@@ -820,15 +859,27 @@ export default function ReservationEdit() {
       }
       setReservationStatus('pending');
       if (reviewStatus === 'returned') setReviewStatus('pending');
+      if (wasReturnedFromManager) setApprovalStatus('pending');
+
       await logActivity({
         reservationId: id,
-        action: 'submitted_for_approval',
-        actionLabel: 'ส่งขออนุมัติ',
-        details: { submitted_by: profile?.full_name || user?.email, submitted_at: new Date().toISOString() },
+        action: wasResubmission ? 'resubmitted_for_approval' : 'submitted_for_approval',
+        actionLabel: wasReturnedFromCashier
+          ? 'ส่งขออนุมัติอีกครั้ง (แก้ไขจำนวนเงินจอง)'
+          : wasResubmission
+            ? 'ส่งขออนุมัติอีกครั้ง (หลังถูกส่งกลับเพื่อแก้ไข)'
+            : 'ส่งขออนุมัติ',
+        details: {
+          submitted_by: profile?.full_name || user?.email,
+          submitted_at: new Date().toISOString(),
+          resubmission: wasResubmission,
+          returned_from: wasReturnedFromCashier ? 'cashier' : wasReturnedFromSupervisor ? 'supervisor' : wasReturnedFromManager ? 'manager' : null,
+          new_deposit_amount: wasReturnedFromCashier ? depositAmount : undefined,
+        },
         companyId: selectedCompany,
         branchId: selectedBranch || null,
       });
-      toast.success('ส่งขออนุมัติสำเร็จ');
+      toast.success(wasResubmission ? 'ส่งขออนุมัติอีกครั้งสำเร็จ' : 'ส่งขออนุมัติสำเร็จ');
       navigate('/reservations');
     } catch (err) {
       console.error('Error:', err);
@@ -876,21 +927,42 @@ export default function ReservationEdit() {
           />
 
           {/* Returned-for-revision banner (Sale role) */}
-          {isSaleRole && reviewStatus === 'returned' && (
-            <div className="p-4 rounded-lg border-2 border-orange-300 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-700">
+          {isSaleRole && isReturnedForRevision && (
+            <div className={cn(
+              "p-4 rounded-lg border-2",
+              returnedFromCashier
+                ? "border-amber-400 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700"
+                : "border-orange-300 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-700"
+            )}>
               <div className="flex items-start gap-3">
-                <RotateCcw className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                <RotateCcw className={cn(
+                  "w-5 h-5 mt-0.5 flex-shrink-0",
+                  returnedFromCashier ? "text-amber-600 dark:text-amber-400" : "text-orange-600 dark:text-orange-400"
+                )} />
                 <div className="flex-1">
-                  <p className="font-semibold text-orange-800 dark:text-orange-300">
-                    เอกสารถูกส่งกลับเพื่อแก้ไข (โดยหัวหน้าทีมขาย)
+                  <p className={cn(
+                    "font-semibold",
+                    returnedFromCashier ? "text-amber-800 dark:text-amber-300" : "text-orange-800 dark:text-orange-300"
+                  )}>
+                    {returnedFromCashier && 'เอกสารถูกส่งกลับเพื่อแก้ไข (โดยแคชเชียร์) — แก้ไขได้เฉพาะ "จำนวนเงินจอง"'}
+                    {returnedFromSupervisor && 'เอกสารถูกส่งกลับเพื่อแก้ไข (โดยหัวหน้าทีมขาย)'}
+                    {returnedFromManager && 'เอกสารถูกส่งกลับเพื่อแก้ไข (โดยผู้จัดการฝ่ายขาย)'}
                   </p>
-                  {reviewRemark && (
-                    <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
-                      เหตุผล: {reviewRemark}
+                  {(displayedReviewRemark || (returnedFromManager && approvalRemark)) && (
+                    <p className={cn(
+                      "text-sm mt-1",
+                      returnedFromCashier ? "text-amber-700 dark:text-amber-300" : "text-orange-700 dark:text-orange-300"
+                    )}>
+                      เหตุผล: {returnedFromManager ? approvalRemark : displayedReviewRemark}
                     </p>
                   )}
-                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
-                    กรุณาแก้ไขรายละเอียดใบจอง แล้วกดส่งขออนุมัติอีกครั้ง (ส่วน "ข้อมูลผู้จองรถ" และ "ยืนยันสัญญาจอง" ไม่สามารถแก้ไขได้)
+                  <p className={cn(
+                    "text-xs mt-2",
+                    returnedFromCashier ? "text-amber-600 dark:text-amber-400" : "text-orange-600 dark:text-orange-400"
+                  )}>
+                    {returnedFromCashier
+                      ? 'กรุณาแก้ไข "จำนวนเงินจอง" แล้วกดส่งขออนุมัติอีกครั้ง — ระบบจะส่งกลับไปที่แคชเชียร์โดยตรง (ข้ามขั้นยืนยันสัญญาจอง)'
+                      : 'กรุณาแก้ไขรายละเอียดใบจอง แล้วกดส่งขออนุมัติอีกครั้ง (ข้ามขั้นยืนยันสัญญาจอง)'}
                   </p>
                 </div>
               </div>
@@ -916,8 +988,11 @@ export default function ReservationEdit() {
 
            {/* Form Sections */}
           <div className="space-y-6">
-           {/* Cashier read-only wrapper for non-payment sections */}
-           <div className={cn((isCashier || isSaleSupervisor) && !isIT && "pointer-events-none select-none opacity-90")}>
+           {/* Cashier read-only wrapper for non-payment sections (also locks all sections when cashier returned for revision) */}
+           <div className={cn(
+             ((isCashier || isSaleSupervisor) && !isIT) && "pointer-events-none select-none opacity-90",
+             (isSaleRole && returnedFromCashier) && "pointer-events-none select-none opacity-90"
+           )}>
             {/* Section 1: Branch/Vehicle Type Selection */}
             <div className="form-section">
               <div className="form-section-header flex items-center gap-2">
@@ -955,14 +1030,14 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 2: Booking Customer - locked when supervisor returned for revision */}
+            {/* Section 2: Booking Customer - locked when any stage returned for revision */}
             <div className={cn(
               "form-section",
-              isSaleRole && reviewStatus === 'returned' && "pointer-events-none select-none opacity-90"
+              isSaleRole && isReturnedForRevision && "pointer-events-none select-none opacity-90"
             )}>
               <div className="form-section-header flex items-center gap-2">
                 <User className="w-5 h-5" />
-                ข้อมูลผู้จองรถ {isSaleRole && reviewStatus === 'returned' && (
+                ข้อมูลผู้จองรถ {isSaleRole && isReturnedForRevision && (
                   <Badge variant="outline" className="ml-2 bg-muted text-muted-foreground">View Only</Badge>
                 )}
               </div>
@@ -1258,8 +1333,19 @@ export default function ReservationEdit() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <div className="space-y-2">
-                  <Label>เงินจอง</Label>
+                <div className={cn(
+                  "space-y-2",
+                  // When cashier returned for revision, lift the parent lock so sale can edit the deposit only
+                  (isSaleRole && returnedFromCashier) && "pointer-events-auto select-auto opacity-100 ring-2 ring-amber-400 rounded-md p-2 -m-2 bg-amber-50 dark:bg-amber-950/30"
+                )}>
+                  <Label className={cn(
+                    (isSaleRole && returnedFromCashier) && "text-amber-700 dark:text-amber-300 font-semibold"
+                  )}>
+                    เงินจอง
+                    {(isSaleRole && returnedFromCashier) && (
+                      <span className="ml-2 text-xs bg-amber-500 text-white px-2 py-0.5 rounded">แก้ไขได้</span>
+                    )}
+                  </Label>
                   <Input 
                     type="text"
                     inputMode="numeric"
@@ -1284,16 +1370,16 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 6: ยืนยันสัญญาจอง - locked when supervisor returned for revision */}
+            {/* Section 6: ยืนยันสัญญาจอง - locked when returned for revision OR already confirmed (no re-confirm on resubmit) */}
             <div className={cn(
               "form-section border-2 border-green-500/20 bg-green-50/50 dark:bg-green-950/20",
-              isSaleRole && reviewStatus === 'returned' && "pointer-events-none select-none opacity-90"
+              isSaleRole && (isReturnedForRevision || confirmationStatus === 'confirmed') && "pointer-events-none select-none opacity-90"
             )}>
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
                   <ShieldCheck className="w-5 h-5" />
                   ยืนยันสัญญาจอง
-                  {isSaleRole && reviewStatus === 'returned' && (
+                  {isSaleRole && (isReturnedForRevision || confirmationStatus === 'confirmed') && (
                     <Badge variant="outline" className="ml-2 bg-muted text-muted-foreground">View Only</Badge>
                   )}
                 </div>

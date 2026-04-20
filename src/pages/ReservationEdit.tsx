@@ -2100,8 +2100,8 @@ export default function ReservationEdit() {
             </div>
             )}
             
-            {/* Action Buttons - Hidden in view-only mode */}
-            {!isViewOnly && !isCashierMode && !isSaleSupervisor && !isSaleManager && (
+            {/* Action Buttons - Hidden in view-only mode (and when sale role is locked after submission) */}
+            {!effectiveViewOnly && !isCashierMode && !isSaleSupervisor && !isSaleManager && (
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
               <Button 
                 variant="outline" 

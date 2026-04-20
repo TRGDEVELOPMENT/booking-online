@@ -29,7 +29,8 @@ import {
   UserCheck,
   RotateCcw,
   XCircle,
-  ThumbsUp
+  ThumbsUp,
+  AlertCircle
 } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Badge } from '@/components/ui/badge';
@@ -1432,16 +1433,22 @@ export default function ReservationEdit() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className={cn(
-                  "space-y-2",
+                  "space-y-2 transition-all",
                   // When cashier returned for revision, lift the parent lock so sale can edit the deposit only
-                  (isSaleRole && returnedFromCashier) && "pointer-events-auto select-auto opacity-100 ring-2 ring-amber-400 rounded-md p-2 -m-2 bg-amber-50 dark:bg-amber-950/30"
+                  (isSaleRole && returnedFromCashier) && "pointer-events-auto select-auto opacity-100 ring-4 ring-amber-500 rounded-lg p-4 -m-1 bg-gradient-to-br from-amber-50 to-amber-100/60 dark:from-amber-950/40 dark:to-amber-900/30 shadow-lg shadow-amber-500/30 animate-pulse"
                 )}>
                   <Label className={cn(
-                    (isSaleRole && returnedFromCashier) && "text-amber-700 dark:text-amber-300 font-semibold"
+                    "flex items-center gap-2",
+                    (isSaleRole && returnedFromCashier) && "text-amber-800 dark:text-amber-200 font-bold text-base"
                   )}>
+                    {(isSaleRole && returnedFromCashier) && (
+                      <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    )}
                     เงินจอง
                     {(isSaleRole && returnedFromCashier) && (
-                      <span className="ml-2 text-xs bg-amber-500 text-white px-2 py-0.5 rounded">แก้ไขได้</span>
+                      <span className="ml-1 text-xs bg-amber-600 text-white px-2 py-0.5 rounded-full font-semibold shadow">
+                        แก้ไขที่นี่
+                      </span>
                     )}
                   </Label>
                   <Input 
@@ -1453,8 +1460,17 @@ export default function ReservationEdit() {
                       setDepositAmount(value ? Number(value) : 0);
                     }}
                     placeholder="0"
-                    className="input-focus"
+                    className={cn(
+                      "input-focus",
+                      (isSaleRole && returnedFromCashier) && "border-amber-500 border-2 bg-white dark:bg-amber-950/50 text-lg font-semibold text-amber-900 dark:text-amber-100 focus-visible:ring-amber-500"
+                    )}
                   />
+                  {(isSaleRole && returnedFromCashier) && (
+                    <p className="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-1 mt-1">
+                      <AlertCircle className="w-3 h-3" />
+                      แคชเชียร์ส่งกลับเพื่อให้แก้ไขจำนวนเงินจอง
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>วันที่คาดว่าจะรับรถ</Label>

@@ -648,7 +648,7 @@ export default function ReservationEdit() {
       });
 
       toast.success('ส่งกลับเพื่อแก้ไขเรียบร้อย');
-      if (isCashierMode) navigate('/reservations/pending-payment');
+      navigate('/reservations/pending-payment');
     } catch (err) {
       console.error('Error returning payment:', err);
       toast.error('เกิดข้อผิดพลาดในการส่งกลับ');

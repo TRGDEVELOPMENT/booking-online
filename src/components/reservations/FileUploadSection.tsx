@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Paperclip, Upload, Trash2, FileText, Image, File, ExternalLink, Loader2 } from 'lucide-react';
+import { Paperclip, Upload, Trash2, FileText, Image, File, ExternalLink, Loader2, Download } from 'lucide-react';
 import type { AttachmentFile } from '@/hooks/useReservationAttachments';
 
 interface FileUploadSectionProps {
@@ -8,6 +8,7 @@ interface FileUploadSectionProps {
   onFilesAdd: (files: File[]) => void;
   onFileRemove: (id: string) => void;
   onFileOpen: (file: AttachmentFile) => void;
+  onFileDownload?: (file: AttachmentFile) => void;
   disabled?: boolean;
   isLoading?: boolean;
   accept?: string;

@@ -167,6 +167,20 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                     if (idx === -2) {
                       return <span className="font-medium" style={{ color: '#b51f19' }}>ยกเลิก</span>;
                     }
+                    // Returned for revision -> show "ส่งกลับเพื่อแก้ไข" in amber
+                    const r: any = reservation;
+                    const isReturned = r.status === 'draft' && (
+                      r.review_status === 'returned' ||
+                      r.approval_status === 'rejected' ||
+                      (r.cashier_user_id && r.confirmation_status === 'confirmed' && r.review_status !== 'reviewed' && (r.review_remark || '').includes('[DEPOSIT_RETURN]'))
+                    );
+                    if (isReturned) {
+                      return (
+                        <span className="font-medium" style={{ color: '#d97706' }}>
+                          ส่งกลับเพื่อแก้ไข
+                        </span>
+                      );
+                    }
                     const stage = workflowStages[idx] || workflowStages[0];
                     const colorStyle = idx === 1 ? { color: '#2349bb' }
                       : idx === 3 ? { color: '#2b93d4' }

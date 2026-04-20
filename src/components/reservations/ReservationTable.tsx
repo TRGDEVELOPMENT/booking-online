@@ -23,8 +23,8 @@ const workflowStages = [
   { label: 'ยืนยันสัญญาจอง', color: '' },
   { label: 'ตรวจสอบการชำระเงิน', color: 'text-orange-600' },
   { label: 'ตรวจสอบรายละเอียด', color: '' },
+  { label: 'รออนุมัติ', color: '' },
   { label: 'อนุมัติ', color: '' },
-  { label: 'อนุมัติแล้ว', color: '' },
 ];
 
 function getWorkflowIndex(r: DatabaseReservation): number {

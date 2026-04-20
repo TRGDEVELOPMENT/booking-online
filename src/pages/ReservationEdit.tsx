@@ -2163,10 +2163,10 @@ export default function ReservationEdit() {
                       }}
                       disabled={isSavingApproval}
                     >
-                      {isSavingApproval ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-                      Reject
+                      {isSavingApproval ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                      ส่งกลับเพื่อแก้ไข
                     </Button>
-                    <Button 
+                    <Button
                       className="gap-2 bg-purple-600 hover:bg-purple-700 text-white"
                       onClick={async () => {
                         setIsSavingApproval(true);

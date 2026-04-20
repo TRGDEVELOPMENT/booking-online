@@ -335,6 +335,10 @@ export default function ReservationCreate() {
       toast.error('กรุณาเลือกสาขา');
       return;
     }
+    if (!selectedBU) {
+      toast.error('กรุณาเลือกประเภทรถยนต์');
+      return;
+    }
     if (!selectedBookingCustomer) {
       toast.error('กรุณาเลือกลูกค้าผู้จอง');
       return;

@@ -1321,16 +1321,29 @@ export default function ReservationEdit() {
                                   setConfirmationStatus('confirmed');
                                   setConfirmedAt(now);
                                   setReservationStatus('confirmed');
-                                  await supabase
-                                    .from('reservations')
-                                    .update({ 
-                                      status: 'confirmed',
-                                      confirmation_status: 'confirmed',
-                                      confirmation_method: 'otp',
-                                      confirmed_at: now
-                                    })
-                                    .eq('id', id);
-                                  toast.success('ยืนยันสัญญาจองสำเร็จ');
+                                   await supabase
+                                     .from('reservations')
+                                     .update({ 
+                                       status: 'confirmed',
+                                       confirmation_status: 'confirmed',
+                                       confirmation_method: 'otp',
+                                       confirmed_at: now
+                                     })
+                                     .eq('id', id);
+                                   await logActivity({
+                                     reservationId: id!,
+                                     action: 'confirmed',
+                                     actionLabel: 'ยืนยันสัญญาจอง (OTP)',
+                                     details: {
+                                       method: 'otp',
+                                       confirmed_at: now,
+                                       confirmed_by: profile?.full_name || user?.email,
+                                       contact: bookingPhone || bookingEmail || '',
+                                     },
+                                     companyId: selectedCompany,
+                                     branchId: selectedBranch || null,
+                                   });
+                                   toast.success('ยืนยันสัญญาจองสำเร็จ');
                                 } catch (err) {
                                   toast.error('รหัส OTP ไม่ถูกต้อง');
                                 } finally {
@@ -1387,6 +1400,19 @@ export default function ReservationEdit() {
                                 confirmed_at: now
                               })
                               .eq('id', id);
+                            await logActivity({
+                              reservationId: id!,
+                              action: 'confirmed',
+                              actionLabel: 'ยืนยันสัญญาจอง (Link)',
+                              details: {
+                                method: 'link',
+                                confirmed_at: now,
+                                confirmed_by: profile?.full_name || user?.email,
+                                contact: bookingPhone || bookingEmail || '',
+                              },
+                              companyId: selectedCompany,
+                              branchId: selectedBranch || null,
+                            });
                             // Show confirmation dialog
                             toast.success('ลูกค้ายืนยันเรียบร้อย', {
                               description: 'ลูกค้ากดยืนยันสัญญาจองผ่าน Link เรียบร้อยแล้ว',

@@ -2050,6 +2050,7 @@ export default function ReservationEdit() {
                           setReviewStatus('reviewed');
                           setReviewedAt(now);
                           toast.success('บันทึกการตรวจสอบสำเร็จ');
+                          navigate('/reservations');
                         } catch (err) {
                           toast.error('เกิดข้อผิดพลาด');
                         } finally {

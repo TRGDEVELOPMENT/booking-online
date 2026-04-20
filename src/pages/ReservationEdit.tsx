@@ -612,7 +612,10 @@ export default function ReservationEdit() {
     }
   };
 
-  // Cashier returns reservation to sale for revision (Step 3 → back to Step 1/2)
+  // Cashier returns reservation to sale for revision (Step 3 → back to Step 1)
+  // Sale will only be allowed to edit the deposit (จำนวนเงินจอง) field.
+  // Customer confirmation is preserved (no re-confirm needed) and on resubmit the
+  // workflow returns straight to the cashier (Step 3).
   const handleReturnPayment = async () => {
     if (!id) return;
     if (!paymentDescription.trim()) {
@@ -622,13 +625,18 @@ export default function ReservationEdit() {
     setIsSavingPayment(true);
     try {
       const now = new Date().toISOString();
+      // Tag the remark so the sale role knows this came from cashier (deposit-only edit)
+      const taggedRemark = `[DEPOSIT_RETURN] ${paymentDescription.trim()}`;
       const { error } = await supabase
         .from('reservations')
         .update({
           status: 'draft',
-          confirmation_status: 'pending',
-          confirmation_method: null,
-          confirmed_at: null,
+          // Preserve customer confirmation – do NOT reset confirmation_status
+          review_status: 'returned',
+          review_remark: taggedRemark,
+          // Clear cashier verification so resubmit lands back at Step 3
+          cashier_user_id: null,
+          cashier_user_name: null,
           updated_at: now,
         })
         .eq('id', id);
@@ -637,11 +645,13 @@ export default function ReservationEdit() {
       await logActivity({
         reservationId: id,
         action: 'review_returned',
-        actionLabel: 'ส่งกลับเพื่อแก้ไข (แคชเชียร์)',
+        actionLabel: 'ส่งกลับเพื่อแก้ไข (แคชเชียร์ - แก้ไขจำนวนเงินจอง)',
         details: {
           reason: paymentDescription,
           returned_at: now,
           returned_by: profile?.full_name || user?.email,
+          returned_from_stage: 'cashier',
+          editable_field: 'deposit_amount',
         },
         companyId: selectedCompany,
         branchId: selectedBranch || null,

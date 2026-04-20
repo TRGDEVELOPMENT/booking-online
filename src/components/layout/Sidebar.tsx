@@ -102,7 +102,6 @@ const allMenuItems: MenuItem[] = [
       { id: 'list', label: 'รายการใบจอง', path: '/reservations', icon: List },
       { id: 'create', label: 'สร้างใบจองใหม่', path: '/reservations/create', icon: FilePlus2 },
       { id: 'customer-confirm-preview', label: 'ยืนยันสัญญาจอง (Customer View)', path: '/reservations/customer-confirm-preview', icon: Smartphone, roles: ['sale', 'sale_supervisor', 'sale_manager', 'it', 'user_admin'] },
-      { id: 'pending-payment', label: 'ใบจองรอยืนยันรับเงิน', path: '/reservations/pending-payment', icon: Wallet, roles: ['cashier'] },
       { id: 'approval-chain', label: 'เปลี่ยนสายอนุมัติของใบจอง', path: '/reservations/approval-chain', icon: GitBranch, roles: ['user_admin', 'it'] },
       { id: 'cancel-approval-chain', label: 'เปลี่ยนสายอนุมัติยกเลิกใบจอง', path: '/reservations/cancel-approval-chain', icon: GitBranch, roles: ['user_admin', 'it'] },
     ]

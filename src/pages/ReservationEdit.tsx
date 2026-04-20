@@ -1814,10 +1814,12 @@ export default function ReservationEdit() {
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => openPicker('freebies')} className="gap-1">
-                  <Plus className="w-4 h-4" />
-                  เพิ่มรายการ
-                </Button>
+                {!isViewOnly && (
+                  <Button variant="outline" size="sm" onClick={() => openPicker('freebies')} className="gap-1">
+                    <Plus className="w-4 h-4" />
+                    เพิ่มรายการ
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -1863,10 +1865,12 @@ export default function ReservationEdit() {
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => openPicker('accessories')} className="gap-1">
-                  <Plus className="w-4 h-4" />
-                  เพิ่มรายการ
-                </Button>
+                {!isViewOnly && (
+                  <Button variant="outline" size="sm" onClick={() => openPicker('accessories')} className="gap-1">
+                    <Plus className="w-4 h-4" />
+                    เพิ่มรายการ
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -1912,10 +1916,12 @@ export default function ReservationEdit() {
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => openPicker('benefits')} className="gap-1">
-                  <Plus className="w-4 h-4" />
-                  เพิ่มรายการ
-                </Button>
+                {!isViewOnly && (
+                  <Button variant="outline" size="sm" onClick={() => openPicker('benefits')} className="gap-1">
+                    <Plus className="w-4 h-4" />
+                    เพิ่มรายการ
+                  </Button>
+                )}
               </div>
             </div>
 

@@ -1814,7 +1814,7 @@ export default function ReservationEdit() {
                     </div>
                   </div>
                 ))}
-                {!isViewOnly && (
+                {!isViewOnly && !isCashierMode && (
                   <Button variant="outline" size="sm" onClick={() => openPicker('freebies')} className="gap-1">
                     <Plus className="w-4 h-4" />
                     เพิ่มรายการ
@@ -1865,7 +1865,7 @@ export default function ReservationEdit() {
                     </div>
                   </div>
                 ))}
-                {!isViewOnly && (
+                {!isViewOnly && !isCashierMode && (
                   <Button variant="outline" size="sm" onClick={() => openPicker('accessories')} className="gap-1">
                     <Plus className="w-4 h-4" />
                     เพิ่มรายการ
@@ -1916,7 +1916,7 @@ export default function ReservationEdit() {
                     </div>
                   </div>
                 ))}
-                {!isViewOnly && (
+                {!isViewOnly && !isCashierMode && (
                   <Button variant="outline" size="sm" onClick={() => openPicker('benefits')} className="gap-1">
                     <Plus className="w-4 h-4" />
                     เพิ่มรายการ

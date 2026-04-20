@@ -1932,7 +1932,7 @@ export default function ReservationEdit() {
                 onFilesAdd={(files) => handleAddFiles(files)}
                 onFileRemove={handleRemoveFile}
                 onFileOpen={handleOpenFile}
-                disabled={isCashierMode}
+                disabled={isViewOnly || isCashierMode}
                 isLoading={isLoadingAttachments}
               />
             </div>

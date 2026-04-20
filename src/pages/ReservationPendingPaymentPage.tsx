@@ -36,6 +36,8 @@ export default function ReservationPendingPaymentPage() {
   const company = companies.find(c => c.id === selectedCompany);
 
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  // Map of reservation_id → latest "resubmission after cashier return" detail
+  const [resubmittedFromCashier, setResubmittedFromCashier] = useState<Record<string, { at: string; deposit?: number }>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -57,7 +59,31 @@ export default function ReservationPendingPaymentPage() {
           return;
         }
 
-        setReservations(data || []);
+        const list = data || [];
+        setReservations(list);
+
+        // Identify reservations that were resubmitted after cashier returned them
+        // (only consider rows that haven't been verified yet — cashier_user_id is null)
+        const candidateIds = list.filter(r => !(r as any).cashier_user_id).map(r => r.id);
+        if (candidateIds.length > 0) {
+          const { data: logs } = await supabase
+            .from('reservation_activity_logs')
+            .select('reservation_id, created_at, details')
+            .eq('company_id', selectedCompany)
+            .eq('action', 'resubmitted_for_approval')
+            .in('reservation_id', candidateIds)
+            .order('created_at', { ascending: false });
+          const map: Record<string, { at: string; deposit?: number }> = {};
+          (logs || []).forEach(l => {
+            const det = (l.details as any) || {};
+            if (det.returned_from === 'cashier' && !map[l.reservation_id]) {
+              map[l.reservation_id] = { at: l.created_at, deposit: det.new_deposit_amount };
+            }
+          });
+          setResubmittedFromCashier(map);
+        } else {
+          setResubmittedFromCashier({});
+        }
       } catch (err) {
         console.error('Error:', err);
         toast.error('เกิดข้อผิดพลาด');

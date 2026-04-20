@@ -1941,14 +1941,15 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 9: Attachments - always interactive (preview/download) regardless of parent read-only state */}
+            {/* Section 9: Attachments - always interactive (preview/download) regardless of parent read-only state.
+                Trash icon is hidden whenever the form is effectively view-only for this user. */}
             <div className="pointer-events-auto">
               <FileUploadSection
                 files={attachments}
                 onFilesAdd={(files) => handleAddFiles(files)}
                 onFileRemove={handleRemoveFile}
                 onFileOpen={handleOpenFile}
-                disabled={isViewOnly || isCashierMode || ((isCashier || isSaleSupervisor) && !isIT)}
+                disabled={effectiveViewOnly || isCashierMode || ((isCashier || isSaleSupervisor || isSaleManager) && !isIT)}
                 isLoading={isLoadingAttachments}
               />
             </div>

@@ -98,6 +98,13 @@ export default function ReservationEdit() {
   const [reservationStatus, setReservationStatus] = useState<string>('draft');
   const [documentNumber, setDocumentNumber] = useState('');
 
+  // Sale role loses edit rights once the document has been submitted for approval.
+  // After 'ส่งขออนุมัติ' the status becomes 'pending' (or downstream) — sale becomes view-only.
+  const isSaleLocked = isSaleRole && !isIT && !isAdmin && (
+    reservationStatus === 'pending' || reservationStatus === 'cancelled'
+  );
+  const effectiveViewOnly = isViewOnly || isSaleLocked;
+
   // Form state
   const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedBU, setSelectedBU] = useState('');

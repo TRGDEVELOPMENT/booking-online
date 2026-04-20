@@ -617,13 +617,17 @@ export type Database = {
           deposit_amount: number | null
           discount: number | null
           document_number: string
+          down_payment: number | null
           expected_delivery_date: string | null
+          finance_amount: number | null
           freebies: Json | null
           fuel_type: string | null
           id: string
+          installment_period_id: string | null
           list_price: number | null
           model: string | null
           net_price: number | null
+          purchase_type: string | null
           review_remark: string | null
           review_status: string | null
           reviewed_at: string | null
@@ -679,13 +683,17 @@ export type Database = {
           deposit_amount?: number | null
           discount?: number | null
           document_number: string
+          down_payment?: number | null
           expected_delivery_date?: string | null
+          finance_amount?: number | null
           freebies?: Json | null
           fuel_type?: string | null
           id?: string
+          installment_period_id?: string | null
           list_price?: number | null
           model?: string | null
           net_price?: number | null
+          purchase_type?: string | null
           review_remark?: string | null
           review_status?: string | null
           reviewed_at?: string | null
@@ -741,13 +749,17 @@ export type Database = {
           deposit_amount?: number | null
           discount?: number | null
           document_number?: string
+          down_payment?: number | null
           expected_delivery_date?: string | null
+          finance_amount?: number | null
           freebies?: Json | null
           fuel_type?: string | null
           id?: string
+          installment_period_id?: string | null
           list_price?: number | null
           model?: string | null
           net_price?: number | null
+          purchase_type?: string | null
           review_remark?: string | null
           review_status?: string | null
           reviewed_at?: string | null

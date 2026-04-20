@@ -671,7 +671,10 @@ export default function ReservationEdit() {
   const calculateWorkflowStage = (): WorkflowStage => {
     // If cancelled
     if (reservationStatus === 'cancelled') return 'step7';
-    
+
+    // If supervisor returned for revision → roll back to Step 1 (Sale must edit & resubmit)
+    if (reviewStatus === 'returned' && reservationStatus === 'draft') return 'step1';
+
     // If approved → Step 6 พิมพ์/ลงนาม
     if (approvalStatus === 'approved') return 'step6';
     

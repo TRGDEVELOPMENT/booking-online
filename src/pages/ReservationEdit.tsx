@@ -674,6 +674,14 @@ export default function ReservationEdit() {
   // Calculate net price
   const finalPrice = basePrice - discountAmount;
 
+  // Detect which stage returned the reservation for revision (drives section locking + banner)
+  const returnedFromCashier = reviewStatus === 'returned' && !cashierUserId;
+  const returnedFromSupervisor = reviewStatus === 'returned' && !!cashierUserId;
+  const returnedFromManager = approvalStatus === 'rejected';
+  const isReturnedForRevision = returnedFromCashier || returnedFromSupervisor || returnedFromManager;
+  // Strip the [DEPOSIT_RETURN] tag we added when displaying the cashier remark
+  const displayedReviewRemark = (reviewRemark || '').replace(/^\[DEPOSIT_RETURN\]\s*/, '');
+
   // Calculate workflow stage based on status
   const calculateWorkflowStage = (): WorkflowStage => {
     // If cancelled

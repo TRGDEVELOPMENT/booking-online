@@ -810,13 +810,19 @@ export default function ReservationEdit() {
     try {
       const { error } = await supabase
         .from('reservations')
-        .update({ status: 'pending' })
+        .update({
+          status: 'pending',
+          // If this is a resubmission after supervisor returned for revision,
+          // reset review_status so the workflow advances again
+          review_status: reviewStatus === 'returned' ? 'pending' : reviewStatus,
+        })
         .eq('id', id);
       if (error) {
         toast.error('เกิดข้อผิดพลาดในการส่งขออนุมัติ: ' + error.message);
         return;
       }
       setReservationStatus('pending');
+      if (reviewStatus === 'returned') setReviewStatus('pending');
       await logActivity({
         reservationId: id,
         action: 'submitted_for_approval',

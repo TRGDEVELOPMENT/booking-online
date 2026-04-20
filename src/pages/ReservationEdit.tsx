@@ -105,6 +105,10 @@ export default function ReservationEdit() {
   );
   const effectiveViewOnly = isViewOnly || isSaleLocked;
 
+  // When the reservation has been returned by supervisor for revision, the booking
+  // customer info and the contract confirmation section must remain view-only.
+  const [reviewStatusState, setReviewStatusState] = useState<string | null>(null);
+
   // Form state
   const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedBU, setSelectedBU] = useState('');

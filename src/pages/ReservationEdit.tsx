@@ -869,6 +869,28 @@ export default function ReservationEdit() {
             }}
           />
 
+          {/* Returned-for-revision banner (Sale role) */}
+          {isSaleRole && reviewStatus === 'returned' && (
+            <div className="p-4 rounded-lg border-2 border-orange-300 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-700">
+              <div className="flex items-start gap-3">
+                <RotateCcw className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-semibold text-orange-800 dark:text-orange-300">
+                    เอกสารถูกส่งกลับเพื่อแก้ไข (โดยหัวหน้าทีมขาย)
+                  </p>
+                  {reviewRemark && (
+                    <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                      เหตุผล: {reviewRemark}
+                    </p>
+                  )}
+                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
+                    กรุณาแก้ไขรายละเอียดใบจอง แล้วกดส่งขออนุมัติอีกครั้ง (ส่วน "ข้อมูลผู้จองรถ" และ "ยืนยันสัญญาจอง" ไม่สามารถแก้ไขได้)
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
            {/* Admin Assignment Panel - visible only to user_admin/it */}
            {isAdmin && id && (
              <AdminAssignmentPanel

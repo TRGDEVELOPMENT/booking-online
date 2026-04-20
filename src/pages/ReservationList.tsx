@@ -27,6 +27,8 @@ export default function ReservationList() {
 
   // Fetch reservations from database
   useEffect(() => {
+    if (!selectedCompany) return;
+
     const fetchReservations = async () => {
       setIsLoading(true);
       try {
@@ -42,7 +44,6 @@ export default function ReservationList() {
           return;
         }
 
-        // Transform the data to match our type
         const transformedData: DatabaseReservation[] = (data || []).map(item => ({
           ...item,
           freebies: Array.isArray(item.freebies) ? item.freebies as DatabaseReservation['freebies'] : null,
@@ -59,23 +60,36 @@ export default function ReservationList() {
       }
     };
 
-    if (selectedCompany) {
-      fetchReservations();
-      // Load branches map (branch_id -> branch_name) from DB
-      supabase
-        .from('branches')
-        .select('branch_id, branch_name')
-        .eq('company_id', selectedCompany)
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('Error fetching branches:', error);
-            return;
-          }
-          const map: Record<string, string> = {};
-          (data || []).forEach((b: any) => { map[b.branch_id] = b.branch_name; });
-          setBranchMap(map);
-        });
-    }
+    fetchReservations();
+
+    // Load branches map (branch_id -> branch_name) from DB
+    supabase
+      .from('branches')
+      .select('branch_id, branch_name')
+      .eq('company_id', selectedCompany)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching branches:', error);
+          return;
+        }
+        const map: Record<string, string> = {};
+        (data || []).forEach((b: any) => { map[b.branch_id] = b.branch_name; });
+        setBranchMap(map);
+      });
+
+    // Realtime subscription: update list whenever reservations change
+    const channel = supabase
+      .channel(`reservations-list-${selectedCompany}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reservations', filter: `company_id=eq.${selectedCompany}` },
+        () => { fetchReservations(); }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [selectedCompany]);
 
   const handleFilterChange = (key: string, value: string) => {

@@ -19,6 +19,9 @@ export function getCurrentStageRole(r: DatabaseReservation): StageRole {
   // Approved -> ready for sale to print
   if (r.approval_status === 'approved') return 'done';
 
+  // Supervisor returned for revision -> sale must edit & resubmit
+  if (r.review_status === 'returned' && r.status === 'draft') return 'sale';
+
   // Reviewed by supervisor, awaiting manager approval
   if (r.review_status === 'reviewed') return 'sale_manager';
 

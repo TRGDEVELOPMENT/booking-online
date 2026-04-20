@@ -671,7 +671,10 @@ export default function ReservationEdit() {
   const calculateWorkflowStage = (): WorkflowStage => {
     // If cancelled
     if (reservationStatus === 'cancelled') return 'step7';
-    
+
+    // If supervisor returned for revision → roll back to Step 1 (Sale must edit & resubmit)
+    if (reviewStatus === 'returned' && reservationStatus === 'draft') return 'step1';
+
     // If approved → Step 6 พิมพ์/ลงนาม
     if (approvalStatus === 'approved') return 'step6';
     
@@ -807,13 +810,19 @@ export default function ReservationEdit() {
     try {
       const { error } = await supabase
         .from('reservations')
-        .update({ status: 'pending' })
+        .update({
+          status: 'pending',
+          // If this is a resubmission after supervisor returned for revision,
+          // reset review_status so the workflow advances again
+          review_status: reviewStatus === 'returned' ? 'pending' : reviewStatus,
+        })
         .eq('id', id);
       if (error) {
         toast.error('เกิดข้อผิดพลาดในการส่งขออนุมัติ: ' + error.message);
         return;
       }
       setReservationStatus('pending');
+      if (reviewStatus === 'returned') setReviewStatus('pending');
       await logActivity({
         reservationId: id,
         action: 'submitted_for_approval',
@@ -868,6 +877,28 @@ export default function ReservationEdit() {
               step5: { name: approvedByName, at: approvedAt },
             }}
           />
+
+          {/* Returned-for-revision banner (Sale role) */}
+          {isSaleRole && reviewStatus === 'returned' && (
+            <div className="p-4 rounded-lg border-2 border-orange-300 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-700">
+              <div className="flex items-start gap-3">
+                <RotateCcw className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-semibold text-orange-800 dark:text-orange-300">
+                    เอกสารถูกส่งกลับเพื่อแก้ไข (โดยหัวหน้าทีมขาย)
+                  </p>
+                  {reviewRemark && (
+                    <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                      เหตุผล: {reviewRemark}
+                    </p>
+                  )}
+                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
+                    กรุณาแก้ไขรายละเอียดใบจอง แล้วกดส่งขออนุมัติอีกครั้ง (ส่วน "ข้อมูลผู้จองรถ" และ "ยืนยันสัญญาจอง" ไม่สามารถแก้ไขได้)
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
            {/* Admin Assignment Panel - visible only to user_admin/it */}
            {isAdmin && id && (
@@ -927,11 +958,16 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 2: Booking Customer */}
-            <div className="form-section">
+            {/* Section 2: Booking Customer - locked when supervisor returned for revision */}
+            <div className={cn(
+              "form-section",
+              isSaleRole && reviewStatus === 'returned' && "pointer-events-none select-none opacity-90"
+            )}>
               <div className="form-section-header flex items-center gap-2">
                 <User className="w-5 h-5" />
-                ข้อมูลผู้จองรถ
+                ข้อมูลผู้จองรถ {isSaleRole && reviewStatus === 'returned' && (
+                  <Badge variant="outline" className="ml-2 bg-muted text-muted-foreground">View Only</Badge>
+                )}
               </div>
               
               {/* Customer Type */}
@@ -1251,12 +1287,18 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 6: ยืนยันสัญญาจอง */}
-            <div className="form-section border-2 border-green-500/20 bg-green-50/50 dark:bg-green-950/20">
+            {/* Section 6: ยืนยันสัญญาจอง - locked when supervisor returned for revision */}
+            <div className={cn(
+              "form-section border-2 border-green-500/20 bg-green-50/50 dark:bg-green-950/20",
+              isSaleRole && reviewStatus === 'returned' && "pointer-events-none select-none opacity-90"
+            )}>
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
                   <ShieldCheck className="w-5 h-5" />
                   ยืนยันสัญญาจอง
+                  {isSaleRole && reviewStatus === 'returned' && (
+                    <Badge variant="outline" className="ml-2 bg-muted text-muted-foreground">View Only</Badge>
+                  )}
                 </div>
                 {/* Status Badge */}
                 {confirmationStatus === 'pending' && (

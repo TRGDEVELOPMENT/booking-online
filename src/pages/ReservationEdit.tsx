@@ -615,6 +615,51 @@ export default function ReservationEdit() {
     }
   };
 
+  // Cashier returns reservation to sale for revision (Step 3 → back to Step 1/2)
+  const handleReturnPayment = async () => {
+    if (!id) return;
+    if (!paymentDescription.trim()) {
+      toast.error('กรุณากรอกเหตุผลในการส่งกลับเพื่อแก้ไข');
+      return;
+    }
+    setIsSavingPayment(true);
+    try {
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from('reservations')
+        .update({
+          status: 'draft',
+          confirmation_status: 'pending',
+          confirmation_method: null,
+          confirmed_at: null,
+          updated_at: now,
+        })
+        .eq('id', id);
+      if (error) throw error;
+
+      await logActivity({
+        reservationId: id,
+        action: 'review_returned',
+        actionLabel: 'ส่งกลับเพื่อแก้ไข (แคชเชียร์)',
+        details: {
+          reason: paymentDescription,
+          returned_at: now,
+          returned_by: profile?.full_name || user?.email,
+        },
+        companyId: selectedCompany,
+        branchId: selectedBranch || null,
+      });
+
+      toast.success('ส่งกลับเพื่อแก้ไขเรียบร้อย');
+      if (isCashierMode) navigate('/reservations/pending-payment');
+    } catch (err) {
+      console.error('Error returning payment:', err);
+      toast.error('เกิดข้อผิดพลาดในการส่งกลับ');
+    } finally {
+      setIsSavingPayment(false);
+    }
+  };
+
   // Branches & models now sourced from DB; keep aliases for minimal diff
   const companyBranches = dbBranches.map(b => ({ id: b.branch_id, name: b.branch_name }));
   const companyModels = dbModels.map(m => ({ id: m.id, name: m.description }));
@@ -1786,7 +1831,7 @@ export default function ReservationEdit() {
                 </div>
 
                 {/* Save Payment Buttons */}
-                <div className="flex items-center gap-3 pt-4 border-t border-border">
+                <div className="flex items-center gap-3 pt-4 border-t border-border flex-wrap">
                   {/* บันทึกรายละเอียด button */}
                   <Button 
                     variant="outline"
@@ -1800,6 +1845,20 @@ export default function ReservationEdit() {
                       <Save className="w-4 h-4" />
                     )}
                     บันทึกรายละเอียด
+                  </Button>
+                  {/* ส่งกลับเพื่อแก้ไข button */}
+                  <Button 
+                    variant="outline"
+                    onClick={handleReturnPayment}
+                    disabled={isSavingPayment}
+                    className="gap-2 border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-400"
+                  >
+                    {isSavingPayment ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RotateCcw className="w-4 h-4" />
+                    )}
+                    ส่งกลับเพื่อแก้ไข
                   </Button>
                   {/* บันทึกยืนยันรับเงินจอง button */}
                   <Button 
@@ -1920,7 +1979,7 @@ export default function ReservationEdit() {
                       disabled={isSavingReview}
                     >
                       {isSavingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
-                      Reject
+                      ส่งกลับเพื่อแก้ไข
                     </Button>
                     <Button 
                       className="gap-2 bg-orange-600 hover:bg-orange-700 text-white"
@@ -2104,10 +2163,10 @@ export default function ReservationEdit() {
                       }}
                       disabled={isSavingApproval}
                     >
-                      {isSavingApproval ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-                      Reject
+                      {isSavingApproval ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                      ส่งกลับเพื่อแก้ไข
                     </Button>
-                    <Button 
+                    <Button
                       className="gap-2 bg-purple-600 hover:bg-purple-700 text-white"
                       onClick={async () => {
                         setIsSavingApproval(true);

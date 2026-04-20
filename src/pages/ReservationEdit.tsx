@@ -137,6 +137,12 @@ export default function ReservationEdit() {
   const [depositAmount, setDepositAmount] = useState(0);
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
 
+  // Finance details (when purchaseType === 'finance')
+  const [downPayment, setDownPayment] = useState<number>(0);
+  const [financeAmount, setFinanceAmount] = useState<number>(0);
+  const [installmentPeriodId, setInstallmentPeriodId] = useState<string>('');
+  const [dbInstallmentPeriods, setDbInstallmentPeriods] = useState<Array<{ id: string; description: string }>>([]);
+
   // Payment Details (Finance Section)
   const [paymentType, setPaymentType] = useState<string>('cash');
   const [paymentAmount, setPaymentAmount] = useState(0);
@@ -395,6 +401,18 @@ export default function ReservationEdit() {
       .order('description')
       .then(({ data }) => { if (data) setDbModels(data); });
   }, []);
+
+  // Fetch installment periods (active) for current company
+  useEffect(() => {
+    if (!selectedCompany) return;
+    supabase
+      .from('installment_periods')
+      .select('id, description')
+      .eq('status', 'active')
+      .eq('company_id', selectedCompany)
+      .order('no', { ascending: true })
+      .then(({ data }) => { if (data) setDbInstallmentPeriods(data); });
+  }, [selectedCompany]);
 
   // Resolve pending model name -> uuid once dbModels loaded
   useEffect(() => {
@@ -1336,6 +1354,61 @@ export default function ReservationEdit() {
                   </div>
                 </RadioGroup>
               </div>
+
+              {purchaseType === 'finance' && (
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-100 dark:border-blue-900">
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-3">ข้อมูลสินเชื่อ</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>เงินดาวน์</Label>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        value={downPayment > 0 ? downPayment.toLocaleString() : ''}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/\D/g, '');
+                          setDownPayment(v ? Number(v) : 0);
+                        }}
+                        placeholder="0"
+                        className="input-focus"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>ยอดจัดไฟแนนซ์</Label>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        value={financeAmount > 0 ? financeAmount.toLocaleString() : ''}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/\D/g, '');
+                          setFinanceAmount(v ? Number(v) : 0);
+                        }}
+                        placeholder="0"
+                        className="input-focus"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>ระยะเวลาผ่อน (งวด)</Label>
+                      <Select value={installmentPeriodId} onValueChange={setInstallmentPeriodId}>
+                        <SelectTrigger className="input-focus">
+                          <SelectValue placeholder="เลือก" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {dbInstallmentPeriods.length === 0 ? (
+                            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                              ไม่มีข้อมูล กรุณาเพิ่มที่ ตั้งค่าระบบ &gt; ระยะเวลาผ่อน
+                            </div>
+                          ) : (
+                            dbInstallmentPeriods.map(p => (
+                              <SelectItem key={p.id} value={p.id}>{p.description}</SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className={cn(

@@ -9,7 +9,8 @@ import {
   Car,
   User,
   CheckCircle,
-  DollarSign
+  DollarSign,
+  RotateCcw
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';

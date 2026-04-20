@@ -402,6 +402,18 @@ export default function ReservationEdit() {
       .then(({ data }) => { if (data) setDbModels(data); });
   }, []);
 
+  // Fetch installment periods (active) for current company
+  useEffect(() => {
+    if (!selectedCompany) return;
+    supabase
+      .from('installment_periods')
+      .select('id, description')
+      .eq('status', 'active')
+      .eq('company_id', selectedCompany)
+      .order('no', { ascending: true })
+      .then(({ data }) => { if (data) setDbInstallmentPeriods(data); });
+  }, [selectedCompany]);
+
   // Resolve pending model name -> uuid once dbModels loaded
   useEffect(() => {
     if (!pendingModelName || dbModels.length === 0) return;

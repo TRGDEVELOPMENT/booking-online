@@ -814,7 +814,10 @@ export default function ReservationEdit() {
     }
   };
 
-  // Submit reservation for approval — transitions status from 'confirmed' to 'pending'
+  // Submit reservation for approval — transitions status from 'confirmed' to 'pending'.
+  // On a resubmission after any stage returned for revision (cashier / supervisor / manager),
+  // we keep `confirmation_status='confirmed'` so the customer is NOT asked to re-confirm,
+  // and we reset the relevant review/approval flags so the workflow advances to the right next stage.
   const handleSubmitForApproval = async () => {
     if (!id) return;
     if (confirmationStatus !== 'confirmed') {
@@ -823,14 +826,32 @@ export default function ReservationEdit() {
     }
     setIsSaving(true);
     try {
+      const wasReturnedFromCashier = returnedFromCashier;
+      const wasReturnedFromSupervisor = returnedFromSupervisor;
+      const wasReturnedFromManager = returnedFromManager;
+      const wasResubmission = wasReturnedFromCashier || wasReturnedFromSupervisor || wasReturnedFromManager;
+
+      const updatePayload: Record<string, any> = {
+        status: 'pending',
+        // Always preserve confirmation_status='confirmed' (no re-confirm on resubmit)
+        // Reset review_status if it was 'returned' so workflow can move forward
+        review_status: reviewStatus === 'returned' ? 'pending' : reviewStatus,
+        // Persist deposit_amount in case cashier returned for editing it
+        deposit_amount: depositAmount,
+      };
+      // Reset manager rejection so workflow can re-enter approval stage
+      if (wasReturnedFromManager) {
+        updatePayload.approval_status = 'pending';
+        updatePayload.approval_remark = null;
+      }
+      // Clear the cashier remark tag once the document is resubmitted
+      if (wasReturnedFromCashier || wasReturnedFromSupervisor) {
+        updatePayload.review_remark = null;
+      }
+
       const { error } = await supabase
         .from('reservations')
-        .update({
-          status: 'pending',
-          // If this is a resubmission after supervisor returned for revision,
-          // reset review_status so the workflow advances again
-          review_status: reviewStatus === 'returned' ? 'pending' : reviewStatus,
-        })
+        .update(updatePayload)
         .eq('id', id);
       if (error) {
         toast.error('เกิดข้อผิดพลาดในการส่งขออนุมัติ: ' + error.message);
@@ -838,15 +859,27 @@ export default function ReservationEdit() {
       }
       setReservationStatus('pending');
       if (reviewStatus === 'returned') setReviewStatus('pending');
+      if (wasReturnedFromManager) setApprovalStatus('pending');
+
       await logActivity({
         reservationId: id,
-        action: 'submitted_for_approval',
-        actionLabel: 'ส่งขออนุมัติ',
-        details: { submitted_by: profile?.full_name || user?.email, submitted_at: new Date().toISOString() },
+        action: wasResubmission ? 'resubmitted_for_approval' : 'submitted_for_approval',
+        actionLabel: wasReturnedFromCashier
+          ? 'ส่งขออนุมัติอีกครั้ง (แก้ไขจำนวนเงินจอง)'
+          : wasResubmission
+            ? 'ส่งขออนุมัติอีกครั้ง (หลังถูกส่งกลับเพื่อแก้ไข)'
+            : 'ส่งขออนุมัติ',
+        details: {
+          submitted_by: profile?.full_name || user?.email,
+          submitted_at: new Date().toISOString(),
+          resubmission: wasResubmission,
+          returned_from: wasReturnedFromCashier ? 'cashier' : wasReturnedFromSupervisor ? 'supervisor' : wasReturnedFromManager ? 'manager' : null,
+          new_deposit_amount: wasReturnedFromCashier ? depositAmount : undefined,
+        },
         companyId: selectedCompany,
         branchId: selectedBranch || null,
       });
-      toast.success('ส่งขออนุมัติสำเร็จ');
+      toast.success(wasResubmission ? 'ส่งขออนุมัติอีกครั้งสำเร็จ' : 'ส่งขออนุมัติสำเร็จ');
       navigate('/reservations');
     } catch (err) {
       console.error('Error:', err);

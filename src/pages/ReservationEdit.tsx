@@ -98,6 +98,13 @@ export default function ReservationEdit() {
   const [reservationStatus, setReservationStatus] = useState<string>('draft');
   const [documentNumber, setDocumentNumber] = useState('');
 
+  // Sale role loses edit rights once the document has been submitted for approval.
+  // After 'ส่งขออนุมัติ' the status becomes 'pending' (or downstream) — sale becomes view-only.
+  const isSaleLocked = isSaleRole && !isIT && !isAdmin && (
+    reservationStatus === 'pending' || reservationStatus === 'cancelled'
+  );
+  const effectiveViewOnly = isViewOnly || isSaleLocked;
+
   // Form state
   const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedBU, setSelectedBU] = useState('');
@@ -744,7 +751,7 @@ export default function ReservationEdit() {
         subtitle={`${company?.code} - เลขที่: ${documentNumber}${isCashierMode ? ' (โหมดแคชเชียร์)' : ''}`}
       />
       
-       <div className={cn("flex-1 p-6 overflow-auto", isViewOnly && !isSaleSupervisor && !isCashier && !isSaleManager && "pointer-events-none")}>
+       <div className={cn("flex-1 p-6 overflow-auto", (effectiveViewOnly && !isSaleSupervisor && !isCashier && !isSaleManager) && "pointer-events-none")}>
         <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
           {/* Workflow Progress */}
           <WorkflowSteps
@@ -2093,8 +2100,8 @@ export default function ReservationEdit() {
             </div>
             )}
             
-            {/* Action Buttons - Hidden in view-only mode */}
-            {!isViewOnly && !isCashierMode && !isSaleSupervisor && !isSaleManager && (
+            {/* Action Buttons - Hidden in view-only mode (and when sale role is locked after submission) */}
+            {!effectiveViewOnly && !isCashierMode && !isSaleSupervisor && !isSaleManager && (
             <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
               <Button 
                 variant="outline" 
@@ -2150,7 +2157,7 @@ export default function ReservationEdit() {
             </div>
 
             {/* View-only back button */}
-            {isViewOnly && (
+            {effectiveViewOnly && (
             <div className="flex items-center pt-4 border-t border-border pointer-events-auto">
               <Button 
                 variant="outline" 

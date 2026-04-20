@@ -267,38 +267,48 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                         </TooltipProvider>
                       );
                     })()}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground">
-                          <MoreHorizontal className="w-3.5 h-3.5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link to={`/reservations/${reservation.id}`}>
-                            <Eye className="w-4 h-4 mr-2" />
-                            ดูรายละเอียด
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to={`/reservations/${reservation.id}/edit`}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            แก้ไข
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to={`/reservations/${reservation.id}/print`}>
-                            <Printer className="w-4 h-4 mr-2" />
-                            พิมพ์สัญญา
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          ลบ
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {(() => {
+                      const stageRole = getCurrentStageRole(reservation);
+                      // Edit allowed only when current role still owns the stage (e.g. sale loses edit after submission)
+                      // Admin viewers (it/user_admin) keep edit access
+                      const canEdit = isAdminViewer || isActionableForRole(stageRole, currentRole);
+                      return (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground">
+                              <MoreHorizontal className="w-3.5 h-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link to={`/reservations/${reservation.id}`}>
+                                <Eye className="w-4 h-4 mr-2" />
+                                ดูรายละเอียด
+                              </Link>
+                            </DropdownMenuItem>
+                            {canEdit && (
+                              <DropdownMenuItem asChild>
+                                <Link to={`/reservations/${reservation.id}/edit`}>
+                                  <Edit className="w-4 h-4 mr-2" />
+                                  แก้ไข
+                                </Link>
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem asChild>
+                              <Link to={`/reservations/${reservation.id}/print`}>
+                                <Printer className="w-4 h-4 mr-2" />
+                                พิมพ์สัญญา
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive">
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              ลบ
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      );
+                    })()}
                   </div>
                 </td>
               </tr>

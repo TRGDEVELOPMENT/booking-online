@@ -137,6 +137,12 @@ export default function ReservationEdit() {
   const [depositAmount, setDepositAmount] = useState(0);
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
 
+  // Finance details (when purchaseType === 'finance')
+  const [downPayment, setDownPayment] = useState<number>(0);
+  const [financeAmount, setFinanceAmount] = useState<number>(0);
+  const [installmentPeriodId, setInstallmentPeriodId] = useState<string>('');
+  const [dbInstallmentPeriods, setDbInstallmentPeriods] = useState<Array<{ id: string; description: string }>>([]);
+
   // Payment Details (Finance Section)
   const [paymentType, setPaymentType] = useState<string>('cash');
   const [paymentAmount, setPaymentAmount] = useState(0);

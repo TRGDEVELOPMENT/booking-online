@@ -2163,7 +2163,7 @@ export default function ReservationEdit() {
                       ? "btn-primary-gradient" 
                       : "bg-muted text-muted-foreground cursor-not-allowed"
                   )}
-                  onClick={handleSave}
+                  onClick={handleSubmitForApproval}
                   disabled={isSaving || confirmationStatus !== 'confirmed'}
                   title={confirmationStatus !== 'confirmed' ? 'กรุณายืนยันสัญญาจองก่อนส่งขออนุมัติ' : ''}
                 >

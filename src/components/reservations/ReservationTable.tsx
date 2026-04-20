@@ -31,6 +31,8 @@ function getWorkflowIndex(r: DatabaseReservation): number {
   if (r.status === 'cancelled') return -2; // cancelled
   if (r.cancel_approval_status === 'approved') return -3; // cancel approved
   if (r.approval_status === 'approved') return 5;
+  // Returned for revision -> back to "สร้าง/แก้ไขใบจอง"
+  if ((r.review_status === 'returned' || (r as any).approval_status === 'rejected') && r.status === 'draft') return 0;
   if (r.review_status === 'reviewed') return 4;
   // Cashier verified payment -> stage moves to "ตรวจสอบรายละเอียด" (supervisor)
   if ((r as any).cashier_user_id) return 3;

@@ -2241,6 +2241,7 @@ export default function ReservationEdit() {
                           setApprovedAt(now);
                           toast.success('อนุมัติใบจองสำเร็จ');
                           refetchLogs();
+                          navigate('/reservations');
                         } catch (err) {
                           toast.error('เกิดข้อผิดพลาด');
                         } finally {

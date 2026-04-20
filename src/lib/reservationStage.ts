@@ -22,10 +22,10 @@ export function getCurrentStageRole(r: DatabaseReservation): StageRole {
   // Reviewed by supervisor, awaiting manager approval
   if (r.review_status === 'reviewed') return 'sale_manager';
 
-  // Cashier verified payment (status pending or cashier_user_id set), awaiting supervisor review
-  if (r.status === 'pending' || (r as any).cashier_user_id) return 'sale_supervisor';
+  // Cashier has verified payment -> supervisor reviews
+  if ((r as any).cashier_user_id) return 'sale_supervisor';
 
-  // Customer confirmed, awaiting cashier verification
+  // Customer confirmed (and submitted for approval) -> cashier verifies payment
   if (r.confirmation_status === 'confirmed') return 'cashier';
 
   // Draft / pending confirmation -> sale

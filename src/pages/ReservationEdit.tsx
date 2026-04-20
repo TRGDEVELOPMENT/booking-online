@@ -1297,8 +1297,19 @@ export default function ReservationEdit() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <div className="space-y-2">
-                  <Label>เงินจอง</Label>
+                <div className={cn(
+                  "space-y-2",
+                  // When cashier returned for revision, lift the parent lock so sale can edit the deposit only
+                  (isSaleRole && returnedFromCashier) && "pointer-events-auto select-auto opacity-100 ring-2 ring-amber-400 rounded-md p-2 -m-2 bg-amber-50 dark:bg-amber-950/30"
+                )}>
+                  <Label className={cn(
+                    (isSaleRole && returnedFromCashier) && "text-amber-700 dark:text-amber-300 font-semibold"
+                  )}>
+                    เงินจอง
+                    {(isSaleRole && returnedFromCashier) && (
+                      <span className="ml-2 text-xs bg-amber-500 text-white px-2 py-0.5 rounded">แก้ไขได้</span>
+                    )}
+                  </Label>
                   <Input 
                     type="text"
                     inputMode="numeric"

@@ -1941,15 +1941,17 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 9: Attachments */}
-            <FileUploadSection
-              files={attachments}
-              onFilesAdd={(files) => handleAddFiles(files)}
-              onFileRemove={handleRemoveFile}
-              onFileOpen={handleOpenFile}
-              disabled={isViewOnly || isCashierMode || ((isCashier || isSaleSupervisor) && !isIT)}
-              isLoading={isLoadingAttachments}
-            />
+            {/* Section 9: Attachments - always interactive (preview/download) regardless of parent read-only state */}
+            <div className="pointer-events-auto">
+              <FileUploadSection
+                files={attachments}
+                onFilesAdd={(files) => handleAddFiles(files)}
+                onFileRemove={handleRemoveFile}
+                onFileOpen={handleOpenFile}
+                disabled={isViewOnly || isCashierMode || ((isCashier || isSaleSupervisor) && !isIT)}
+                isLoading={isLoadingAttachments}
+              />
+            </div>
 
             </div>
             {/* End cashier read-only wrapper */}

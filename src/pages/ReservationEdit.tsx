@@ -1979,7 +1979,7 @@ export default function ReservationEdit() {
                       disabled={isSavingReview}
                     >
                       {isSavingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
-                      Reject
+                      ส่งกลับเพื่อแก้ไข
                     </Button>
                     <Button 
                       className="gap-2 bg-orange-600 hover:bg-orange-700 text-white"

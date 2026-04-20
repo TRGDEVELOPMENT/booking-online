@@ -236,6 +236,20 @@ export default function FileUploadSection({
                   >
                     <ExternalLink className="w-4 h-4" />
                   </Button>
+                  {/* Download file button */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownload(file);
+                    }}
+                    title="ดาวน์โหลดไฟล์"
+                  >
+                    <Download className="w-4 h-4" />
+                  </Button>
                   {/* Delete button - only show if not disabled */}
                   {!disabled && (
                     <Button

@@ -965,48 +965,7 @@ export default function ReservationEdit() {
             }}
           />
 
-          {/* Returned-for-revision banner (Sale role) */}
-          {isSaleRole && isReturnedForRevision && (
-            <div className={cn(
-              "p-4 rounded-lg border-2",
-              returnedFromCashier
-                ? "border-amber-400 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700"
-                : "border-orange-300 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-700"
-            )}>
-              <div className="flex items-start gap-3">
-                <RotateCcw className={cn(
-                  "w-5 h-5 mt-0.5 flex-shrink-0",
-                  returnedFromCashier ? "text-amber-600 dark:text-amber-400" : "text-orange-600 dark:text-orange-400"
-                )} />
-                <div className="flex-1">
-                  <p className={cn(
-                    "font-semibold",
-                    returnedFromCashier ? "text-amber-800 dark:text-amber-300" : "text-orange-800 dark:text-orange-300"
-                  )}>
-                    {returnedFromCashier && 'เอกสารถูกส่งกลับเพื่อแก้ไข (โดยแคชเชียร์) — แก้ไขได้เฉพาะ "จำนวนเงินจอง"'}
-                    {returnedFromSupervisor && 'เอกสารถูกส่งกลับเพื่อแก้ไข (โดยหัวหน้าทีมขาย)'}
-                    {returnedFromManager && 'เอกสารถูกส่งกลับเพื่อแก้ไข (โดยผู้จัดการฝ่ายขาย)'}
-                  </p>
-                  {(displayedReviewRemark || (returnedFromManager && approvalRemark)) && (
-                    <p className={cn(
-                      "text-sm mt-1",
-                      returnedFromCashier ? "text-amber-700 dark:text-amber-300" : "text-orange-700 dark:text-orange-300"
-                    )}>
-                      เหตุผล: {returnedFromManager ? approvalRemark : displayedReviewRemark}
-                    </p>
-                  )}
-                  <p className={cn(
-                    "text-xs mt-2",
-                    returnedFromCashier ? "text-amber-600 dark:text-amber-400" : "text-orange-600 dark:text-orange-400"
-                  )}>
-                    {returnedFromCashier
-                      ? 'กรุณาแก้ไข "จำนวนเงินจอง" แล้วกดส่งขออนุมัติอีกครั้ง — ระบบจะส่งกลับไปที่แคชเชียร์โดยตรง (ข้ามขั้นยืนยันสัญญาจอง)'
-                      : 'กรุณาแก้ไขรายละเอียดใบจอง แล้วกดส่งขออนุมัติอีกครั้ง (ข้ามขั้นยืนยันสัญญาจอง)'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Returned-for-revision banner hidden by request */}
 
            {/* Admin Assignment Panel - visible only to user_admin/it */}
            {isAdmin && id && (

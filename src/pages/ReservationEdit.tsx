@@ -613,10 +613,10 @@ export default function ReservationEdit() {
     if (reviewStatus === 'reviewed') return 'step5';
     
     // If confirmed by customer:
-    //  - Until cashier verifies payment (cashier_user_id is set or status === 'pending') → Step 3 ตรวจสอบการชำระเงิน
+    //  - Until cashier verifies payment (cashier_user_id is set) → Step 3 ตรวจสอบการชำระเงิน
     //  - After cashier verifies → Step 4 ตรวจสอบรายละเอียด
     if (confirmationStatus === 'confirmed') {
-      const cashierVerified = !!cashierUserId || reservationStatus === 'pending';
+      const cashierVerified = !!cashierUserId;
       return cashierVerified ? 'step4' : 'step3';
     }
     

@@ -1406,7 +1406,7 @@ export default function ReservationEdit() {
                     เงินจอง
                     {(isSaleRole && returnedFromCashier) && (
                       <span className="ml-1 text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-medium">
-                        แก้ไขที่นี่
+                        แก้ไข
                       </span>
                     )}
                   </Label>

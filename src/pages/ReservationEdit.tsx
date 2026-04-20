@@ -302,6 +302,15 @@ export default function ReservationEdit() {
         setDiscountAmount(data.discount || 0);
         setDepositAmount(data.deposit_amount || 0);
         setExpectedDeliveryDate(data.expected_delivery_date || '');
+
+        // Purchase type & finance details
+        const anyData = data as any;
+        if (anyData.purchase_type) {
+          setPurchaseType(anyData.purchase_type as PurchaseType);
+        }
+        if (anyData.down_payment != null) setDownPayment(Number(anyData.down_payment) || 0);
+        if (anyData.finance_amount != null) setFinanceAmount(Number(anyData.finance_amount) || 0);
+        if (anyData.installment_period_id) setInstallmentPeriodId(anyData.installment_period_id);
         
         // Items
         if (Array.isArray(data.freebies)) {

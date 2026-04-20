@@ -1138,13 +1138,18 @@ export default function ReservationEdit() {
               </div>
             </div>
 
-            {/* Section 3: Buyer (if different) */}
-            <div className="form-section">
+            {/* Section 3: Buyer (if different) - locked when any stage returned for revision (no changing customer) */}
+            <div className={cn(
+              "form-section",
+              isSaleRole && isReturnedForRevision && "pointer-events-none select-none opacity-90"
+            )}>
               <div className="form-section-header flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                ข้อมูลผู้ซื้อรถ
+                ข้อมูลผู้ซื้อรถ {isSaleRole && isReturnedForRevision && (
+                  <Badge variant="outline" className="ml-2 bg-muted text-muted-foreground">View Only</Badge>
+                )}
               </div>
-              
+
               <div className="flex items-center space-x-2 mb-4">
                 <Checkbox 
                   id="buyerSame" 

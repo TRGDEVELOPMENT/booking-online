@@ -302,6 +302,15 @@ export default function ReservationEdit() {
         setDiscountAmount(data.discount || 0);
         setDepositAmount(data.deposit_amount || 0);
         setExpectedDeliveryDate(data.expected_delivery_date || '');
+
+        // Purchase type & finance details
+        const anyData = data as any;
+        if (anyData.purchase_type) {
+          setPurchaseType(anyData.purchase_type as PurchaseType);
+        }
+        if (anyData.down_payment != null) setDownPayment(Number(anyData.down_payment) || 0);
+        if (anyData.finance_amount != null) setFinanceAmount(Number(anyData.finance_amount) || 0);
+        if (anyData.installment_period_id) setInstallmentPeriodId(anyData.installment_period_id);
         
         // Items
         if (Array.isArray(data.freebies)) {
@@ -792,11 +801,15 @@ export default function ReservationEdit() {
         freebies: freebies.filter(f => f.name),
         accessories: accessories.filter(a => a.name),
         benefits: benefits.filter(b => b.name),
+        purchase_type: purchaseType,
+        down_payment: purchaseType === 'finance' ? downPayment : 0,
+        finance_amount: purchaseType === 'finance' ? financeAmount : 0,
+        installment_period_id: purchaseType === 'finance' ? (installmentPeriodId || null) : null,
       };
 
       const { error } = await supabase
         .from('reservations')
-        .update(updateData)
+        .update(updateData as any)
         .eq('id', id);
 
       if (error) {

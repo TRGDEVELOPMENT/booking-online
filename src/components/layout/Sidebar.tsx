@@ -249,6 +249,41 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
     };
   }, [selectedCompany, currentRole, isAdminViewer, location.pathname]);
 
+  // Fetch count of cancellation requests pending for sale_manager approval
+  useEffect(() => {
+    if (!selectedCompany || !isManager) {
+      setPendingCancelCount(0);
+      return;
+    }
+    let cancelled = false;
+    const fetchCancelCount = async () => {
+      const { data, error } = await supabase
+        .from('reservations')
+        .select('id, status, cancel_request_status, cancel_approval_status')
+        .eq('company_id', selectedCompany)
+        .eq('cancel_request_status', 'requested')
+        .neq('status', 'cancelled');
+      if (cancelled || error || !data) return;
+      const count = data.filter((r: any) => r.cancel_approval_status !== 'approved').length;
+      setPendingCancelCount(count);
+    };
+    fetchCancelCount();
+
+    const channel = supabase
+      .channel(`sidebar-cancel-${selectedCompany}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reservations', filter: `company_id=eq.${selectedCompany}` },
+        () => { fetchCancelCount(); }
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [selectedCompany, isManager, location.pathname]);
+
   // Filter subItems based on role
   const filterSubItemsByRole = (subItems?: SubItem[]) => {
     if (!subItems) return [];

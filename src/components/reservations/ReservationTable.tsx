@@ -240,8 +240,46 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                   <div className="flex justify-center gap-0.5">
                     {(() => {
                       const stageRole = getCurrentStageRole(reservation);
-                      // Admin viewers (IT / user_admin) → view-only
-                      if (isAdminViewer) {
+                      const idx = getWorkflowIndex(reservation);
+                      const r: any = reservation;
+                      const isReturned = r.status === 'draft' && (
+                        r.review_status === 'returned' ||
+                        r.approval_status === 'rejected' ||
+                        (r.cashier_user_id && r.confirmation_status === 'confirmed' && r.review_status !== 'reviewed' && (r.review_remark || '').includes('[DEPOSIT_RETURN]'))
+                      );
+                      // Early stages: สร้าง (0), ยืนยันสัญญาจอง (1), or ส่งกลับเพื่อแก้ไข
+                      const isEarlyStage = idx === 0 || idx === 1 || isReturned;
+                      const isCreator = !!currentUserId && reservation.created_by === currentUserId;
+
+                      // Case 1: Early stage + (creator OR IT Admin) → View, Print, Delete
+                      if (isEarlyStage && (isCreator || isItAdmin)) {
+                        return (
+                          <>
+                            <Link to={`/reservations/${reservation.id}`}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" title="ดูรายละเอียด">
+                                <Eye className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
+                            <Link to={`/reservations/${reservation.id}/print`}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" title="พิมพ์เอกสาร">
+                                <Printer className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                              title="ลบ"
+                              onClick={() => handleDelete(reservation.id)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </>
+                        );
+                      }
+
+                      // user_admin (non-IT) viewers → view-only
+                      if (isAdminViewer && !isItAdmin) {
                         return (
                           <Link to={`/reservations/${reservation.id}`}>
                             <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" title="ดูรายละเอียด">
@@ -252,6 +290,8 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                       }
 
                       const actionable = isActionableForRole(stageRole, currentRole);
+
+                      // Case 2: Other stages + user is NOT actionable role → View only
                       if (!actionable) {
                         return (
                           <Link to={`/reservations/${reservation.id}`}>
@@ -262,7 +302,7 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                         );
                       }
 
-                      // Actionable for current role — show role-specific action icon (highly visible)
+                      // Actionable for current role — show role-specific action icon
                       const actionMeta: Record<string, { Icon: typeof Eye; label: string; bg: string; ring: string }> = {
                         sale: stageRole === 'done'
                           ? { Icon: Printer, label: 'พิมพ์เอกสาร', bg: 'bg-emerald-500 hover:bg-emerald-600 text-white', ring: 'ring-emerald-300' }
@@ -297,48 +337,6 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                             <TooltipContent>⚡ {meta.label}</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                      );
-                    })()}
-                    {(() => {
-                      const stageRole = getCurrentStageRole(reservation);
-                      // Edit allowed only when current role still owns the stage (e.g. sale loses edit after submission)
-                      // Admin viewers (it/user_admin) keep edit access
-                      const canEdit = isAdminViewer || isActionableForRole(stageRole, currentRole);
-                      return (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground">
-                              <MoreHorizontal className="w-3.5 h-3.5" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link to={`/reservations/${reservation.id}`}>
-                                <Eye className="w-4 h-4 mr-2" />
-                                ดูรายละเอียด
-                              </Link>
-                            </DropdownMenuItem>
-                            {canEdit && (
-                              <DropdownMenuItem asChild>
-                                <Link to={`/reservations/${reservation.id}/edit`}>
-                                  <Edit className="w-4 h-4 mr-2" />
-                                  แก้ไข
-                                </Link>
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem asChild>
-                              <Link to={`/reservations/${reservation.id}/print`}>
-                                <Printer className="w-4 h-4 mr-2" />
-                                พิมพ์สัญญา
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive">
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              ลบ
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       );
                     })()}
                   </div>

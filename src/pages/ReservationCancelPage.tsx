@@ -135,7 +135,7 @@ const ReservationCancelPage = () => {
 
   useEffect(() => {
     fetchApprovedReservations();
-  }, [selectedCompany]);
+  }, [selectedCompany, isSale, profile?.user_id]);
 
   const handleOpenCancelDialog = (reservation: DatabaseReservation) => {
     setSelectedReservation(reservation);

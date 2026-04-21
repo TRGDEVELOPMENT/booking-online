@@ -110,9 +110,17 @@ const ReservationCancelPage = () => {
         cancel_review_status: item.cancel_review_status,
         cancel_approval_status: item.cancel_approval_status,
         cancel_reason: item.cancel_reason,
+        cancel_requested_by: item.cancel_requested_by,
       } as any));
 
-      setReservations(transformedData);
+      const visibleReservations = isSale && profile?.user_id
+        ? transformedData.filter((item: any) => {
+            const ownerId = item.cancel_requested_by || item.created_by;
+            return ownerId === profile.user_id;
+          })
+        : transformedData;
+
+      setReservations(visibleReservations);
     } catch (error) {
       console.error("Error fetching reservations:", error);
       toast({

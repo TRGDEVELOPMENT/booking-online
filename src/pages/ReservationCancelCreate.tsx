@@ -95,7 +95,7 @@ const ReservationCancelCreate = () => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedReservation || !cancelReason) return;
+    if (!selectedReservation || !cancelReason || isSubmitting) return;
     setIsSubmitting(true);
     try {
       const { error } = await supabase
@@ -103,10 +103,12 @@ const ReservationCancelCreate = () => {
         .update({
           cancel_request_status: "requested",
           cancel_requested_at: new Date().toISOString(),
+          cancel_requested_by: profile?.user_id || null,
           cancel_reason: cancelReason,
           cancel_review_remark: cancelRemark.trim() || null,
         } as any)
-        .eq("id", selectedReservation.id);
+        .eq("id", selectedReservation.id)
+        .is("cancel_request_status", null);
 
       if (error) throw error;
 

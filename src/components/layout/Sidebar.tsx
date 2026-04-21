@@ -204,6 +204,7 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
   const { profile, roles, signOut, hasRole } = useAuth();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['reservations']);
   const [actionableCount, setActionableCount] = useState(0);
+  const [pendingCancelCount, setPendingCancelCount] = useState(0);
 
   // Check if user is a cashier
   const isCashier = hasRole('cashier');

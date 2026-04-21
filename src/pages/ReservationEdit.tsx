@@ -1228,12 +1228,12 @@ export default function ReservationEdit() {
                  {attachments.length === 0 ? (
                    <p className="text-sm text-muted-foreground">ไม่มีไฟล์แนบ</p>
                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {attachments.map(file => (
-                        <div
-                          key={file.id}
-                          className="flex items-center gap-2 p-2 rounded border hover:bg-muted/50 text-sm transition-colors"
-                        >
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pointer-events-auto [&_*]:pointer-events-auto">
+                       {attachments.map(file => (
+                         <div
+                           key={file.id}
+                           className="flex items-center gap-2 p-2 rounded border hover:bg-muted/50 text-sm transition-colors"
+                         >
                           <Paperclip className="w-4 h-4 text-primary shrink-0" />
                           <span className="truncate flex-1">{file.name}</span>
                           <span className="text-xs text-muted-foreground shrink-0">{(file.size / 1024).toFixed(0)} KB</span>

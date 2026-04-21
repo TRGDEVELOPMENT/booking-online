@@ -147,14 +147,10 @@ const ReservationCancelApprovePage = () => {
       </TableCell>
       <TableCell className="text-center">
         {mode === "approved" ? (
-          <Badge variant="destructive">ยกเลิกแล้ว</Badge>
-        ) : r.cancel_review_status === "reviewed" ? (
-          <Badge className="bg-orange-500 text-white border-orange-500">
-            รออนุมัติยกเลิก
-          </Badge>
+          <Badge variant="destructive" className="hover:bg-destructive">ยกเลิกแล้ว</Badge>
         ) : (
-          <Badge variant="outline" className="text-orange-600 border-orange-600">
-            รอตรวจสอบ
+          <Badge className="bg-orange-500 text-white border-orange-500 hover:bg-orange-500">
+            รออนุมัติ
           </Badge>
         )}
       </TableCell>

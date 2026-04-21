@@ -300,9 +300,9 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
     );
   };
 
-  const isActive = (path: string) => {
+  const matchesPath = (path: string) => {
     if (path === '/') return location.pathname === '/';
-    return location.pathname === path || location.pathname.startsWith(path + '/');
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
   const selectedCompanyData = companies.find(c => c.id === selectedCompany);
@@ -333,6 +333,22 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
       return item.roles.some(role => hasRole(role as any));
     });
   };
+
+  const activeMenuPath = (() => {
+    const visiblePaths = filterMenuByRole(allMenuItems.filter(item => !isPublished || !devMenuIds.includes(item.id)))
+      .flatMap(item => {
+        const filteredSubItems = filterSubItemsByRole(item.subItems);
+        return filteredSubItems.length > 0
+          ? filteredSubItems.map(subItem => subItem.path)
+          : [item.path];
+      })
+      .filter(matchesPath)
+      .sort((a, b) => b.length - a.length);
+
+    return visiblePaths[0] ?? null;
+  })();
+
+  const isActive = (path: string) => activeMenuPath === path;
 
   const handleLogout = async () => {
     await signOut();

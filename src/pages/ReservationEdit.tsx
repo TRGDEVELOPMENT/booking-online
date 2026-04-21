@@ -30,7 +30,8 @@ import {
   RotateCcw,
   XCircle,
   ThumbsUp,
-  AlertCircle
+  AlertCircle,
+  FileText
 } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Badge } from '@/components/ui/badge';

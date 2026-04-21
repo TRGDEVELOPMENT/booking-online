@@ -163,7 +163,7 @@ const ReservationCancelApprovePage = () => {
           title={canApprove && mode === "pending" ? "พิจารณาอนุมัติยกเลิก" : "ดูรายละเอียด"}
         >
           {canApprove && mode === "pending" ? (
-            <ClipboardCheck className="h-4 w-4" />
+            <ClipboardCheck className="h-4 w-4 text-orange-500" />
           ) : (
             <Eye className="h-4 w-4" />
           )}

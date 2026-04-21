@@ -394,6 +394,7 @@ export default function ReservationEdit() {
         setCreatedAt(data.created_at);
 
         // Lookup actor names from profiles
+        setReviewedBy(data.reviewed_by || null);
         const actorIds = [data.created_by, data.reviewed_by, data.approved_by].filter(Boolean) as string[];
         if (actorIds.length > 0) {
           const { data: profiles } = await supabase

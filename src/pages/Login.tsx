@@ -170,12 +170,12 @@ export default function Login() {
             </p>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: 'ที่ปรึกษาการขาย', username: 'sale', icon: '👤' },
-                { label: 'แคชเชียร์', username: 'cashier', icon: '💰' },
-                { label: 'หัวหน้าทีมขาย', username: 'supervisor', icon: '👨‍💼' },
-                { label: 'ผจก.ฝ่ายขาย', username: 'manager', icon: '📋' },
-                { label: 'ผู้ดูแลระบบ', username: 'useradmin', icon: '🔧' },
-                { label: 'IT Admin', username: 'itadmin', icon: '💻' },
+              { label: 'ที่ปรึกษาการขาย', username: 'sale', icon: '👤', role: 'sale' },
+                { label: 'แคชเชียร์', username: 'cashier', icon: '💰', role: 'cashier' },
+                { label: 'หัวหน้าทีมขาย', username: 'supervisor', icon: '👨‍💼', role: 'sale_supervisor' },
+                { label: 'ผจก.ฝ่ายขาย', username: 'manager', icon: '📋', role: 'sale_manager' },
+                { label: 'ผู้ดูแลระบบ', username: 'useradmin', icon: '🔧', role: 'user_admin' },
+                { label: 'IT Admin', username: 'itadmin', icon: '💻', role: 'it' },
               ].map((acc) => (
                 <Button
                   key={acc.username}
@@ -201,6 +201,9 @@ export default function Login() {
                       }
                       if (data.user) {
                         await supabase.from('profiles').update({ company_id: targetCompany }).eq('user_id', data.user.id);
+                        // Reset role to the intended role for this test account
+                        // (in case it was changed via the role switcher)
+                        await supabase.functions.invoke('switch-role', { body: { role: acc.role } });
                         localStorage.setItem('selectedCompany', targetCompany);
                         toast.success(`เข้าสู่ระบบเป็น ${acc.label} สำเร็จ`);
                         navigate('/');

@@ -888,11 +888,48 @@ export default function ReservationEdit() {
       const wasReturnedFromManager = returnedFromManager;
       const wasResubmission = wasReturnedFromCashier || wasReturnedFromSupervisor || wasReturnedFromManager;
 
+      // Persist any edits the user made before resubmitting (e.g. switching purchase type
+      // from cash → finance, updating prices, vehicle, freebies). Without this, edits made
+      // on the form after a return-for-revision would silently be discarded because
+      // resubmit previously only touched workflow status fields.
+      const customerName = `${bookingTitle}${bookingFirstName} ${bookingLastName}`;
+      const modelName = dbModels.find(m => m.id === selectedModel)?.description || '';
+      const submodelName = dbSubModels.find(s => s.id === selectedSubmodel)?.description || '';
+      const colorName = dbColors.find(c => c.id === selectedColor)?.description || '';
+
       const updatePayload: Record<string, any> = {
         status: 'pending',
         // Always preserve confirmation_status='confirmed' (no re-confirm on resubmit)
-        // Persist deposit_amount in case cashier returned for editing it
+        // Customer / buyer
+        branch_id: selectedBranch,
+        customer_type: bookingCustomerType,
+        customer_name: customerName,
+        customer_id_card: bookingIdNo,
+        customer_phone: bookingPhone,
+        customer_email: bookingEmail || null,
+        buyer_name: isBuyerSame ? customerName : buyerName || null,
+        buyer_id_card: isBuyerSame ? bookingIdNo : buyerIdCard || null,
+        buyer_phone: isBuyerSame ? bookingPhone : buyerPhone || null,
+        // Vehicle
+        vehicle_type: selectedBU || null,
+        model: modelName || null,
+        submodel: submodelName || null,
+        color: colorName || null,
+        fuel_type: selectedFuelType || null,
+        // Pricing & finance
+        list_price: basePrice,
+        discount: discountAmount,
+        net_price: finalPrice,
         deposit_amount: depositAmount,
+        expected_delivery_date: expectedDeliveryDate || null,
+        purchase_type: purchaseType,
+        down_payment: purchaseType === 'finance' ? downPayment : 0,
+        finance_amount: purchaseType === 'finance' ? financeAmount : 0,
+        installment_period_id: purchaseType === 'finance' ? (installmentPeriodId || null) : null,
+        // Items
+        freebies: freebies.filter(f => f.name),
+        accessories: accessories.filter(a => a.name),
+        benefits: benefits.filter(b => b.name),
       };
 
       // Any resubmission after a return → route back to "ตรวจสอบการชำระเงิน" (cashier stage)

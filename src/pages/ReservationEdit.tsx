@@ -2165,7 +2165,7 @@ export default function ReservationEdit() {
 
             {/* Section 9: Attachments - always interactive (preview/download) regardless of parent read-only state.
                 Trash icon is hidden whenever the form is effectively view-only for this user. */}
-            <div className="pointer-events-auto">
+            <div className="pointer-events-auto [&_*]:pointer-events-auto">
               <FileUploadSection
                 files={attachments}
                 onFilesAdd={(files) => handleAddFiles(files)}

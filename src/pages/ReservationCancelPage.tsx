@@ -201,7 +201,7 @@ const ReservationCancelPage = () => {
   return (
     <div className="space-y-6">
       <Header
-        title="ยกเลิกใบจอง"
+        title="รายการยกเลิกใบจอง"
         subtitle={`${selectedCompany} - ${companyNames[selectedCompany] || selectedCompany}`}
       />
 
@@ -223,7 +223,7 @@ const ReservationCancelPage = () => {
         <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
         <div>
           <p className="text-sm font-medium text-warning">
-            แสดงเฉพาะใบจองที่ผ่านการอนุมัติจากผู้จัดการฝ่ายขายแล้วเท่านั้น
+            แสดงเฉพาะใบจองที่อยู่ใน Process การขอยกเลิก (รออนุมัติ / ยกเลิกแล้ว)
           </p>
           <p className="text-sm text-muted-foreground mt-1">
             จำนวน {filteredReservations.length} รายการ

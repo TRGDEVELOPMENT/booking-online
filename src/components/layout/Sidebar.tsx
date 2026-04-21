@@ -431,6 +431,11 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
                                       {actionableCount > 99 ? '99+' : actionableCount}
                                     </span>
                                   )}
+                                  {subItem.id === 'cancel-approve' && pendingCancelCount > 0 && (
+                                    <span className="ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold leading-none">
+                                      {pendingCancelCount > 99 ? '99+' : pendingCancelCount}
+                                    </span>
+                                  )}
                                 </Link>
                               </li>
                             );

@@ -1812,7 +1812,7 @@ export default function ReservationEdit() {
                       />
                     </div>
                     <div className="col-span-1">
-                      {!isViewOnly && !isCashierMode && (
+                      {!isViewOnly && !isCashierMode && !isSaleManager && !isSaleSupervisor && (
                         <Button variant="ghost" size="icon" onClick={() => removeItem('freebies', item.id)} className="text-destructive hover:text-destructive">
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -1820,7 +1820,7 @@ export default function ReservationEdit() {
                     </div>
                   </div>
                 ))}
-                {!isViewOnly && !isCashierMode && (
+                {!isViewOnly && !isCashierMode && !isSaleManager && !isSaleSupervisor && (
                   <Button variant="outline" size="sm" onClick={() => openPicker('freebies')} className="gap-1">
                     <Plus className="w-4 h-4" />
                     เพิ่มรายการ
@@ -1865,7 +1865,7 @@ export default function ReservationEdit() {
                       />
                     </div>
                     <div className="col-span-1">
-                      {!isViewOnly && !isCashierMode && (
+                      {!isViewOnly && !isCashierMode && !isSaleManager && !isSaleSupervisor && (
                         <Button variant="ghost" size="icon" onClick={() => removeItem('accessories', item.id)} className="text-destructive hover:text-destructive">
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -1873,7 +1873,7 @@ export default function ReservationEdit() {
                     </div>
                   </div>
                 ))}
-                {!isViewOnly && !isCashierMode && (
+                {!isViewOnly && !isCashierMode && !isSaleManager && !isSaleSupervisor && (
                   <Button variant="outline" size="sm" onClick={() => openPicker('accessories')} className="gap-1">
                     <Plus className="w-4 h-4" />
                     เพิ่มรายการ
@@ -1918,7 +1918,7 @@ export default function ReservationEdit() {
                       />
                     </div>
                     <div className="col-span-1">
-                      {!isViewOnly && !isCashierMode && (
+                      {!isViewOnly && !isCashierMode && !isSaleManager && !isSaleSupervisor && (
                         <Button variant="ghost" size="icon" onClick={() => removeItem('benefits', item.id)} className="text-destructive hover:text-destructive">
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -1926,7 +1926,7 @@ export default function ReservationEdit() {
                     </div>
                   </div>
                 ))}
-                {!isViewOnly && !isCashierMode && (
+                {!isViewOnly && !isCashierMode && !isSaleManager && !isSaleSupervisor && (
                   <Button variant="outline" size="sm" onClick={() => openPicker('benefits')} className="gap-1">
                     <Plus className="w-4 h-4" />
                     เพิ่มรายการ

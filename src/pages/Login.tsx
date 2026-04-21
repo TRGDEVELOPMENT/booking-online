@@ -170,12 +170,12 @@ export default function Login() {
             </p>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: 'ที่ปรึกษาการขาย', username: 'sale', icon: '👤' },
-                { label: 'แคชเชียร์', username: 'cashier', icon: '💰' },
-                { label: 'หัวหน้าทีมขาย', username: 'supervisor', icon: '👨‍💼' },
-                { label: 'ผจก.ฝ่ายขาย', username: 'manager', icon: '📋' },
-                { label: 'ผู้ดูแลระบบ', username: 'useradmin', icon: '🔧' },
-                { label: 'IT Admin', username: 'itadmin', icon: '💻' },
+              { label: 'ที่ปรึกษาการขาย', username: 'sale', icon: '👤', role: 'sale' },
+                { label: 'แคชเชียร์', username: 'cashier', icon: '💰', role: 'cashier' },
+                { label: 'หัวหน้าทีมขาย', username: 'supervisor', icon: '👨‍💼', role: 'sale_supervisor' },
+                { label: 'ผจก.ฝ่ายขาย', username: 'manager', icon: '📋', role: 'sale_manager' },
+                { label: 'ผู้ดูแลระบบ', username: 'useradmin', icon: '🔧', role: 'user_admin' },
+                { label: 'IT Admin', username: 'itadmin', icon: '💻', role: 'it' },
               ].map((acc) => (
                 <Button
                   key={acc.username}

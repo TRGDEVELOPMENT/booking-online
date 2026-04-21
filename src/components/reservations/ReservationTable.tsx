@@ -294,20 +294,34 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                         );
                       }
 
+                      // Stage = done (approved) → show View + Print icons (consistent ghost style)
+                      if (stageRole === 'done') {
+                        return (
+                          <>
+                            <Link to={`/reservations/${reservation.id}`}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" title="ดูรายละเอียด">
+                                <Eye className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
+                            <Link to={`/reservations/${reservation.id}/print`}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" title="พิมพ์เอกสาร">
+                                <Printer className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
+                          </>
+                        );
+                      }
+
                       // Actionable for current role — show role-specific action icon
                       const actionMeta: Record<string, { Icon: typeof Eye; label: string; bg: string; ring: string }> = {
-                        sale: stageRole === 'done'
-                          ? { Icon: Printer, label: 'พิมพ์เอกสาร', bg: 'bg-emerald-500 hover:bg-emerald-600 text-white', ring: 'ring-emerald-300' }
-                          : { Icon: FileSignature, label: 'ดำเนินการสัญญาจอง', bg: 'bg-blue-500 hover:bg-blue-600 text-white', ring: 'ring-blue-300' },
+                        sale: { Icon: FileSignature, label: 'ดำเนินการสัญญาจอง', bg: 'bg-blue-500 hover:bg-blue-600 text-white', ring: 'ring-blue-300' },
                         cashier: { Icon: Wallet, label: 'ตรวจสอบการชำระเงิน', bg: 'bg-orange-500 hover:bg-orange-600 text-white', ring: 'ring-orange-300' },
                         sale_supervisor: { Icon: ClipboardCheck, label: 'ตรวจสอบรายละเอียด', bg: 'bg-sky-500 hover:bg-sky-600 text-white', ring: 'ring-sky-300' },
                         sale_manager: { Icon: CheckCircle2, label: 'อนุมัติใบจอง', bg: 'bg-emerald-500 hover:bg-emerald-600 text-white', ring: 'ring-emerald-300' },
                       };
                       const meta = actionMeta[currentRole] || actionMeta.sale;
                       const ActionIcon = meta.Icon;
-                      const targetPath = stageRole === 'done'
-                        ? `/reservations/${reservation.id}/print`
-                        : `/reservations/${reservation.id}/edit`;
+                      const targetPath = `/reservations/${reservation.id}/edit`;
                       return (
                         <TooltipProvider>
                           <Tooltip>

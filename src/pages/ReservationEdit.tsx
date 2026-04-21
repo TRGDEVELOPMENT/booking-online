@@ -631,7 +631,7 @@ export default function ReservationEdit() {
       });
 
       toast.success('บันทึกยืนยันรับเงินจองสำเร็จ');
-      navigate('/reservations/pending-payment');
+      navigate('/reservations');
     } catch (err) {
       console.error('Error saving payment:', err);
       toast.error('เกิดข้อผิดพลาดในการบันทึก');

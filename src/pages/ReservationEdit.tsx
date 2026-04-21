@@ -31,7 +31,9 @@ import {
   XCircle,
   ThumbsUp,
   AlertCircle,
-  FileText
+  FileText,
+  ExternalLink,
+  Download
 } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Badge } from '@/components/ui/badge';
@@ -1226,21 +1228,62 @@ export default function ReservationEdit() {
                  {attachments.length === 0 ? (
                    <p className="text-sm text-muted-foreground">ไม่มีไฟล์แนบ</p>
                  ) : (
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                     {attachments.map(file => (
-                       <button
-                         key={file.id}
-                         type="button"
-                         onClick={() => handleOpenFile(file)}
-                         className="flex items-center gap-2 p-2 rounded border hover:bg-muted/50 text-sm text-left transition-colors"
-                       >
-                         <Paperclip className="w-4 h-4 text-primary shrink-0" />
-                         <span className="truncate flex-1">{file.name}</span>
-                         <span className="text-xs text-muted-foreground shrink-0">{(file.size / 1024).toFixed(0)} KB</span>
-                       </button>
-                     ))}
-                   </div>
-                 )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {attachments.map(file => (
+                        <div
+                          key={file.id}
+                          className="flex items-center gap-2 p-2 rounded border hover:bg-muted/50 text-sm transition-colors"
+                        >
+                          <Paperclip className="w-4 h-4 text-primary shrink-0" />
+                          <span className="truncate flex-1">{file.name}</span>
+                          <span className="text-xs text-muted-foreground shrink-0">{(file.size / 1024).toFixed(0)} KB</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-primary hover:text-primary hover:bg-primary/10 shrink-0"
+                            onClick={(e) => { e.stopPropagation(); handleOpenFile(file); }}
+                            title="เปิดดูไฟล์"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-primary hover:text-primary hover:bg-primary/10 shrink-0"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                let blob: Blob;
+                                if (file.file) {
+                                  blob = file.file;
+                                } else if (file.url) {
+                                  const res = await fetch(file.url);
+                                  blob = await res.blob();
+                                } else {
+                                  return;
+                                }
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = file.name;
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(url);
+                              } catch (err) {
+                                console.error('Download failed:', err);
+                              }
+                            }}
+                            title="ดาวน์โหลดไฟล์"
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                </div>
              </div>
            ) : (

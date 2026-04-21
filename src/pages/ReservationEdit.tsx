@@ -1651,12 +1651,12 @@ export default function ReservationEdit() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className={cn(
-                  "space-y-1.5",
+                  "flex items-center gap-3",
                   // When cashier returned for revision, lift the parent lock so sale can edit the deposit only
                   (isSaleRole && returnedFromCashier) && "pointer-events-auto select-auto opacity-100 ring-2 ring-amber-500 rounded-md p-2 -m-0.5 bg-amber-50 dark:bg-amber-950/30"
                 )}>
                   <Label className={cn(
-                    "flex items-center gap-1.5",
+                    "flex items-center gap-1.5 whitespace-nowrap min-w-[140px] shrink-0 mb-0",
                     (isSaleRole && returnedFromCashier) && "text-amber-800 dark:text-amber-200 font-semibold"
                   )}>
                     {(isSaleRole && returnedFromCashier) && (
@@ -1679,19 +1679,19 @@ export default function ReservationEdit() {
                     }}
                     placeholder="0"
                     className={cn(
-                      "input-focus",
+                      "input-focus flex-1",
                       (isSaleRole && returnedFromCashier) && "border-amber-500 bg-white dark:bg-amber-950/50 font-semibold text-amber-900 dark:text-amber-100 focus-visible:ring-amber-500"
                     )}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>วันที่คาดว่าจะรับรถ</Label>
+                <div className="flex items-center gap-3">
+                  <Label className="whitespace-nowrap min-w-[160px] shrink-0 mb-0">วันที่คาดว่าจะรับรถ</Label>
                   <Input 
                     type="date"
                     value={expectedDeliveryDate}
                     onChange={(e) => setExpectedDeliveryDate(e.target.value)}
                     className={cn(
-                      "input-focus h-10",
+                      "input-focus h-10 flex-1",
                       calculateWorkflowStage() !== 'step3' && "[&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none [&::-webkit-inner-spin-button]:hidden"
                     )}
                   />

@@ -262,14 +262,24 @@ export default function ReservationCancelDetail() {
                 </Button>
               )}
               {canApprove && (
-                <Button
-                  onClick={handleApproveCancel}
-                  disabled={isProcessing}
-                  variant="destructive"
-                >
-                  {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  อนุมัติยกเลิกใบจอง
-                </Button>
+                <>
+                  <Button
+                    onClick={handleRejectCancel}
+                    disabled={isProcessing}
+                    variant="outline"
+                  >
+                    {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                    ไม่อนุมัติ
+                  </Button>
+                  <Button
+                    onClick={handleApproveCancel}
+                    disabled={isProcessing}
+                    variant="destructive"
+                  >
+                    {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                    อนุมัติยกเลิกใบจอง
+                  </Button>
+                </>
               )}
             </div>
           </CardContent>

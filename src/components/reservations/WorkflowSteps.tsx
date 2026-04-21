@@ -10,6 +10,7 @@ interface AssignmentInfo {
 interface StepActor {
   name?: string | null;
   at?: string | null;
+  pending?: boolean;
 }
 
 interface WorkflowStepsProps {

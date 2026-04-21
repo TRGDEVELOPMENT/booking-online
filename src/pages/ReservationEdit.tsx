@@ -404,24 +404,46 @@ export default function ReservationEdit() {
             .eq('reservation_id', id)
             .order('created_at', { ascending: true });
 
-          const findFirst = (actions: string[]) =>
-            (logs || []).find((l: any) => actions.includes(l.action));
-          const findLast = (actions: string[]) => {
-            const arr = (logs || []).filter((l: any) => actions.includes(l.action));
-            return arr.length ? arr[arr.length - 1] : null;
+          const allLogs = logs || [];
+
+          // The "current cycle" starts after the most recent resubmission (if any).
+          // Stages completed in a previous cycle were reset by the resubmit and the
+          // user must redo them — so their old actor names should NOT be shown.
+          const lastResubmitIdx = (() => {
+            for (let i = allLogs.length - 1; i >= 0; i--) {
+              if (allLogs[i].action === 'resubmitted_for_approval') return i;
+            }
+            return -1;
+          })();
+          const cycleLogs = lastResubmitIdx >= 0 ? allLogs.slice(lastResubmitIdx + 1) : allLogs;
+
+          const findFirst = (arr: any[], actions: string[]) =>
+            arr.find((l: any) => actions.includes(l.action));
+          const findLast = (arr: any[], actions: string[]) => {
+            const matched = arr.filter((l: any) => actions.includes(l.action));
+            return matched.length ? matched[matched.length - 1] : null;
           };
 
-          const createdLog = findFirst(['created']);
-          const confirmedLog = findFirst(['confirmed']);
-          const cashierLog = findLast(['cashier_verified']);
-          const reviewedLog = findLast(['reviewed']);
-          const approvedLog = findLast(['approved']);
+          // Step 1 & 2: lifetime values (created/confirmed do not get reset)
+          const createdLog = findFirst(allLogs, ['created']);
+          const confirmedLog = findFirst(allLogs, ['confirmed']);
+          // Step 3-5: only consider activity from the current cycle
+          const cashierLog = findLast(cycleLogs, ['cashier_verified']);
+          const reviewedLog = findLast(cycleLogs, ['reviewed']);
+          const approvedLog = findLast(cycleLogs, ['approved']);
 
           setCreatedByName(createdLog?.performed_by_name || null);
           setConfirmedByName(confirmedLog?.performed_by_name || null);
+
+          // Cashier — clear if not yet verified in this cycle
           if (cashierLog?.performed_by_name) {
             setCashierUserName(cashierLog.performed_by_name);
+            setCashierVerifiedAt(cashierLog.created_at);
+          } else {
+            setCashierUserName(null);
+            setCashierVerifiedAt(null);
           }
+
           setReviewedByName(reviewedLog?.performed_by_name || null);
           setApprovedByName(approvedLog?.performed_by_name || null);
 

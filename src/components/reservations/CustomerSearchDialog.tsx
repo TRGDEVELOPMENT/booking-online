@@ -216,21 +216,16 @@ export function CustomerSearchDialog({
                 <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>พิมพ์เพื่อค้นหาลูกค้า</p>
                 <p className="text-sm mt-1">ค้นหาได้ด้วย Tax ID, ชื่อ หรือนามสกุล</p>
+                <Button
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  className="gap-2 mt-4"
+                >
+                  <Plus className="w-4 h-4" />
+                  สร้างลูกค้าใหม่
+                </Button>
               </div>
             )}
           </ScrollArea>
-
-          {/* Create New Button (always visible at bottom) */}
-          <div className="pt-4 border-t border-border">
-            <Button
-              variant="outline"
-              onClick={() => setIsCreateDialogOpen(true)}
-              className="w-full gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              สร้างลูกค้าใหม่
-            </Button>
-          </div>
         </DialogContent>
       </Dialog>
 

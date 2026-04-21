@@ -58,9 +58,23 @@ const statusStyles: Record<string, string> = {
 };
 
 export function ReservationTable({ reservations, selectedIds, onSelectChange, pageSize = 15, branchMap = {} }: ReservationTableProps) {
-  const { roles, hasRole } = useAuth();
+  const { user, roles, hasRole } = useAuth();
   const currentRole = roles[0]?.role || '';
   const isAdminViewer = hasRole('it') || hasRole('user_admin');
+  const isItAdmin = hasRole('it');
+  const currentUserId = user?.id;
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('ยืนยันการลบใบจองนี้?')) return;
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { toast } = await import('sonner');
+    const { error } = await supabase.from('reservations').delete().eq('id', id);
+    if (error) {
+      toast.error('เกิดข้อผิดพลาดในการลบข้อมูล');
+      return;
+    }
+    toast.success('ลบใบจองสำเร็จ');
+  };
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(reservations.length / pageSize));
   const startIdx = (currentPage - 1) * pageSize;

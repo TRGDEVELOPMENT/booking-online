@@ -184,6 +184,7 @@ export default function ReservationEdit() {
   const [createdByName, setCreatedByName] = useState<string | null>(null);
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [reviewedByName, setReviewedByName] = useState<string | null>(null);
+  const [reviewedBy, setReviewedBy] = useState<string | null>(null);
   const [approvedByName, setApprovedByName] = useState<string | null>(null);
 
   // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์

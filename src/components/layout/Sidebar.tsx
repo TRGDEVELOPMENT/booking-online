@@ -400,10 +400,9 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
               const Icon = item.icon;
               const filteredSubItems = filterSubItemsByRole(item.subItems);
               const hasSubItems = filteredSubItems.length > 0;
-              const isExpanded = expandedMenus.includes(item.id);
-              const active = hasSubItems
-                ? filteredSubItems.some(sub => isActive(sub.path))
-                : isActive(item.path);
+              const hasActiveSubItem = hasSubItems && filteredSubItems.some(sub => isActive(sub.path));
+              const isExpanded = expandedMenus.includes(item.id) || hasActiveSubItem;
+              const active = !hasSubItems && isActive(item.path);
 
               return (
                 <li key={item.id}>

@@ -210,6 +210,7 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
   const isCashier = hasRole('cashier');
   const currentRole = roles[0]?.role || '';
   const isAdminViewer = hasRole('it') || hasRole('user_admin');
+  const isManager = hasRole('sale_manager');
 
   // Fetch count of reservations awaiting action by the current role
   useEffect(() => {

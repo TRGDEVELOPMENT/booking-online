@@ -322,11 +322,11 @@ const ReservationCancelPage = () => {
                   </TableCell>
                   <TableCell className="text-center">
                     {reservation.status === "cancelled" ? (
-                      <Badge variant="destructive">ยกเลิกแล้ว</Badge>
+                      <Badge variant="destructive" className="hover:bg-destructive">ยกเลิกแล้ว</Badge>
                     ) : (reservation as any).cancel_request_status === "requested" ? (
-                      <Badge className="bg-orange-500 text-white border-orange-500">อยู่ระหว่างยกเลิกใบจอง</Badge>
+                      <Badge className="bg-orange-500 text-white border-orange-500 hover:bg-orange-500">อยู่ระหว่างยกเลิกใบจอง</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-green-600 border-green-600">อนุมัติใบจองแล้ว</Badge>
+                      <Badge variant="outline" className="text-green-600 border-green-600 hover:bg-transparent">อนุมัติใบจองแล้ว</Badge>
                     )}
                   </TableCell>
                   <TableCell>

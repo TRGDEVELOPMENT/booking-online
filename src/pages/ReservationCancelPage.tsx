@@ -60,12 +60,15 @@ const ReservationCancelPage = () => {
   const fetchApprovedReservations = async () => {
     setIsLoading(true);
     try {
+      // แสดงเฉพาะใบจองที่อยู่ใน Process การขอยกเลิก
+      // - มีการ request cancel แล้ว (cancel_request_status not null) หรือ
+      // - ยกเลิกแล้ว (status = 'cancelled')
       const { data, error } = await supabase
         .from("reservations")
         .select("*")
         .eq("company_id", selectedCompany)
-        .eq("approval_status", "approved")
-        .order("created_at", { ascending: false }) as any;
+        .or("cancel_request_status.not.is.null,status.eq.cancelled")
+        .order("updated_at", { ascending: false }) as any;
 
       if (error) throw error;
 
@@ -101,7 +104,12 @@ const ReservationCancelPage = () => {
         created_by: item.created_by,
         created_at: item.created_at,
         updated_at: item.updated_at,
-      }));
+        cancel_request_status: item.cancel_request_status,
+        cancel_requested_at: item.cancel_requested_at,
+        cancel_review_status: item.cancel_review_status,
+        cancel_approval_status: item.cancel_approval_status,
+        cancel_reason: item.cancel_reason,
+      } as any));
 
       setReservations(transformedData);
     } catch (error) {

@@ -1,16 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Edit, Trash2, MoreHorizontal, Printer, FileSignature, Wallet, ClipboardCheck, CheckCircle2 } from 'lucide-react';
+import { Eye, Trash2, Printer, FileSignature, Wallet, ClipboardCheck, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { DatabaseReservation } from '@/types/database-reservation';
 import { DatabaseStatusLabels } from '@/types/database-reservation';

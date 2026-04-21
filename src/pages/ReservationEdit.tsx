@@ -1691,8 +1691,8 @@ export default function ReservationEdit() {
                     value={expectedDeliveryDate}
                     onChange={(e) => setExpectedDeliveryDate(e.target.value)}
                     className={cn(
-                      "input-focus",
-                      calculateWorkflowStage() !== 'step3' && "[&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                      "input-focus h-10",
+                      calculateWorkflowStage() !== 'step3' && "[&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none [&::-webkit-inner-spin-button]:hidden"
                     )}
                   />
                 </div>

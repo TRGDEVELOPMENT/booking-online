@@ -31,7 +31,9 @@ import {
   XCircle,
   ThumbsUp,
   AlertCircle,
-  FileText
+  FileText,
+  ExternalLink,
+  Download
 } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Badge } from '@/components/ui/badge';

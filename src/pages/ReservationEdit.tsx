@@ -1952,10 +1952,10 @@ export default function ReservationEdit() {
             {/* End cashier read-only wrapper */}
 
             {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Show when sent for approval (pending) or approved */}
-            {(isIT || isCashier || approvalStatus === 'approved' || (!isSaleRole && !isSaleSupervisor && reservationStatus === 'pending')) && (
+            {(isIT || isCashier || isSaleManager || approvalStatus === 'approved' || (!isSaleRole && !isSaleSupervisor && reservationStatus === 'pending')) && (
             <div className={cn(
               "form-section border-2 border-primary/20 bg-primary/5",
-              isSaleSupervisor && !isIT && "pointer-events-none select-none opacity-90"
+              ((isSaleSupervisor || isSaleManager) && !isIT) && "pointer-events-none select-none opacity-90"
             )}>
               <div className="form-section-header flex items-center gap-2 text-primary">
                 <CreditCard className="w-5 h-5" />

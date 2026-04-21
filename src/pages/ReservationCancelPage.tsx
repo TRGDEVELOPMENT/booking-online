@@ -59,6 +59,7 @@ const ReservationCancelPage = () => {
   const [isCancelling, setIsCancelling] = useState(false);
 
   const fetchApprovedReservations = async () => {
+    if (!profile?.user_id) return;
     setIsLoading(true);
     try {
       // แสดงเฉพาะใบจองที่อยู่ใน Process การขอยกเลิก

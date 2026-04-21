@@ -2022,10 +2022,12 @@ export default function ReservationEdit() {
               />
             </div>
 
-            </div>
-            {/* End cashier read-only wrapper */}
+             </div>
+             {/* End cashier read-only wrapper */}
+             </>
+             )}
 
-            {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Show when sent for approval (pending) or approved */}
+             {/* Section 10: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Show when sent for approval (pending) or approved */}
             {(isIT || isCashier || isSaleManager || approvalStatus === 'approved' || (!isSaleRole && !isSaleSupervisor && reservationStatus === 'pending')) && (
             <div className={cn(
               "form-section border-2 border-primary/20 bg-primary/5",

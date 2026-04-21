@@ -240,7 +240,6 @@ export default function ReservationCancelDetail() {
             )}
             {canApprove && (
               <div className="space-y-2">
-                <Label htmlFor="approval-remark">หมายเหตุการอนุมัติ (Remark)</Label>
                 <Textarea
                   id="approval-remark"
                   value={approvalRemark}
@@ -274,7 +273,7 @@ export default function ReservationCancelDetail() {
                   <Button
                     onClick={handleApproveCancel}
                     disabled={isProcessing}
-                    variant="destructive"
+                    className="bg-green-600 hover:bg-green-700 text-white"
                   >
                     {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                     อนุมัติยกเลิกใบจอง

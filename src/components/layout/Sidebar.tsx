@@ -117,10 +117,10 @@ const allMenuItems: MenuItem[] = [
     label: 'ยกเลิกใบจอง', 
     icon: Ban, 
     path: '/reservations/cancel',
-    roles: ['sale', 'sale_supervisor', 'sale_manager', 'it'],
+    roles: ['sale', 'sale_supervisor', 'sale_manager', 'it', 'user_admin'],
     subItems: [
-      { id: 'cancel-list', label: 'รายการยกเลิก', path: '/reservations/cancel', icon: List },
-      { id: 'cancel-approve', label: 'อนุมัติยกเลิกใบจอง', path: '/reservations/cancel-approve', icon: Award },
+      { id: 'cancel-list', label: 'รายการยกเลิกใบจอง', path: '/reservations/cancel', icon: List },
+      { id: 'cancel-approve', label: 'อนุมัติยกเลิกใบจอง', path: '/reservations/cancel-approve', icon: Award, roles: ['sale_manager', 'it', 'user_admin'] },
     ],
   },
   { 

@@ -183,6 +183,7 @@ export default function ReservationEdit() {
   // Stage actor info (for WorkflowSteps display)
   const [createdByName, setCreatedByName] = useState<string | null>(null);
   const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [confirmedByName, setConfirmedByName] = useState<string | null>(null);
   const [reviewedByName, setReviewedByName] = useState<string | null>(null);
   const [reviewedBy, setReviewedBy] = useState<string | null>(null);
   const [approvedByName, setApprovedByName] = useState<string | null>(null);
@@ -393,18 +394,55 @@ export default function ReservationEdit() {
         // Created info
         setCreatedAt(data.created_at);
 
-        // Lookup actor names from profiles
+        // Lookup actor names — prefer activity logs (readable across company via RLS)
+        // since `profiles` RLS only lets normal users read their own row.
         setReviewedBy(data.reviewed_by || null);
-        const actorIds = [data.created_by, data.reviewed_by, data.approved_by].filter(Boolean) as string[];
-        if (actorIds.length > 0) {
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('user_id, full_name')
-            .in('user_id', actorIds);
-          const nameMap = new Map(profiles?.map((p: any) => [p.user_id, p.full_name]) || []);
-          if (data.created_by) setCreatedByName(nameMap.get(data.created_by) || null);
-          if (data.reviewed_by) setReviewedByName(nameMap.get(data.reviewed_by) || null);
-          if (data.approved_by) setApprovedByName(nameMap.get(data.approved_by) || null);
+        try {
+          const { data: logs } = await supabase
+            .from('reservation_activity_logs')
+            .select('action, performed_by, performed_by_name, created_at')
+            .eq('reservation_id', id)
+            .order('created_at', { ascending: true });
+
+          const findFirst = (actions: string[]) =>
+            (logs || []).find((l: any) => actions.includes(l.action));
+          const findLast = (actions: string[]) => {
+            const arr = (logs || []).filter((l: any) => actions.includes(l.action));
+            return arr.length ? arr[arr.length - 1] : null;
+          };
+
+          const createdLog = findFirst(['created']);
+          const confirmedLog = findFirst(['confirmed']);
+          const cashierLog = findLast(['cashier_verified']);
+          const reviewedLog = findLast(['reviewed']);
+          const approvedLog = findLast(['approved']);
+
+          setCreatedByName(createdLog?.performed_by_name || null);
+          setConfirmedByName(confirmedLog?.performed_by_name || null);
+          if (cashierLog?.performed_by_name) {
+            setCashierUserName(cashierLog.performed_by_name);
+          }
+          setReviewedByName(reviewedLog?.performed_by_name || null);
+          setApprovedByName(approvedLog?.performed_by_name || null);
+
+          // Fallback: try profiles for ids we still don't have a name for
+          const missingIds = [
+            !createdLog && data.created_by,
+            !reviewedLog && data.reviewed_by,
+            !approvedLog && data.approved_by,
+          ].filter(Boolean) as string[];
+          if (missingIds.length > 0) {
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('user_id, full_name')
+              .in('user_id', missingIds);
+            const nameMap = new Map(profiles?.map((p: any) => [p.user_id, p.full_name]) || []);
+            if (!createdLog && data.created_by) setCreatedByName(nameMap.get(data.created_by) || null);
+            if (!reviewedLog && data.reviewed_by) setReviewedByName(nameMap.get(data.reviewed_by) || null);
+            if (!approvedLog && data.approved_by) setApprovedByName(nameMap.get(data.approved_by) || null);
+          }
+        } catch (nameErr) {
+          console.warn('Could not load actor names:', nameErr);
         }
       } catch (err) {
         console.error('Error:', err);
@@ -1025,7 +1063,7 @@ export default function ReservationEdit() {
             assignments={assignments}
             stepActors={{
               step1: { name: createdByName, at: createdAt },
-              step2: { name: createdByName, at: confirmedAt },
+              step2: { name: confirmedByName || createdByName, at: confirmedAt },
               step3: { name: cashierUserName, at: cashierVerifiedAt },
               step4: { name: reviewedByName, at: reviewedAt },
               step5: { name: approvedByName, at: approvedAt },

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +47,7 @@ const ReservationCancelCreate = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<any | null>(null);
   const [cancelReason, setCancelReason] = useState("");
+  const [cancelRemark, setCancelRemark] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSearch = async () => {
@@ -102,6 +104,7 @@ const ReservationCancelCreate = () => {
           cancel_request_status: "requested",
           cancel_requested_at: new Date().toISOString(),
           cancel_reason: cancelReason,
+          cancel_review_remark: cancelRemark.trim() || null,
         } as any)
         .eq("id", selectedReservation.id);
 
@@ -270,6 +273,17 @@ const ReservationCancelCreate = () => {
               {!cancelReason && (
                 <p className="text-sm text-destructive mt-3">กรุณาเลือกเหตุผลในการยกเลิก</p>
               )}
+
+              <div className="mt-4 space-y-2">
+                <Label htmlFor="cancel-remark">หมายเหตุเพิ่มเติม (Remark)</Label>
+                <Textarea
+                  id="cancel-remark"
+                  value={cancelRemark}
+                  onChange={(e) => setCancelRemark(e.target.value)}
+                  placeholder="ระบุรายละเอียดเพิ่มเติมเกี่ยวกับการขอยกเลิก..."
+                  rows={3}
+                />
+              </div>
             </CardContent>
           </Card>
 

@@ -1961,7 +1961,38 @@ export default function ReservationEdit() {
                 <CreditCard className="w-5 h-5" />
                 รายละเอียดการชำระเงิน (เฉพาะการเงิน)
               </div>
-              
+
+              {isSaleManager && !isIT ? (
+                /* Compact summary for Sale Manager */
+                <div className="space-y-2 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <span className="text-muted-foreground">ประเภท: </span>
+                      <span className="font-medium">
+                        {paymentType === 'cash' ? 'เงินสด' : paymentType === 'transfer' ? 'เงินโอน' : paymentType === 'credit' ? 'บัตรเครดิต' : 'ใบสั่งซื้อ'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">จำนวนรับ: </span>
+                      <span className="font-medium">{paymentAmount.toLocaleString()} บาท</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">เงินจอง: </span>
+                      <span className="font-medium">{depositAmount.toLocaleString()} บาท</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">โดย: </span>
+                      <span className="font-medium">{cashierUserName || '-'}</span>
+                    </div>
+                  </div>
+                  {paymentDescription && (
+                    <div className="p-2 bg-background/60 rounded border text-xs">
+                      <span className="text-muted-foreground">หมายเหตุ: </span>
+                      <span>{paymentDescription}</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
               <div className="space-y-4">
                 {/* Payment Type */}
                 <div>
@@ -2104,6 +2135,7 @@ export default function ReservationEdit() {
                   </Button>
                 </div>
               </div>
+              )}
             </div>
             )}
 

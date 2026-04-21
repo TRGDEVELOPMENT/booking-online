@@ -1040,9 +1040,9 @@ export default function ReservationEdit() {
                    <div><span className="text-muted-foreground">ผู้ซื้อ: </span><span className="font-medium">{isBuyerSame ? 'เหมือนผู้จอง' : (buyerName || '-')}</span></div>
                  </div>
                  <div className="border-t pt-2 mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                   <div><span className="text-muted-foreground">รุ่น: </span><span className="font-medium">{models.find(m => m.id === selectedModel)?.description || selectedModel || '-'}</span></div>
-                   <div><span className="text-muted-foreground">รุ่นย่อย: </span><span className="font-medium">{submodels.find(s => s.id === selectedSubmodel)?.description || selectedSubmodel || '-'}</span></div>
-                   <div><span className="text-muted-foreground">สี: </span><span className="font-medium">{colors.find(c => c.id === selectedColor)?.description || selectedColor || '-'}</span></div>
+                   <div><span className="text-muted-foreground">รุ่น: </span><span className="font-medium">{dbModels.find(m => m.id === selectedModel)?.description || selectedModel || '-'}</span></div>
+                   <div><span className="text-muted-foreground">รุ่นย่อย: </span><span className="font-medium">{dbSubModels.find(s => s.id === selectedSubmodel)?.description || selectedSubmodel || '-'}</span></div>
+                   <div><span className="text-muted-foreground">สี: </span><span className="font-medium">{dbColors.find(c => c.id === selectedColor)?.description || selectedColor || '-'}</span></div>
                    <div><span className="text-muted-foreground">ประเภทเชื้อเพลิง: </span><span className="font-medium">{selectedFuelType}</span></div>
                  </div>
                  <div className="border-t pt-2 mt-2 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2 text-sm">
@@ -1061,9 +1061,9 @@ export default function ReservationEdit() {
                  </div>
                  {(freebies.length > 0 || accessories.length > 0 || benefits.length > 0) && (
                    <div className="border-t pt-2 mt-2 text-sm space-y-1">
-                     {freebies.length > 0 && <div><span className="text-muted-foreground">ของแถม: </span><span>{freebies.map(f => f.itemName).join(', ')}</span></div>}
-                     {accessories.length > 0 && <div><span className="text-muted-foreground">อุปกรณ์: </span><span>{accessories.map(a => a.itemName).join(', ')}</span></div>}
-                     {benefits.length > 0 && <div><span className="text-muted-foreground">สิทธิประโยชน์: </span><span>{benefits.map(b => b.itemName).join(', ')}</span></div>}
+                     {freebies.length > 0 && <div><span className="text-muted-foreground">ของแถม: </span><span>{freebies.map(f => f.name).join(', ')}</span></div>}
+                     {accessories.length > 0 && <div><span className="text-muted-foreground">อุปกรณ์: </span><span>{accessories.map(a => a.name).join(', ')}</span></div>}
+                     {benefits.length > 0 && <div><span className="text-muted-foreground">สิทธิประโยชน์: </span><span>{benefits.map(b => b.name).join(', ')}</span></div>}
                    </div>
                  )}
                </div>

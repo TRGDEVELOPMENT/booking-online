@@ -13,6 +13,7 @@ import ReservationCreate from "@/pages/ReservationCreate";
 import ReservationEdit from "@/pages/ReservationEdit";
 import ReservationPrint from "@/pages/ReservationPrint";
 import ReservationCancelPage from "@/pages/ReservationCancelPage";
+import ReservationCancelApprovePage from "@/pages/ReservationCancelApprovePage";
 import ReservationCancelDetail from "@/pages/ReservationCancelDetail";
 import ReservationCancelPrint from "@/pages/ReservationCancelPrint";
 import ReservationPendingPaymentPage from "@/pages/ReservationPendingPaymentPage";

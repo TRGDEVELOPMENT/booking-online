@@ -2092,6 +2092,31 @@ export default function ReservationEdit() {
                       <span>{paymentDescription}</span>
                     </div>
                   )}
+                  {/* Payment attachments uploaded by cashier (file_path contains '/payment-') */}
+                  {(() => {
+                    const paymentFiles = attachments.filter((f: any) =>
+                      (f.file_path || '').includes('/payment-')
+                    );
+                    if (paymentFiles.length === 0) return null;
+                    return (
+                      <div className="space-y-1">
+                        <div className="text-xs text-muted-foreground">ไฟล์แนบการชำระเงิน ({paymentFiles.length})</div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {paymentFiles.map((f: any) => (
+                            <button
+                              key={f.id}
+                              type="button"
+                              onClick={() => handleOpenFile(f)}
+                              className="flex items-center gap-2 p-2 bg-background/60 border rounded text-xs hover:bg-background transition text-left pointer-events-auto"
+                            >
+                              <FileText className="w-4 h-4 text-primary shrink-0" />
+                              <span className="truncate">{f.file_name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               ) : (
               <div className="space-y-4">

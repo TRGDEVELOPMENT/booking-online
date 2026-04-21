@@ -355,6 +355,30 @@ export default function ReservationEdit() {
           setCashierVerifiedAt(data.updated_at);
         }
 
+        // Restore payment details from latest activity log entry
+        // (payment_amount/type/description are persisted in reservation_activity_logs.details)
+        try {
+          const { data: payLogs } = await supabase
+            .from('reservation_activity_logs')
+            .select('action, details, created_at')
+            .eq('reservation_id', id)
+            .in('action', ['cashier_verified', 'updated'])
+            .order('created_at', { ascending: false })
+            .limit(20);
+          const latestPay = (payLogs || []).find((l: any) => {
+            const d = l.details || {};
+            return d.payment_amount != null || d.payment_type != null || d.payment_description != null;
+          });
+          if (latestPay) {
+            const d: any = latestPay.details || {};
+            if (d.payment_amount != null) setPaymentAmount(Number(d.payment_amount) || 0);
+            if (d.payment_type) setPaymentType(String(d.payment_type));
+            if (d.payment_description) setPaymentDescription(String(d.payment_description));
+          }
+        } catch (logErr) {
+          console.warn('Could not load payment details from activity log:', logErr);
+        }
+
         if (data.approval_status) {
           setApprovalStatus(data.approval_status as 'pending' | 'approved' | 'rejected');
         }

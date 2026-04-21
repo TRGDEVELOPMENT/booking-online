@@ -201,6 +201,9 @@ export default function Login() {
                       }
                       if (data.user) {
                         await supabase.from('profiles').update({ company_id: targetCompany }).eq('user_id', data.user.id);
+                        // Reset role to the intended role for this test account
+                        // (in case it was changed via the role switcher)
+                        await supabase.functions.invoke('switch-role', { body: { role: acc.role } });
                         localStorage.setItem('selectedCompany', targetCompany);
                         toast.success(`เข้าสู่ระบบเป็น ${acc.label} สำเร็จ`);
                         navigate('/');

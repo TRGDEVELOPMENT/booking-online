@@ -1021,6 +1021,80 @@ export default function ReservationEdit() {
 
            {/* Form Sections */}
           <div className="space-y-6">
+           {/* Compact summary view for Sale Manager (approval stage) */}
+           {isSaleManager && !isIT ? (
+             <div className="space-y-4">
+               {/* Summary Card */}
+               <div className="form-section">
+                 <div className="form-section-header flex items-center gap-2">
+                   <FileText className="w-5 h-5" />
+                   สรุปข้อมูลใบจอง
+                 </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                   <div><span className="text-muted-foreground">เลขที่: </span><span className="font-medium">{documentNumber}</span></div>
+                   <div><span className="text-muted-foreground">สาขา: </span><span className="font-medium">{selectedBranch || '-'}</span></div>
+                   <div><span className="text-muted-foreground">ผู้จอง: </span><span className="font-medium">{`${bookingTitle} ${bookingFirstName} ${bookingLastName}`.trim() || '-'}</span></div>
+                   <div><span className="text-muted-foreground">เบอร์โทร: </span><span className="font-medium">{bookingPhone || '-'}</span></div>
+                   <div><span className="text-muted-foreground">เลขประจำตัว: </span><span className="font-medium">{bookingIdNo || '-'}</span></div>
+                   <div><span className="text-muted-foreground">ผู้ซื้อ: </span><span className="font-medium">{isBuyerSame ? 'เหมือนผู้จอง' : (buyerName || '-')}</span></div>
+                 </div>
+                 <div className="border-t pt-2 mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                   <div><span className="text-muted-foreground">รุ่น: </span><span className="font-medium">{models.find(m => m.id === selectedModel)?.description || selectedModel || '-'}</span></div>
+                   <div><span className="text-muted-foreground">รุ่นย่อย: </span><span className="font-medium">{submodels.find(s => s.id === selectedSubmodel)?.description || selectedSubmodel || '-'}</span></div>
+                   <div><span className="text-muted-foreground">สี: </span><span className="font-medium">{colors.find(c => c.id === selectedColor)?.description || selectedColor || '-'}</span></div>
+                   <div><span className="text-muted-foreground">ประเภทเชื้อเพลิง: </span><span className="font-medium">{selectedFuelType}</span></div>
+                 </div>
+                 <div className="border-t pt-2 mt-2 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2 text-sm">
+                   <div><span className="text-muted-foreground">ราคา: </span><span className="font-medium">{basePrice.toLocaleString()}</span></div>
+                   <div><span className="text-muted-foreground">ส่วนลด: </span><span className="font-medium">{discountAmount.toLocaleString()}</span></div>
+                   <div><span className="text-muted-foreground">ราคาสุทธิ: </span><span className="font-semibold text-primary">{(basePrice - discountAmount).toLocaleString()}</span></div>
+                   <div><span className="text-muted-foreground">เงินจอง: </span><span className="font-medium">{depositAmount.toLocaleString()}</span></div>
+                   <div><span className="text-muted-foreground">ประเภทซื้อ: </span><span className="font-medium">{purchaseType === 'cash' ? 'เงินสด' : 'เช่าซื้อ'}</span></div>
+                   {purchaseType === 'finance' && (
+                     <>
+                       <div><span className="text-muted-foreground">ดาวน์: </span><span className="font-medium">{downPayment.toLocaleString()}</span></div>
+                       <div><span className="text-muted-foreground">จัดไฟแนนซ์: </span><span className="font-medium">{financeAmount.toLocaleString()}</span></div>
+                     </>
+                   )}
+                   <div><span className="text-muted-foreground">รับรถ: </span><span className="font-medium">{expectedDeliveryDate || '-'}</span></div>
+                 </div>
+                 {(freebies.length > 0 || accessories.length > 0 || benefits.length > 0) && (
+                   <div className="border-t pt-2 mt-2 text-sm space-y-1">
+                     {freebies.length > 0 && <div><span className="text-muted-foreground">ของแถม: </span><span>{freebies.map(f => f.itemName).join(', ')}</span></div>}
+                     {accessories.length > 0 && <div><span className="text-muted-foreground">อุปกรณ์: </span><span>{accessories.map(a => a.itemName).join(', ')}</span></div>}
+                     {benefits.length > 0 && <div><span className="text-muted-foreground">สิทธิประโยชน์: </span><span>{benefits.map(b => b.itemName).join(', ')}</span></div>}
+                   </div>
+                 )}
+               </div>
+
+               {/* Compact Attachments */}
+               <div className="form-section">
+                 <div className="form-section-header flex items-center gap-2">
+                   <Paperclip className="w-5 h-5" />
+                   ไฟล์แนบ ({attachments.length})
+                 </div>
+                 {attachments.length === 0 ? (
+                   <p className="text-sm text-muted-foreground">ไม่มีไฟล์แนบ</p>
+                 ) : (
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                     {attachments.map(file => (
+                       <button
+                         key={file.id}
+                         type="button"
+                         onClick={() => handleOpenFile(file)}
+                         className="flex items-center gap-2 p-2 rounded border hover:bg-muted/50 text-sm text-left transition-colors"
+                       >
+                         <Paperclip className="w-4 h-4 text-primary shrink-0" />
+                         <span className="truncate flex-1">{file.name}</span>
+                         <span className="text-xs text-muted-foreground shrink-0">{(file.size / 1024).toFixed(0)} KB</span>
+                       </button>
+                     ))}
+                   </div>
+                 )}
+               </div>
+             </div>
+           ) : (
+           <>
            {/* Cashier read-only wrapper for non-payment sections (also locks all sections when cashier returned for revision) */}
            <div className={cn(
              ((isCashier || isSaleSupervisor) && !isIT) && "pointer-events-none select-none opacity-90",

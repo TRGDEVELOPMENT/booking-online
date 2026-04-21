@@ -2108,8 +2108,11 @@ export default function ReservationEdit() {
             )}
 
             {/* Section 11: ตรวจสอบใบจอง (หัวหน้าทีมขาย) - Show when in review step or approved */}
-            {(isIT || isSaleSupervisor || (!isSaleManager && (approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && (reviewStatus !== 'pending' || reservationStatus === 'pending'))))) && (
-            <div className="form-section border-2 border-orange-500/20 bg-orange-50/50 dark:bg-orange-950/20">
+            {(isIT || isSaleSupervisor || isSaleManager || (approvalStatus === 'approved' || (!isCashierMode && !isSaleRole && (reviewStatus !== 'pending' || reservationStatus === 'pending')))) && (
+            <div className={cn(
+              "form-section border-2 border-orange-500/20 bg-orange-50/50 dark:bg-orange-950/20",
+              isSaleManager && !isIT && "pointer-events-none select-none opacity-90"
+            )}>
               <div className="form-section-header flex items-center justify-between">
                 <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
                   <ClipboardCheck className="w-5 h-5" />

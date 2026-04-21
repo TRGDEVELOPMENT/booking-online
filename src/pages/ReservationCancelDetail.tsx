@@ -4,6 +4,8 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { CancellationWorkflowSteps } from "@/components/reservations/CancellationWorkflowSteps";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,6 +33,8 @@ export default function ReservationCancelDetail() {
   const [reservation, setReservation] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [reviewRemark, setReviewRemark] = useState("");
+  const [approvalRemark, setApprovalRemark] = useState("");
 
   const fetchReservation = async () => {
     if (!id) return;
@@ -83,6 +87,7 @@ export default function ReservationCancelDetail() {
           cancel_review_status: "reviewed",
           cancel_reviewed_at: new Date().toISOString(),
           cancel_reviewed_by: profile?.user_id || null,
+          cancel_review_remark: reviewRemark.trim() || reservation.cancel_review_remark || null,
         } as any)
         .eq("id", reservation.id);
 
@@ -108,6 +113,7 @@ export default function ReservationCancelDetail() {
           cancel_approval_status: "approved",
           cancel_approved_at: new Date().toISOString(),
           cancel_approved_by: profile?.user_id || null,
+          cancel_approval_remark: approvalRemark.trim() || null,
           status: "cancelled",
         } as any)
         .eq("id", reservation.id);
@@ -169,40 +175,90 @@ export default function ReservationCancelDetail() {
         cancelApprovalStatus={reservation.cancel_approval_status}
       />
 
-      {/* Action Buttons for role-based actions */}
+      {/* Action panel for role-based actions */}
       {(canReview || canApprove) && (
-        <div className="flex gap-3">
-          {canReview && (
-            <Button
-              onClick={handleReviewCancel}
-              disabled={isProcessing}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-            >
-              {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              ตรวจสอบการขอยกเลิก
-            </Button>
-          )}
-          {canApprove && (
-            <Button
-              onClick={handleApproveCancel}
-              disabled={isProcessing}
-              variant="destructive"
-            >
-              {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              อนุมัติยกเลิกใบจอง
-            </Button>
-          )}
-        </div>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              {canReview ? "ตรวจสอบการขอยกเลิก" : "อนุมัติยกเลิกใบจอง"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {canReview && (
+              <div className="space-y-2">
+                <Label htmlFor="review-remark">หมายเหตุการตรวจสอบ (Remark)</Label>
+                <Textarea
+                  id="review-remark"
+                  value={reviewRemark}
+                  onChange={(e) => setReviewRemark(e.target.value)}
+                  placeholder="ระบุความเห็นหรือหมายเหตุการตรวจสอบ..."
+                  rows={3}
+                />
+              </div>
+            )}
+            {canApprove && (
+              <div className="space-y-2">
+                <Label htmlFor="approval-remark">หมายเหตุการอนุมัติ (Remark)</Label>
+                <Textarea
+                  id="approval-remark"
+                  value={approvalRemark}
+                  onChange={(e) => setApprovalRemark(e.target.value)}
+                  placeholder="ระบุความเห็นหรือหมายเหตุการอนุมัติยกเลิก..."
+                  rows={3}
+                />
+              </div>
+            )}
+            <div className="flex gap-3">
+              {canReview && (
+                <Button
+                  onClick={handleReviewCancel}
+                  disabled={isProcessing}
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  ตรวจสอบการขอยกเลิก
+                </Button>
+              )}
+              {canApprove && (
+                <Button
+                  onClick={handleApproveCancel}
+                  disabled={isProcessing}
+                  variant="destructive"
+                >
+                  {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  อนุมัติยกเลิกใบจอง
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Cancel Reason */}
-      {reservation.cancel_reason && (
+      {/* Cancel Reason & Remarks */}
+      {(reservation.cancel_reason || reservation.cancel_review_remark || reservation.cancel_approval_remark) && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base text-red-700">เหตุผลในการยกเลิก</CardTitle>
+            <CardTitle className="text-base text-red-700">เหตุผล / หมายเหตุการยกเลิก</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm">{reservation.cancel_reason}</p>
+          <CardContent className="space-y-3 text-sm">
+            {reservation.cancel_reason && (
+              <div>
+                <p className="text-xs text-muted-foreground">เหตุผลการยกเลิก</p>
+                <p className="font-medium">{reservation.cancel_reason}</p>
+              </div>
+            )}
+            {reservation.cancel_review_remark && (
+              <div>
+                <p className="text-xs text-muted-foreground">หมายเหตุ (ขั้นตอนขอ/ตรวจสอบ)</p>
+                <p className="whitespace-pre-wrap">{reservation.cancel_review_remark}</p>
+              </div>
+            )}
+            {reservation.cancel_approval_remark && (
+              <div>
+                <p className="text-xs text-muted-foreground">หมายเหตุการอนุมัติยกเลิก</p>
+                <p className="whitespace-pre-wrap">{reservation.cancel_approval_remark}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

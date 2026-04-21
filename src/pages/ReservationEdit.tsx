@@ -730,8 +730,11 @@ export default function ReservationEdit() {
   const finalPrice = basePrice - discountAmount;
 
   // Detect which stage returned the reservation for revision (drives section locking + banner)
-  const returnedFromCashier = reviewStatus === 'returned' && !cashierUserId;
-  const returnedFromSupervisor = reviewStatus === 'returned' && !!cashierUserId;
+  // Detect which stage returned the reservation for revision (drives section locking + banner)
+  // Distinguish by reviewed_by: cashier-return clears cashier_user_id but does NOT set reviewed_by;
+  // supervisor-return sets reviewed_by + reviewed_at.
+  const returnedFromSupervisor = reviewStatus === 'returned' && !!reviewedBy;
+  const returnedFromCashier = reviewStatus === 'returned' && !reviewedBy;
   const returnedFromManager = approvalStatus === 'rejected';
   const isReturnedForRevision = returnedFromCashier || returnedFromSupervisor || returnedFromManager;
   // Strip the [DEPOSIT_RETURN] tag we added when displaying the cashier remark

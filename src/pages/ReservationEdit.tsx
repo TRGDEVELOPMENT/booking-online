@@ -1651,7 +1651,7 @@ export default function ReservationEdit() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className={cn(
-                  "flex items-center gap-3",
+                  "flex items-center gap-2",
                   // When cashier returned for revision, lift the parent lock so sale can edit the deposit only
                   (isSaleRole && returnedFromCashier) && "pointer-events-auto select-auto opacity-100 ring-2 ring-amber-500 rounded-md p-2 -m-0.5 bg-amber-50 dark:bg-amber-950/30"
                 )}>
@@ -1684,8 +1684,8 @@ export default function ReservationEdit() {
                     )}
                   />
                 </div>
-                <div className="flex items-center gap-3">
-                  <Label className="whitespace-nowrap min-w-[160px] shrink-0 mb-0">วันที่คาดว่าจะรับรถ</Label>
+                <div className="flex items-center gap-2">
+                  <Label className="whitespace-nowrap min-w-[140px] shrink-0 mb-0">วันที่คาดว่าจะรับรถ</Label>
                   <Input 
                     type="date"
                     value={expectedDeliveryDate}

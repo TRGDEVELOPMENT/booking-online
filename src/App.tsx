@@ -13,6 +13,7 @@ import ReservationCreate from "@/pages/ReservationCreate";
 import ReservationEdit from "@/pages/ReservationEdit";
 import ReservationPrint from "@/pages/ReservationPrint";
 import ReservationCancelPage from "@/pages/ReservationCancelPage";
+import ReservationCancelCreate from "@/pages/ReservationCancelCreate";
 import ReservationCancelApprovePage from "@/pages/ReservationCancelApprovePage";
 import ReservationCancelDetail from "@/pages/ReservationCancelDetail";
 import ReservationCancelPrint from "@/pages/ReservationCancelPrint";
@@ -77,6 +78,7 @@ const App = () => (
               <Route path="/reservations/:id" element={<ReservationEdit />} />
               <Route path="/reservations/:id/edit" element={<ReservationEdit />} />
               <Route path="/reservations/cancel" element={<ReservationCancelPage />} />
+              <Route path="/reservations/cancel/create" element={<ReservationCancelCreate />} />
               <Route path="/reservations/cancel-approve" element={<ReservationCancelApprovePage />} />
               <Route path="/reservations/:id/cancel-detail" element={<ReservationCancelDetail />} />
               <Route path="/reservations/pending-payment" element={<ReservationPendingPaymentPage />} />

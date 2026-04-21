@@ -28,7 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Search, Ban, Loader2, AlertTriangle, Printer, Eye } from "lucide-react";
+import { Search, Ban, Loader2, AlertTriangle, Printer, Eye, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
 
@@ -45,9 +45,10 @@ const branchNames: Record<string, string> = {
 
 const ReservationCancelPage = () => {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, hasRole } = useAuth();
   const { toast } = useToast();
   const selectedCompany = profile?.company_id || "BPK";
+  const isSale = hasRole("sale");
 
   const [reservations, setReservations] = useState<DatabaseReservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -205,7 +206,7 @@ const ReservationCancelPage = () => {
         subtitle={`${selectedCompany} - ${companyNames[selectedCompany] || selectedCompany}`}
       />
 
-      {/* Search */}
+      {/* Search & Actions */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -216,6 +217,15 @@ const ReservationCancelPage = () => {
             className="pl-10"
           />
         </div>
+        {isSale && (
+          <Button
+            onClick={() => navigate("/reservations/cancel/create")}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            ยกเลิกใบจอง
+          </Button>
+        )}
       </div>
 
       {/* Info Banner */}

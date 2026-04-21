@@ -120,7 +120,44 @@ export default function ReservationCancelDetail() {
 
       if (error) throw error;
       toast({ title: "อนุมัติยกเลิกเรียบร้อย", description: "ใบจองถูกยกเลิกแล้ว" });
-      fetchReservation();
+      navigate("/reservations/cancel-approve");
+    } catch (err) {
+      console.error(err);
+      toast({ title: "เกิดข้อผิดพลาด", variant: "destructive" });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Sales Manager: Reject cancel request
+  const handleRejectCancel = async () => {
+    if (!reservation) return;
+    if (!approvalRemark.trim()) {
+      toast({
+        title: "กรุณาระบุเหตุผล",
+        description: "ต้องระบุหมายเหตุเมื่อไม่อนุมัติการยกเลิก",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      const { error } = await supabase
+        .from("reservations")
+        .update({
+          cancel_approval_status: "rejected",
+          cancel_request_status: null,
+          cancel_requested_at: null,
+          cancel_requested_by: null,
+          cancel_approved_at: new Date().toISOString(),
+          cancel_approved_by: profile?.user_id || null,
+          cancel_approval_remark: approvalRemark.trim(),
+        } as any)
+        .eq("id", reservation.id);
+
+      if (error) throw error;
+      toast({ title: "ไม่อนุมัติการยกเลิก", description: "ใบจองยังคงสถานะเดิม" });
+      navigate("/reservations/cancel-approve");
     } catch (err) {
       console.error(err);
       toast({ title: "เกิดข้อผิดพลาด", variant: "destructive" });
@@ -150,7 +187,12 @@ export default function ReservationCancelDetail() {
   }
 
   const canReview = hasRole("sale_supervisor") && reservation.cancel_request_status === "requested" && reservation.cancel_review_status !== "reviewed";
-  const canApprove = hasRole("sale_manager") && reservation.cancel_review_status === "reviewed" && reservation.cancel_approval_status !== "approved";
+  // 2-stage workflow: Manager approves directly when request is in 'requested' state
+  const canApprove =
+    hasRole("sale_manager") &&
+    reservation.cancel_request_status === "requested" &&
+    reservation.cancel_approval_status !== "approved" &&
+    reservation.status !== "cancelled";
 
   const freebies = Array.isArray(reservation.freebies) ? reservation.freebies : [];
   const accessories = Array.isArray(reservation.accessories) ? reservation.accessories : [];
@@ -220,14 +262,24 @@ export default function ReservationCancelDetail() {
                 </Button>
               )}
               {canApprove && (
-                <Button
-                  onClick={handleApproveCancel}
-                  disabled={isProcessing}
-                  variant="destructive"
-                >
-                  {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  อนุมัติยกเลิกใบจอง
-                </Button>
+                <>
+                  <Button
+                    onClick={handleRejectCancel}
+                    disabled={isProcessing}
+                    variant="outline"
+                  >
+                    {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                    ไม่อนุมัติ
+                  </Button>
+                  <Button
+                    onClick={handleApproveCancel}
+                    disabled={isProcessing}
+                    variant="destructive"
+                  >
+                    {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                    อนุมัติยกเลิกใบจอง
+                  </Button>
+                </>
               )}
             </div>
           </CardContent>

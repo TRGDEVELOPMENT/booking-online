@@ -1576,20 +1576,20 @@ export default function ReservationEdit() {
                 </div>
               </div>
 
-              <div className="mt-4">
-                <Label>ประเภทการซื้อ <span className="text-destructive">*</span></Label>
+              <div className="mt-4 flex items-center gap-4">
+                <Label className="whitespace-nowrap shrink-0 mb-0">ประเภทการซื้อ <span className="text-destructive">*</span></Label>
                 <RadioGroup 
                   value={purchaseType} 
                   onValueChange={(v) => setPurchaseType(v as PurchaseType)}
-                  className="flex gap-6 mt-2"
+                  className="flex gap-6"
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="cash" id="cash" />
-                    <Label htmlFor="cash" className="cursor-pointer">เงินสด</Label>
+                    <Label htmlFor="cash" className="cursor-pointer mb-0">เงินสด</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="finance" id="finance" />
-                    <Label htmlFor="finance" className="cursor-pointer">สินเชื่อ (ผ่อน)</Label>
+                    <Label htmlFor="finance" className="cursor-pointer mb-0">สินเชื่อ (ผ่อน)</Label>
                   </div>
                 </RadioGroup>
               </div>

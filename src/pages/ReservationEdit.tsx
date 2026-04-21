@@ -184,6 +184,7 @@ export default function ReservationEdit() {
   const [createdByName, setCreatedByName] = useState<string | null>(null);
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [reviewedByName, setReviewedByName] = useState<string | null>(null);
+  const [reviewedBy, setReviewedBy] = useState<string | null>(null);
   const [approvedByName, setApprovedByName] = useState<string | null>(null);
 
   // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์
@@ -393,6 +394,7 @@ export default function ReservationEdit() {
         setCreatedAt(data.created_at);
 
         // Lookup actor names from profiles
+        setReviewedBy(data.reviewed_by || null);
         const actorIds = [data.created_by, data.reviewed_by, data.approved_by].filter(Boolean) as string[];
         if (actorIds.length > 0) {
           const { data: profiles } = await supabase
@@ -728,8 +730,11 @@ export default function ReservationEdit() {
   const finalPrice = basePrice - discountAmount;
 
   // Detect which stage returned the reservation for revision (drives section locking + banner)
-  const returnedFromCashier = reviewStatus === 'returned' && !cashierUserId;
-  const returnedFromSupervisor = reviewStatus === 'returned' && !!cashierUserId;
+  // Detect which stage returned the reservation for revision (drives section locking + banner)
+  // Distinguish by reviewed_by: cashier-return clears cashier_user_id but does NOT set reviewed_by;
+  // supervisor-return sets reviewed_by + reviewed_at.
+  const returnedFromSupervisor = reviewStatus === 'returned' && !!reviewedBy;
+  const returnedFromCashier = reviewStatus === 'returned' && !reviewedBy;
   const returnedFromManager = approvalStatus === 'rejected';
   const isReturnedForRevision = returnedFromCashier || returnedFromSupervisor || returnedFromManager;
   // Strip the [DEPOSIT_RETURN] tag we added when displaying the cashier remark

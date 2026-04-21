@@ -204,11 +204,13 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
   const { profile, roles, signOut, hasRole } = useAuth();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['reservations']);
   const [actionableCount, setActionableCount] = useState(0);
+  const [pendingCancelCount, setPendingCancelCount] = useState(0);
 
   // Check if user is a cashier
   const isCashier = hasRole('cashier');
   const currentRole = roles[0]?.role || '';
   const isAdminViewer = hasRole('it') || hasRole('user_admin');
+  const isManager = hasRole('sale_manager');
 
   // Fetch count of reservations awaiting action by the current role
   useEffect(() => {
@@ -246,6 +248,41 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
       supabase.removeChannel(channel);
     };
   }, [selectedCompany, currentRole, isAdminViewer, location.pathname]);
+
+  // Fetch count of cancellation requests pending for sale_manager approval
+  useEffect(() => {
+    if (!selectedCompany || !isManager) {
+      setPendingCancelCount(0);
+      return;
+    }
+    let cancelled = false;
+    const fetchCancelCount = async () => {
+      const { data, error } = await supabase
+        .from('reservations')
+        .select('id, status, cancel_request_status, cancel_approval_status')
+        .eq('company_id', selectedCompany)
+        .eq('cancel_request_status', 'requested')
+        .neq('status', 'cancelled');
+      if (cancelled || error || !data) return;
+      const count = data.filter((r: any) => r.cancel_approval_status !== 'approved').length;
+      setPendingCancelCount(count);
+    };
+    fetchCancelCount();
+
+    const channel = supabase
+      .channel(`sidebar-cancel-${selectedCompany}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reservations', filter: `company_id=eq.${selectedCompany}` },
+        () => { fetchCancelCount(); }
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [selectedCompany, isManager, location.pathname]);
 
   // Filter subItems based on role
   const filterSubItemsByRole = (subItems?: SubItem[]) => {
@@ -392,6 +429,11 @@ export function Sidebar({ selectedCompany, onCompanyChange }: SidebarProps) {
                                   {subItem.id === 'list' && actionableCount > 0 && (
                                     <span className="ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold leading-none">
                                       {actionableCount > 99 ? '99+' : actionableCount}
+                                    </span>
+                                  )}
+                                  {subItem.id === 'cancel-approve' && pendingCancelCount > 0 && (
+                                    <span className="ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold leading-none">
+                                      {pendingCancelCount > 99 ? '99+' : pendingCancelCount}
                                     </span>
                                   )}
                                 </Link>

@@ -10,6 +10,7 @@ interface AssignmentInfo {
 interface StepActor {
   name?: string | null;
   at?: string | null;
+  pending?: boolean;
 }
 
 interface WorkflowStepsProps {
@@ -89,6 +90,7 @@ export function WorkflowSteps({ currentStage, documentStatus, assignments = [], 
           // Prefer actor (who actually did it) when stage completed/current; fall back to assignment (who is assigned)
           const showActor = (isCompleted || isCurrent) && (actor?.name || actor?.at);
           const formattedTime = formatThaiDateTime(actor?.at);
+          const isPendingPreview = isCurrent && !!actor?.pending && !!actor?.name;
 
           return (
             <div key={step.id} className="relative z-10 flex flex-col items-center flex-1 min-w-0 px-1">
@@ -117,17 +119,28 @@ export function WorkflowSteps({ currentStage, documentStatus, assignments = [], 
               {/* Actor name + timestamp (when stage completed or current) */}
               {showActor && actor?.name ? (
                 <p
-                  className="text-[10px] md:text-xs text-foreground mt-1 text-center truncate max-w-[100px] md:max-w-[140px] font-medium"
+                  className={cn(
+                    "text-[10px] md:text-xs mt-1 text-center truncate max-w-[100px] md:max-w-[140px]",
+                    isPendingPreview
+                      ? "italic text-muted-foreground/80 font-normal"
+                      : "text-foreground font-medium"
+                  )}
                   title={actor.name}
                 >
                   👤 {actor.name}
                 </p>
               ) : null}
-              {showActor && formattedTime ? (
+              {showActor && !isPendingPreview && formattedTime ? (
                 <p className="text-[10px] text-muted-foreground mt-0.5 text-center whitespace-nowrap">
                   🕒 {formattedTime}
                 </p>
               ) : null}
+              {isPendingPreview ? (
+                <p className="text-[10px] italic text-muted-foreground/70 mt-0.5 text-center whitespace-nowrap">
+                  รอดำเนินการ
+                </p>
+              ) : null}
+
 
               {/* Fallback: show assigned (planned) user when no actor yet */}
               {!showActor && assignment?.assigned_user_name ? (

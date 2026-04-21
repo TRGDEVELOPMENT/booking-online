@@ -1079,18 +1079,41 @@ export default function ReservationEdit() {
        <div className={cn("flex-1 p-6 overflow-auto", ((effectiveViewOnly && !isSaleSupervisor && !isCashier && !isSaleManager) || isSaleManager) && "pointer-events-none")}>
         <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
           {/* Workflow Progress */}
-          <WorkflowSteps
-            currentStage={calculateWorkflowStage()}
-            documentStatus={calculateDocumentStatus()}
-            assignments={assignments}
-            stepActors={{
-              step1: { name: createdByName, at: createdAt },
-              step2: { name: confirmedByName || createdByName, at: confirmedAt },
-              step3: { name: cashierUserName, at: cashierVerifiedAt },
-              step4: { name: reviewedByName, at: reviewedAt },
-              step5: { name: approvedByName, at: approvedAt },
-            }}
-          />
+          {(() => {
+            const currentStage = calculateWorkflowStage();
+            const currentUserName = profile?.full_name || user?.email || null;
+            // Map role -> step it can preview (only when that step is the current stage and not yet acted)
+            const previewFor = (step: 'step3' | 'step4' | 'step5'): { name: string | null; pending: boolean } => {
+              if (currentStage !== step || !currentUserName) return { name: null, pending: false };
+              if (step === 'step3' && isCashier && !cashierUserName) return { name: currentUserName, pending: true };
+              if (step === 'step4' && isSaleSupervisor && !reviewedByName) return { name: currentUserName, pending: true };
+              if (step === 'step5' && isSaleManager && !approvedByName) return { name: currentUserName, pending: true };
+              return { name: null, pending: false };
+            };
+            const p3 = previewFor('step3');
+            const p4 = previewFor('step4');
+            const p5 = previewFor('step5');
+            return (
+              <WorkflowSteps
+                currentStage={currentStage}
+                documentStatus={calculateDocumentStatus()}
+                assignments={assignments}
+                stepActors={{
+                  step1: { name: createdByName, at: createdAt },
+                  step2: { name: confirmedByName || createdByName, at: confirmedAt },
+                  step3: cashierUserName
+                    ? { name: cashierUserName, at: cashierVerifiedAt }
+                    : { name: p3.name, pending: p3.pending },
+                  step4: reviewedByName
+                    ? { name: reviewedByName, at: reviewedAt }
+                    : { name: p4.name, pending: p4.pending },
+                  step5: approvedByName
+                    ? { name: approvedByName, at: approvedAt }
+                    : { name: p5.name, pending: p5.pending },
+                }}
+              />
+            );
+          })()}
 
           {/* Returned-for-revision banner hidden by request */}
 

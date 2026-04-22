@@ -83,7 +83,19 @@ export default function ReservationPrint() {
             const { data: fallbackName } = await supabase
               .rpc('get_company_role_user_name', { _company_id: data.company_id, _role: 'sale_manager' });
             if (fallbackName) setManagerName(prev => prev || (fallbackName as string));
+
+
+          // Fetch branch manager name from branches table
+          if (data.branch_id && data.company_id) {
+            const { data: branchData } = await supabase
+              .from('branches')
+              .select('manager_name')
+              .eq('company_id', data.company_id)
+              .eq('branch_id', data.branch_id)
+              .maybeSingle();
+            if (branchData?.manager_name) setBranchManagerName(branchData.manager_name);
           }
+        }
         }
       } catch (err) {
         console.error('Error:', err);

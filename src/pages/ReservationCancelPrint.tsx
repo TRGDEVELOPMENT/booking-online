@@ -6,8 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { companies } from "@/data/mockData";
 import type { DatabaseReservation } from "@/types/database-reservation";
 import lacLogo from '@/assets/LAC.png';
+import bizrLogo from '@/assets/bizpk-logo.png';
 
 const companyLogos: Record<string, string> = {
+  BPK: bizrLogo,
   LAC: lacLogo,
 };
 

@@ -6,8 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { companies } from "@/data/mockData";
 import type { DatabaseReservation } from "@/types/database-reservation";
 import lacLogo from '@/assets/LAC.png';
+import bizrLogo from '@/assets/bizpk-logo.png';
 
 const companyLogos: Record<string, string> = {
+  BPK: bizrLogo,
   LAC: lacLogo,
 };
 
@@ -36,6 +38,7 @@ export default function ReservationCancelPrint() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [reservation, setReservation] = useState<DatabaseReservation | null>(null);
+  const [managerName, setManagerName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -66,6 +69,27 @@ export default function ReservationCancelPrint() {
               ? (data.benefits as DatabaseReservation["benefits"])
               : null,
           });
+
+          // Fetch sale manager: prefer approver, then assignment, then any sale_manager in company
+          let mgrUserId: string | null = (data as any).approved_by ?? null;
+          if (!mgrUserId) {
+            const { data: assignment } = await supabase
+              .from('reservation_assignments')
+              .select('assigned_user_id')
+              .eq('reservation_id', id)
+              .eq('stage', 'sale_manager')
+              .maybeSingle();
+            mgrUserId = assignment?.assigned_user_id ?? null;
+          }
+          if (mgrUserId) {
+            const { data: mgrName } = await supabase
+              .rpc('get_profile_name', { _user_id: mgrUserId });
+            if (mgrName) setManagerName(mgrName as string);
+          } else {
+            const { data: fallbackName } = await supabase
+              .rpc('get_company_role_user_name', { _company_id: data.company_id, _role: 'sale_manager' });
+            if (fallbackName) setManagerName(fallbackName as string);
+          }
         }
       } catch (err) {
         console.error("Error:", err);
@@ -144,9 +168,9 @@ export default function ReservationCancelPrint() {
         className="print:mt-0 mt-20 p-12 max-w-4xl mx-auto bg-white min-h-screen"
         style={{ fontFamily: "TH Sarabun New, Sarabun, serif" }}
       >
-        {/* Company Logo */}
+        {/* Company Logo - Top Left */}
         {companyLogos[reservation.company_id] && (
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-start mb-4">
             <img src={companyLogos[reservation.company_id]} alt="Company Logo" className="h-16 object-contain" />
           </div>
         )}
@@ -221,7 +245,7 @@ export default function ReservationCancelPrint() {
           <div className="mt-16">
             <p>........................................................</p>
             <p className="mt-2">
-              (.......................................................)
+              ( {managerName || ".......................................................".slice(0, 55)} )
             </p>
             <p className="mt-1 font-semibold">ผู้จัดการฝ่ายขาย</p>
           </div>

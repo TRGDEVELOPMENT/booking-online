@@ -87,6 +87,7 @@ export type Database = {
           company_id: string
           created_at: string
           id: string
+          manager_name: string | null
           no: number
           status: string
           updated_at: string
@@ -97,6 +98,7 @@ export type Database = {
           company_id: string
           created_at?: string
           id?: string
+          manager_name?: string | null
           no: number
           status?: string
           updated_at?: string
@@ -107,6 +109,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           id?: string
+          manager_name?: string | null
           no?: number
           status?: string
           updated_at?: string

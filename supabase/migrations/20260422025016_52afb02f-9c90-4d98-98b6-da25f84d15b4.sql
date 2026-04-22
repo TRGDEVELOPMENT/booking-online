@@ -1,0 +1,1 @@
+ALTER TABLE public.branches ADD COLUMN manager_name text;

@@ -47,7 +47,9 @@ export default function Login() {
 
     try {
       // Construct internal email from username (company-independent)
-      const internalEmail = `${username}@app.internal`;
+      // Lowercase + sanitize to match the format used during user creation
+      const sanitizedUsername = username.toLowerCase().replace(/[^a-z0-9._-]/g, '');
+      const internalEmail = `${sanitizedUsername}@app.internal`;
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: internalEmail,

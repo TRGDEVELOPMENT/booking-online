@@ -269,7 +269,7 @@ export default function ReservationPrint() {
           <div className="mb-4 text-indent">
             <p className="indent-8">ระหว่าง <span className="font-bold underline">{companyName}</span> ผู้จำหน่าย/ตัวแทนจำหน่ายรถยนต์ของผู้ประกอบธุรกิจ ☐ สำนักงานใหญ่ ☒ สำนักงานสาขา ตั้งอยู่ เลขที่ 800/1 อาคาร {dotLine('80px')} ชั้น {dotLine('40px')} ห้อง {dotLine('40px')} หมู่ที่ {dotLine('40px')} ตรอก/ซอย {dotLine('80px')} ถนนบรมราชชนนี ตำบล/แขวงบางบำหรุ อำเภอ/เขตบางพลัด จังหวัดกรุงเทพมหานคร</p>
             <p className="indent-8">หมายเลขโทรศัพท์ 02-8864466 อีเมล bizpk_01@nissan-dealer.in.th</p>
-            <p className="indent-8">โดย {dotLine('40px')} กรรมการผู้มีอำนาจ หรือ {dotLine('150px')} ผู้มีอำนาจกระทำการแทนผู้ประกอบธุรกิจ ตามหนังสือมอบอำนาจ ลงวันที่ {dotLine('40px')} เดือน {dotLine('80px')} พ.ศ. {dotLine('50px')} (ให้แสดงหนังสือมอบอำนาจต่อผู้บริโภค)</p>
+            <p className="indent-8">โดย {branchManagerName ? filledDotLine(branchManagerName, '200px') : dotLine('200px')} กรรมการผู้มีอำนาจ หรือ {dotLine('150px')} ผู้มีอำนาจกระทำการแทนผู้ประกอบธุรกิจ ตามหนังสือมอบอำนาจ ลงวันที่ {dotLine('40px')} เดือน {dotLine('80px')} พ.ศ. {dotLine('50px')} (ให้แสดงหนังสือมอบอำนาจต่อผู้บริโภค)</p>
             <p className="indent-8">ซึ่งต่อไปในสัญญานี้เรียกว่า <span className="font-bold">"ผู้ประกอบธุรกิจ"</span> ฝ่ายหนึ่ง</p>
           </div>
 

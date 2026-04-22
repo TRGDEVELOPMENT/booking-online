@@ -28,6 +28,9 @@ interface Surname {
   description: string;
 }
 
+// คำนำหน้าที่ไม่ต้องกรอกนามสกุล (นิติบุคคล)
+const CORPORATE_SURNAMES = ['หจก.', 'บจก.', 'บมจ.'];
+
 interface CustomerFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -110,6 +113,10 @@ export function CustomerFormDialog({
   }, [open, initialTaxId]);
 
   const handleSubmit = async () => {
+    // Get selected surname description
+    const selectedSurname = surnames.find(s => s.id === formData.surname_id);
+    const isCorporateSurname = selectedSurname && CORPORATE_SURNAMES.includes(selectedSurname.description);
+
     // Validation
     if (!formData.tax_id.trim()) {
       toast.error('กรุณากรอกเลขประจำตัวผู้เสียภาษี/เลขบัตรประชาชน');
@@ -119,7 +126,8 @@ export function CustomerFormDialog({
       toast.error('กรุณากรอกชื่อ');
       return;
     }
-    if (!formData.last_name.trim()) {
+    // นามสกุลบังคับเฉพาะกรณีไม่ใช่นิติบุคคล
+    if (!isCorporateSurname && !formData.last_name.trim()) {
       toast.error('กรุณากรอกนามสกุล');
       return;
     }
@@ -259,7 +267,22 @@ export function CustomerFormDialog({
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label>นามสกุล <span className="text-destructive">*</span></Label>
+                <Label>
+                  นามสกุล{' '}
+                  <span
+                    className={
+                      surnames.find(s => s.id === formData.surname_id)?.description &&
+                      CORPORATE_SURNAMES.includes(surnames.find(s => s.id === formData.surname_id)!.description)
+                        ? 'text-muted-foreground'
+                        : 'text-destructive'
+                    }
+                  >
+                    {surnames.find(s => s.id === formData.surname_id)?.description &&
+                    CORPORATE_SURNAMES.includes(surnames.find(s => s.id === formData.surname_id)!.description)
+                      ? '(ไม่บังคับ)'
+                      : '*'}
+                  </span>
+                </Label>
                 <Input
                   value={formData.last_name}
                   onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}

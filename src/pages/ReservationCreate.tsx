@@ -414,6 +414,10 @@ export default function ReservationCreate() {
         freebies: freebies.filter(f => f.name),
         accessories: accessories.filter(a => a.name),
         benefits: benefits.filter(b => b.name),
+        purchase_type: purchaseType,
+        down_payment: purchaseType === 'finance' ? downPayment : 0,
+        finance_amount: purchaseType === 'finance' ? financeAmount : 0,
+        installment_period_id: purchaseType === 'finance' ? (installmentPeriodId || null) : null,
         created_by: user?.id || null,
       };
 

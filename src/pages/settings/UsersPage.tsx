@@ -92,7 +92,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [branches, setBranches] = useState<{ branch_id: string; branch_name: string }[]>([]);
+  const [branches, setBranches] = useState<{ branch_id: string; branch_name: string; company_id?: string }[]>([]);
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);

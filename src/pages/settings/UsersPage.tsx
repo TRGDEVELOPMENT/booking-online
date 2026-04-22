@@ -273,7 +273,8 @@ export default function UsersPage() {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
-    if ((formData.role === 'sale' || formData.role === 'sale_supervisor') && !formData.team_id) {
+    // Only Sale role requires team selection; Sale Supervisor does not
+    if (formData.role === 'sale' && !formData.team_id) {
       toast.error('กรุณาเลือกทีมขาย');
       return;
     }

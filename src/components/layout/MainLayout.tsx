@@ -9,8 +9,9 @@ export function MainLayout() {
   const [selectedCompany, setSelectedCompany] = useState(() => {
     return localStorage.getItem('selectedCompany') || 'BPK';
   });
-  const { profile, roles, signOut } = useAuth();
+  const { profile, roles, signOut, hasRole, user } = useAuth();
   const navigate = useNavigate();
+  const isIT = hasRole('it');
 
   const getRoleDisplayName = (role: string) => {
     const roleMap: Record<string, string> = {

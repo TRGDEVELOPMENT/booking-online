@@ -154,6 +154,11 @@ export default function UsersPage() {
 
     const { data: profiles } = await query;
 
+    // Fetch user_groups for role name mapping
+    const { data: userGroups } = await supabase
+      .from('user_groups')
+      .select('role_id, name, company_id');
+
     if (profiles) {
       const usersWithRoles: UserWithRole[] = await Promise.all(
         profiles.map(async (p) => {
@@ -167,6 +172,13 @@ export default function UsersPage() {
             team_id: (p as any).team_id || null,
             status: (p as any).status || 'active',
             roles: rolesData?.map(r => r.role) || [],
+            roleNames: rolesData?.map(r => {
+              // Find user_group name for this role, matching by company_id
+              const group = userGroups?.find(
+                g => g.role_id === r.role && g.company_id === p.company_id
+              );
+              return group?.name || roleLabels[r.role] || r.role;
+            }) || [],
           };
         })
       );

@@ -588,9 +588,9 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {user.roles.map(role => (
-                        <Badge key={role} variant="secondary" className="text-xs">
-                          {roleLabels[role] || role}
+                      {(user.roleNames || user.roles.map(role => roleLabels[role] || role)).map((roleName, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">
+                          {roleName}
                         </Badge>
                       ))}
                     </div>

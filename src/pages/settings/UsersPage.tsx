@@ -145,8 +145,8 @@ export default function UsersPage() {
     let query = supabase
       .from('profiles')
       .select('user_id, full_name, company_id, branch_id, supervisor_id, status, username, email, team_id, created_at')
-      .order('company_id', { ascending: true })
-      .order('created_at', { ascending: true });
+      .order('branch_id', { ascending: true })
+      .order('full_name', { ascending: true });
 
     if (!isIT) {
       query = query.eq('company_id', profile.company_id);

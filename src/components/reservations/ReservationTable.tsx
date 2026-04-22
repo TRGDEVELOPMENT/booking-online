@@ -270,21 +270,28 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                         );
                       }
 
-                      // user_admin (non-IT) viewers → view-only
+                      // user_admin (non-IT) viewers → view + print
                       if (isAdminViewer && !isItAdmin) {
                         return (
-                          <Link to={`/reservations/${reservation.id}`}>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" title="ดูรายละเอียด">
-                              <Eye className="w-3.5 h-3.5" />
-                            </Button>
-                          </Link>
+                          <>
+                            <Link to={`/reservations/${reservation.id}`}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" title="ดูรายละเอียด">
+                                <Eye className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
+                            <Link to={`/reservations/${reservation.id}/print`}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" title="พิมพ์เอกสาร">
+                                <Printer className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
+                          </>
                         );
                       }
 
                       const actionable = isActionableForRole(stageRole, currentRole);
                       const isCancelled = idx === -2 || idx === -3;
 
-                      // Case 2: Other stages + user is NOT actionable role → View only (+ Print if cancelled)
+                      // Case 2: Other stages + user is NOT actionable role → View + Print
                       if (!actionable) {
                         return (
                           <>
@@ -293,13 +300,11 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                                 <Eye className="w-3.5 h-3.5" />
                               </Button>
                             </Link>
-                            {isCancelled && (
-                              <Link to={`/reservations/${reservation.id}/print`}>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" title="พิมพ์เอกสาร (ยกเลิก)">
-                                  <Printer className="w-3.5 h-3.5" />
-                                </Button>
-                              </Link>
-                            )}
+                            <Link to={`/reservations/${reservation.id}/print`}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" title={isCancelled ? 'พิมพ์เอกสาร (ยกเลิก)' : 'พิมพ์เอกสาร'}>
+                                <Printer className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
                           </>
                         );
                       }

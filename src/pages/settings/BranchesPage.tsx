@@ -20,6 +20,7 @@ interface Branch {
   no: number;
   branch_id: string;
   branch_name: string;
+  manager_name: string | null;
   status: string;
   company_id: string;
 }

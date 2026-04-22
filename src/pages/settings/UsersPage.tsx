@@ -425,9 +425,17 @@ export default function UsersPage() {
     return sup?.full_name || '-';
   };
 
-  const filteredUsers = users.filter(u =>
-    u.full_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [branchFilter, setBranchFilter] = useState<string>('all');
+
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = u.full_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesBranch =
+      branchFilter === 'all' ||
+      (branchFilter === '__all_branches__'
+        ? (u.roles.includes('it') || u.branch_id === 'all' || !u.branch_id)
+        : u.branch_id === branchFilter);
+    return matchesSearch && matchesBranch;
+  });
 
   return (
     <div className="space-y-6">
@@ -445,8 +453,8 @@ export default function UsersPage() {
       </div>
 
       <div className="bg-card rounded-xl border border-border">
-        <div className="p-4 border-b border-border">
-          <div className="relative max-w-sm">
+        <div className="p-4 border-b border-border flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[220px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="ค้นหาชื่อผู้ใช้งาน..."
@@ -454,6 +462,22 @@ export default function UsersPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
+          </div>
+          <div className="w-full sm:w-auto sm:min-w-[240px]">
+            <Select value={branchFilter} onValueChange={setBranchFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="กรองตามสาขา" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">ทุกสาขา (แสดงทั้งหมด)</SelectItem>
+                <SelectItem value="__all_branches__">สิทธิ์ทุกสาขา / IT Admin</SelectItem>
+                {branches.map((b) => (
+                  <SelectItem key={b.branch_id} value={b.branch_id}>
+                    {b.branch_id} - {b.branch_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

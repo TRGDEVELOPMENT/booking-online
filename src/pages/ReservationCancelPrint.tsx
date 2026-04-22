@@ -168,9 +168,9 @@ export default function ReservationCancelPrint() {
         className="print:mt-0 mt-20 p-12 max-w-4xl mx-auto bg-white min-h-screen"
         style={{ fontFamily: "TH Sarabun New, Sarabun, serif" }}
       >
-        {/* Company Logo */}
+        {/* Company Logo - Top Left */}
         {companyLogos[reservation.company_id] && (
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-start mb-4">
             <img src={companyLogos[reservation.company_id]} alt="Company Logo" className="h-16 object-contain" />
           </div>
         )}

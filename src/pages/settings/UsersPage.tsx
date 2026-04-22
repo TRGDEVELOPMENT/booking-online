@@ -711,20 +711,13 @@ export default function UsersPage() {
               )}
             </div>
 
-            {/* Team selection - for Sale and Sale Supervisor roles */}
-            {(formData.role === 'sale' || formData.role === 'sale_supervisor') && (() => {
-              const isSupervisor = formData.role === 'sale_supervisor';
+            {/* Team selection - for Sale role only (not for Sale Supervisor) */}
+            {formData.role === 'sale' && (() => {
               const branchTeams = salesTeams.filter(t => {
                 if (formData.branch_id && t.branch_id !== formData.branch_id) return false;
-                // For supervisor: show only teams where they are the supervisor (in edit mode)
-                if (isSupervisor && dialogMode === 'edit' && editingUserId) {
-                  return t.supervisor_id === editingUserId;
-                }
                 return true;
               });
-              const helpText = isSupervisor
-                ? 'เลือกทีมขายที่หัวหน้าทีมนี้ดูแล'
-                : 'เลือกทีมขายที่พนักงานนี้สังกัด — หัวหน้าทีมจะถูกกำหนดเป็นค่าเริ่มต้นในสายอนุมัติรายการจอง';
+              const helpText = 'เลือกทีมขายที่พนักงานนี้สังกัด — หัวหน้าทีมจะถูกกำหนดเป็นค่าเริ่มต้นในสายอนุมัติรายการจอง';
               return (
                 <div className="space-y-2 p-3 rounded-lg bg-accent/40 border border-border">
                   <Label>
@@ -742,7 +735,7 @@ export default function UsersPage() {
                     <SelectContent>
                       {branchTeams.length === 0 ? (
                         <div className="px-3 py-2 text-sm text-muted-foreground">
-                          {isSupervisor ? 'ยังไม่มีทีมขายที่ผู้ใช้นี้เป็นหัวหน้า' : 'ไม่พบทีมขายในสาขานี้'}
+                          ไม่พบทีมขายในสาขานี้
                         </div>
                       ) : (
                         branchTeams.map(t => {
@@ -750,9 +743,7 @@ export default function UsersPage() {
                           return (
                             <SelectItem key={t.id} value={t.id}>
                               {t.team_name}
-                              {!isSupervisor && (
-                                <span className="text-muted-foreground"> — หัวหน้า: {supName}</span>
-                              )}
+                              <span className="text-muted-foreground"> — หัวหน้า: {supName}</span>
                             </SelectItem>
                           );
                         })

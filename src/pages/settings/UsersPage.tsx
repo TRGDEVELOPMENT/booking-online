@@ -113,9 +113,18 @@ export default function UsersPage() {
   const [roleWarningOpen, setRoleWarningOpen] = useState(false);
 
   const isAdmin = hasRole('user_admin') || hasRole('it');
+  const isIT = hasRole('it');
 
   const [salesTeams, setSalesTeams] = useState<SalesTeamOption[]>([]);
   const [roleOptions, setRoleOptions] = useState<RoleOption[]>(DEFAULT_ROLE_OPTIONS);
+  const [companyFilter, setCompanyFilter] = useState<string>('all');
+
+  const COMPANY_OPTIONS = [
+    { id: 'BPK', name: 'บริษัท บิซ พีเค จำกัด' },
+    { id: 'LAC', name: 'บริษัท เลกซัส ออโต้ ซิตี้ จำกัด' },
+    { id: 'ICCK', name: 'บริษัท อีซูซุชัยเจริญกิจมอเตอร์ส จำกัด' },
+    { id: 'VPA', name: 'บริษัท วี.พี. ออโต้ เอ็นเตอร์ไพรส์ จำกัด' },
+  ];
 
   useEffect(() => {
     if (!profile?.company_id) return;
@@ -123,7 +132,7 @@ export default function UsersPage() {
     fetchBranches();
     fetchSalesTeams();
     fetchRoleOptions();
-  }, [profile?.company_id]);
+  }, [profile?.company_id, isIT]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -132,11 +141,18 @@ export default function UsersPage() {
       setLoading(false);
       return;
     }
-    const { data: profiles } = await supabase
+    // IT Admin sees ALL companies; everyone else only sees their own company
+    let query = supabase
       .from('profiles')
       .select('user_id, full_name, company_id, branch_id, supervisor_id, status, username, email, team_id, created_at')
-      .eq('company_id', profile.company_id)
+      .order('company_id', { ascending: true })
       .order('created_at', { ascending: true });
+
+    if (!isIT) {
+      query = query.eq('company_id', profile.company_id);
+    }
+
+    const { data: profiles } = await query;
 
     if (profiles) {
       const usersWithRoles: UserWithRole[] = await Promise.all(
@@ -160,12 +176,16 @@ export default function UsersPage() {
   };
 
   const fetchBranches = async () => {
-    const { data } = await supabase
+    // IT sees branches across all companies
+    let query = supabase
       .from('branches')
-      .select('branch_id, branch_name')
-      .eq('company_id', profile?.company_id || '')
+      .select('branch_id, branch_name, company_id')
       .eq('status', 'active');
-    setBranches(data || []);
+    if (!isIT) {
+      query = query.eq('company_id', profile?.company_id || '');
+    }
+    const { data } = await query;
+    setBranches(data as any || []);
   };
 
   const fetchSalesTeams = async () => {

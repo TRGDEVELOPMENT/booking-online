@@ -248,6 +248,10 @@ export default function UsersPage() {
   };
 
   const openEditDialog = (user: UserWithRole) => {
+    if (user.roles.includes('it')) {
+      toast.error('ไม่สามารถแก้ไขผู้ใช้งาน IT Admin ได้');
+      return;
+    }
     setDialogMode('edit');
     setEditingUserId(user.user_id);
     setFormData({

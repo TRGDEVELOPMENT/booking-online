@@ -127,10 +127,16 @@ export default function UsersPage() {
 
   const fetchUsers = async () => {
     setLoading(true);
+    if (!profile?.company_id) {
+      setUsers([]);
+      setLoading(false);
+      return;
+    }
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('user_id, full_name, company_id, branch_id, supervisor_id, status, username, email, team_id')
-      .eq('company_id', profile?.company_id || '');
+      .select('user_id, full_name, company_id, branch_id, supervisor_id, status, username, email, team_id, created_at')
+      .eq('company_id', profile.company_id)
+      .order('created_at', { ascending: true });
 
     if (profiles) {
       const usersWithRoles: UserWithRole[] = await Promise.all(

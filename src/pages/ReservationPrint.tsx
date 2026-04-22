@@ -51,18 +51,14 @@ export default function ReservationPrint() {
             benefits: Array.isArray(data.benefits) ? data.benefits as DatabaseReservation['benefits'] : null,
           });
 
-          // Fetch creator (sale advisor) name
+          // Fetch creator (sale advisor) name via security definer to bypass RLS
           if (data.created_by) {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('full_name')
-              .eq('user_id', data.created_by)
-              .maybeSingle();
-            if (profile?.full_name) setCreatorName(profile.full_name);
+            const { data: creatorFullName } = await supabase
+              .rpc('get_profile_name', { _user_id: data.created_by });
+            if (creatorFullName) setCreatorName(creatorFullName as string);
           }
 
-          // Fetch sale manager name: prefer approver, otherwise look up assigned manager via assignments,
-          // otherwise any sale_manager in same company.
+          // Fetch sale manager: prefer approver, then assignment, then any sale_manager in company
           let mgrUserId: string | null = (data as any).approved_by ?? null;
 
           if (!mgrUserId) {
@@ -76,29 +72,16 @@ export default function ReservationPrint() {
           }
 
           if (mgrUserId) {
-            const { data: mgrProfile } = await supabase
-              .from('profiles')
-              .select('full_name')
-              .eq('user_id', mgrUserId)
-              .maybeSingle();
-            if (mgrProfile?.full_name) setManagerName(mgrProfile.full_name);
-          } else {
-            // Fallback: find any sale_manager in same company
-            const { data: roles } = await supabase
-              .from('user_roles')
-              .select('user_id')
-              .eq('role', 'sale_manager');
-            const userIds = (roles || []).map(r => r.user_id);
-            if (userIds.length > 0) {
-              const { data: mgrProfile } = await supabase
-                .from('profiles')
-                .select('full_name')
-                .in('user_id', userIds)
-                .eq('company_id', data.company_id)
-                .limit(1)
-                .maybeSingle();
-              if (mgrProfile?.full_name) setManagerName(mgrProfile.full_name);
-            }
+            const { data: mgrName } = await supabase
+              .rpc('get_profile_name', { _user_id: mgrUserId });
+            if (mgrName) setManagerName(mgrName as string);
+          }
+
+          // Final fallback: any sale_manager in same company
+          if (!mgrUserId || !managerName) {
+            const { data: fallbackName } = await supabase
+              .rpc('get_company_role_user_name', { _company_id: data.company_id, _role: 'sale_manager' });
+            if (fallbackName) setManagerName(prev => prev || (fallbackName as string));
           }
         }
       } catch (err) {

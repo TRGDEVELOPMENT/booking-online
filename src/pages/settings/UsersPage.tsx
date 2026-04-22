@@ -597,9 +597,15 @@ export default function UsersPage() {
                   </TableCell>
                   {isAdmin && (
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => openEditDialog(user)} title="แก้ไข">
-                        <Pencil className="w-4 h-4" />
-                      </Button>
+                      {user.roles.includes('it') ? (
+                        <span className="text-xs text-muted-foreground italic" title="IT Admin ไม่สามารถแก้ไขหรือลบได้">
+                          ระบบ
+                        </span>
+                      ) : (
+                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(user)} title="แก้ไข">
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                      )}
                     </TableCell>
                   )}
                 </TableRow>

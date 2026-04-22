@@ -1,63 +1,65 @@
 
 
-## Plan: Customer Confirmation View (Design Mockup)
+## Update Function Overview Page
 
-Create a design-only mockup screen showing how customers will see the contract confirmation flow on their device — both OTP and Link methods. This is for internal **design review with users**, not the live customer flow.
+ปรับปรุงหน้า Function Overview (`/function-overview`) ให้สะท้อนฟีเจอร์ปัจจุบันของระบบทั้งหมดที่พัฒนาเพิ่มเติมไปแล้ว เช่น Multi-tenancy, Role-based workflow, Approval Chain, Cancellation flow, Sales Team, IT Admin protections ฯลฯ
 
-### 1. New menu item (Sidebar)
+### สิ่งที่จะอัปเดต
 
-Add under the **"ใบจองรถยนต์"** group (visible to `sale`, `sale_supervisor`, `sale_manager`, `it`, `user_admin`):
+หน้า `src/pages/FunctionOverviewPage.tsx` จะถูกจัดกลุ่มเนื้อหาใหม่เป็น 7 หมวดหลัก พร้อมไอคอนและคำอธิบายภาษาไทย:
 
-- **Label:** `ยืนยันสัญญาจอง (Customer View)`
-- **Path:** `/reservations/customer-confirm-preview`
-- **Icon:** `Smartphone` (lucide)
+1. **ระบบหลักและสถาปัตยกรรม (Core Architecture)**
+   - Multi-tenancy แยกข้อมูลตาม Company (BPK, LAC, ICCK, VPA)
+   - Branch-specific document numbering `{PREFIX}-{YYMM}{5-digit}`
+   - RLS เข้มงวดทุกตาราง + IT Admin bypass
+   - Username = Employee ID (login ด้วยรหัสพนักงาน)
 
-Treated as a "design preview" page — purely UI mockup, no DB calls.
+2. **การจัดการใบจองรถยนต์ (Reservation Management)**
+   - สร้าง/แก้ไข/พิมพ์ใบจอง (A4, TH Sarabun)
+   - Dynamic Vehicle Selection: Model → Sub Model → Color → Price
+   - Customer Search & Verify (ป้องกันลูกค้าซ้ำด้วย Tax ID)
+   - Attachment system (ไฟล์แนบใน bucket แยก company)
+   - Activity Log / Audit Trail (JSONB append-only)
 
-### 2. New page: `src/pages/CustomerConfirmPreviewPage.tsx`
+3. **Workflow & Approval (6 ขั้นตอน)**
+   - Draft → Confirmed → Payment → Review → Approval → Final
+   - Customer Confirmation: OTP / Link
+   - Approval Chain (Global Templates vs Per-Reservation Override)
+   - Cancellation Workflow: Sale → Supervisor → Manager (พร้อม watermark)
 
-Layout: centered page with a header explaining purpose ("หน้านี้เป็นตัวอย่าง UI ฝั่งลูกค้า สำหรับ Confirm Design") + a **Tabs** component with 2 tabs:
+4. **Role-Based Access (8 บทบาท)**
+   - Sale, Sale Supervisor, Sale Manager, Cashier, User Admin, IT Admin
+   - แสดงตารางสิทธิ์ของแต่ละบทบาทในแต่ละ Section ของใบจอง
+   - IT Admin ลบ/แก้ไม่ได้ + เข้าได้ทุก company/branch
 
-**Tab 1 — กรณียืนยันด้วย OTP**
-**Tab 2 — กรณียืนยันด้วย Link**
+5. **การจัดการผู้ใช้งาน (User Management)**
+   - Users, User Groups (table view), Permission Matrix
+   - Sales Teams, Approval Chain, Cancel Approval Chain
+   - Branch filter + เรียงตาม Branch → Full Name
+   - Position column ดึงจาก User Groups
 
-Each tab renders a **mobile-frame mockup** (max-w-sm, rounded-3xl border with shadow) so reviewers visualize the customer's phone screen.
+6. **Master Data & Settings**
+   - Vehicle Types, Models, Sub Models, Colors (CSV Import/Export)
+   - Engine Sizes, Fuel Types, Standard Prices
+   - Freebies, Accessories, Benefits, Surnames (global)
+   - Customers, Branches, Installment Periods
 
-### 3. Mockup contents — both share a common card
+7. **รายงานและแดชบอร์ด (Reports & Dashboard)**
+   - Dashboard Blue-Grey แสดง KPI cards
+   - รายงาน: Monthly / Pending Approval / Cancelled
+   - Cashier Pending Payments view
 
-Top of card:
-- Company logo + "ยืนยันสัญญาจองรถยนต์"
-- Reservation summary (read-only): เลขที่ใบจอง, ชื่อผู้จอง, รุ่น/รุ่นย่อย/สี, ราคา, เงินจอง, วันที่ส่งมอบ
-- Sales advisor contact (name + phone)
+### รูปแบบการแสดงผล
 
-#### Tab 1 — OTP flow (3 sub-states shown stacked or as inner steps)
-1. **State A: Request OTP** — "เราจะส่งรหัส OTP 6 หลักไปที่เบอร์ 08X-XXX-1234" + ปุ่ม `ขอรหัส OTP`
-2. **State B: Enter OTP** — `InputOTP` 6 ช่อง, countdown "รหัสหมดอายุใน 04:32", link "ส่งรหัสใหม่อีกครั้ง", ปุ่ม `ยืนยันสัญญาจอง`
-3. **State C: Success** — ไอคอน ✓ สีเขียว "ยืนยันสัญญาจองสำเร็จ" + timestamp + ปุ่ม "ดาวน์โหลดสำเนาใบจอง (PDF)"
+- ใช้ Card grid (3 คอลัมน์ใน desktop, 1 คอลัมน์ใน mobile)
+- แต่ละหมวดเป็น Card พร้อม Lucide icon + bullet list ของฟีเจอร์
+- เพิ่ม Section บนสุด: หัวข้อ + คำอธิบายโครงการ + Tech Stack badges (React, Vite, Tailwind, Lovable Cloud)
+- ใช้สีตาม Workflow standards: Draft (black), Confirmed (#2349bb), Approved (#02681f), Cancelled (#b51f19)
+- ใช้ Poppins font ตาม design system
 
-Use a small inner Tabs/Stepper or stacked cards so reviewer sees all three states on one page.
+### ไฟล์ที่จะแก้ไข
 
-#### Tab 2 — Link flow (3 sub-states)
-1. **State A: Landing (after click email link)** — "สวัสดีคุณ {ชื่อ}, กรุณาตรวจสอบรายละเอียดสัญญาจองด้านล่าง", checkbox "ข้าพเจ้าได้อ่านและยอมรับเงื่อนไข", ปุ่ม `ยืนยันสัญญาจอง`
-2. **State B: Link หมดอายุ** — ไอคอนเตือนสีเหลือง "ลิงก์นี้หมดอายุแล้ว กรุณาติดต่อที่ปรึกษาการขาย" + เบอร์ติดต่อ
-3. **State C: Success** — เหมือน OTP success state
+- `src/pages/FunctionOverviewPage.tsx` — เขียนใหม่ทั้งหน้าให้สะท้อนสถานะปัจจุบันของระบบ
 
-### 4. Styling notes
-
-- Use existing tokens: `bg-card`, `border`, `text-foreground`, `text-muted-foreground`, primary buttons.
-- Mobile frame: `mx-auto max-w-sm rounded-[2.5rem] border-8 border-slate-800 bg-background overflow-hidden` to simulate phone bezel.
-- Status badges use workflow colors from memory (green `#02681f` for confirmed).
-- Mock data hardcoded inside the page — no Supabase calls.
-
-### 5. Routing
-
-Add route in `src/App.tsx` inside `MainLayout`:
-```
-<Route path="/reservations/customer-confirm-preview" element={<CustomerConfirmPreviewPage />} />
-```
-
-### Files to change
-- `src/components/layout/Sidebar.tsx` — add sub-item
-- `src/pages/CustomerConfirmPreviewPage.tsx` — new page (mockup)
-- `src/App.tsx` — register route
+ไม่มีการแก้ไข database, edge functions หรือไฟล์อื่น ๆ — เป็นการอัปเดตเอกสารภายในแอปเท่านั้น
 

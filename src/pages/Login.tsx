@@ -64,19 +64,34 @@ export default function Login() {
       }
 
       if (data.user) {
-        // Verify the user actually belongs to the selected company.
-        // Do NOT overwrite profiles.company_id — each user is permanently bound
-        // to their own company at creation time.
+        // Check if user is IT Admin — IT can log into any company
+        const { data: rolesData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', data.user.id);
+        const isIT = rolesData?.some(r => r.role === 'it') ?? false;
+
         const { data: profileData } = await supabase
           .from('profiles')
           .select('company_id')
           .eq('user_id', data.user.id)
           .maybeSingle();
 
-        if (profileData && profileData.company_id !== company) {
-          await supabase.auth.signOut();
-          toast.error(`บัญชีนี้ไม่ได้สังกัดบริษัท ${company}`);
-          return;
+        if (isIT) {
+          // IT Admin: sync the selected company into profile so it acts as the active context
+          if (profileData && profileData.company_id !== company) {
+            await supabase
+              .from('profiles')
+              .update({ company_id: company })
+              .eq('user_id', data.user.id);
+          }
+        } else {
+          // Non-IT users are strictly bound to their assigned company
+          if (profileData && profileData.company_id !== company) {
+            await supabase.auth.signOut();
+            toast.error(`บัญชีนี้ไม่ได้สังกัดบริษัท ${company}`);
+            return;
+          }
         }
 
         localStorage.setItem('selectedCompany', company);

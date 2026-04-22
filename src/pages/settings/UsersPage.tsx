@@ -92,7 +92,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [branches, setBranches] = useState<{ branch_id: string; branch_name: string }[]>([]);
+  const [branches, setBranches] = useState<{ branch_id: string; branch_name: string; company_id?: string }[]>([]);
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -113,9 +113,18 @@ export default function UsersPage() {
   const [roleWarningOpen, setRoleWarningOpen] = useState(false);
 
   const isAdmin = hasRole('user_admin') || hasRole('it');
+  const isIT = hasRole('it');
 
   const [salesTeams, setSalesTeams] = useState<SalesTeamOption[]>([]);
   const [roleOptions, setRoleOptions] = useState<RoleOption[]>(DEFAULT_ROLE_OPTIONS);
+  const [companyFilter, setCompanyFilter] = useState<string>('all');
+
+  const COMPANY_OPTIONS = [
+    { id: 'BPK', name: 'บริษัท บิซ พีเค จำกัด' },
+    { id: 'LAC', name: 'บริษัท เลกซัส ออโต้ ซิตี้ จำกัด' },
+    { id: 'ICCK', name: 'บริษัท อีซูซุชัยเจริญกิจมอเตอร์ส จำกัด' },
+    { id: 'VPA', name: 'บริษัท วี.พี. ออโต้ เอ็นเตอร์ไพรส์ จำกัด' },
+  ];
 
   useEffect(() => {
     if (!profile?.company_id) return;
@@ -123,7 +132,7 @@ export default function UsersPage() {
     fetchBranches();
     fetchSalesTeams();
     fetchRoleOptions();
-  }, [profile?.company_id]);
+  }, [profile?.company_id, isIT]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -132,11 +141,18 @@ export default function UsersPage() {
       setLoading(false);
       return;
     }
-    const { data: profiles } = await supabase
+    // IT Admin sees ALL companies; everyone else only sees their own company
+    let query = supabase
       .from('profiles')
       .select('user_id, full_name, company_id, branch_id, supervisor_id, status, username, email, team_id, created_at')
-      .eq('company_id', profile.company_id)
+      .order('company_id', { ascending: true })
       .order('created_at', { ascending: true });
+
+    if (!isIT) {
+      query = query.eq('company_id', profile.company_id);
+    }
+
+    const { data: profiles } = await query;
 
     if (profiles) {
       const usersWithRoles: UserWithRole[] = await Promise.all(
@@ -160,12 +176,16 @@ export default function UsersPage() {
   };
 
   const fetchBranches = async () => {
-    const { data } = await supabase
+    // IT sees branches across all companies
+    let query = supabase
       .from('branches')
-      .select('branch_id, branch_name')
-      .eq('company_id', profile?.company_id || '')
+      .select('branch_id, branch_name, company_id')
       .eq('status', 'active');
-    setBranches(data || []);
+    if (!isIT) {
+      query = query.eq('company_id', profile?.company_id || '');
+    }
+    const { data } = await query;
+    setBranches(data as any || []);
   };
 
   const fetchSalesTeams = async () => {
@@ -427,14 +447,20 @@ export default function UsersPage() {
 
   const [branchFilter, setBranchFilter] = useState<string>('all');
 
+  // Branches dropdown options — when IT filters by a specific company, only show that company's branches
+  const branchDropdownOptions = isIT && companyFilter !== 'all'
+    ? branches.filter(b => b.company_id === companyFilter)
+    : branches;
+
   const filteredUsers = users.filter(u => {
     const matchesSearch = u.full_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCompany = !isIT || companyFilter === 'all' || u.company_id === companyFilter;
     const matchesBranch =
       branchFilter === 'all' ||
       (branchFilter === '__all_branches__'
         ? (u.roles.includes('it') || u.branch_id === 'all' || !u.branch_id)
         : u.branch_id === branchFilter);
-    return matchesSearch && matchesBranch;
+    return matchesSearch && matchesCompany && matchesBranch;
   });
 
   return (
@@ -463,6 +489,23 @@ export default function UsersPage() {
               className="pl-10"
             />
           </div>
+          {isIT && (
+            <div className="w-full sm:w-auto sm:min-w-[220px]">
+              <Select value={companyFilter} onValueChange={(v) => { setCompanyFilter(v); setBranchFilter('all'); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="กรองตามบริษัท" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทุกบริษัท</SelectItem>
+                  {COMPANY_OPTIONS.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.id} - {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="w-full sm:w-auto sm:min-w-[240px]">
             <Select value={branchFilter} onValueChange={setBranchFilter}>
               <SelectTrigger>
@@ -471,9 +514,9 @@ export default function UsersPage() {
               <SelectContent>
                 <SelectItem value="all">ทุกสาขา (แสดงทั้งหมด)</SelectItem>
                 <SelectItem value="__all_branches__">สิทธิ์ทุกสาขา / IT Admin</SelectItem>
-                {branches.map((b) => (
-                  <SelectItem key={b.branch_id} value={b.branch_id}>
-                    {b.branch_id} - {b.branch_name}
+                {branchDropdownOptions.map((b) => (
+                  <SelectItem key={`${b.company_id || ''}-${b.branch_id}`} value={b.branch_id}>
+                    {isIT && b.company_id ? `[${b.company_id}] ` : ''}{b.branch_id} - {b.branch_name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -485,6 +528,7 @@ export default function UsersPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[60px]">ลำดับ</TableHead>
+              {isIT && <TableHead className="w-[80px]">บริษัท</TableHead>}
               <TableHead>รหัสพนักงาน</TableHead>
               <TableHead>ชื่อ-สกุล</TableHead>
               <TableHead>สาขา</TableHead>
@@ -497,13 +541,13 @@ export default function UsersPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={(isAdmin ? 8 : 7) + (isIT ? 1 : 0)} className="text-center text-muted-foreground py-8">
                   กำลังโหลด...
                 </TableCell>
               </TableRow>
             ) : filteredUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={(isAdmin ? 8 : 7) + (isIT ? 1 : 0)} className="text-center text-muted-foreground py-8">
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>
@@ -511,12 +555,17 @@ export default function UsersPage() {
               filteredUsers.map((user, index) => (
                 <TableRow key={user.user_id} className={user.status === 'inactive' ? 'opacity-50' : ''}>
                   <TableCell>{index + 1}</TableCell>
+                  {isIT && (
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs font-mono">{user.company_id}</Badge>
+                    </TableCell>
+                  )}
                   <TableCell className="font-mono text-xs">{user.username || '-'}</TableCell>
                   <TableCell className="font-medium">{user.full_name}</TableCell>
                   <TableCell>
                     {user.roles.includes('it') || user.branch_id === 'all'
                       ? <span className="text-sm text-muted-foreground">ทุกสาขา</span>
-                      : branches.find(b => b.branch_id === user.branch_id)?.branch_name || user.branch_id || '-'}
+                      : branches.find(b => b.branch_id === user.branch_id && (!isIT || b.company_id === user.company_id))?.branch_name || user.branch_id || '-'}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">

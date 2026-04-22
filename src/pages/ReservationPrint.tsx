@@ -238,9 +238,7 @@ export default function ReservationPrint() {
               {companyLogos[reservation.company_id] && (
                 <img src={companyLogos[reservation.company_id]} alt="Company Logo" className="h-16 object-contain" />
               )}
-              <div className="flex-1">
-                <div className="text-right text-sm text-gray-500 mb-1">{companyName}</div>
-              </div>
+              <div className="flex-1"></div>
               {topRightLogo && (
                 <img
                   src={topRightLogo}

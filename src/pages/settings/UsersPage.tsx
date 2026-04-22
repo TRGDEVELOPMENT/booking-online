@@ -489,6 +489,23 @@ export default function UsersPage() {
               className="pl-10"
             />
           </div>
+          {isIT && (
+            <div className="w-full sm:w-auto sm:min-w-[220px]">
+              <Select value={companyFilter} onValueChange={(v) => { setCompanyFilter(v); setBranchFilter('all'); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="กรองตามบริษัท" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทุกบริษัท</SelectItem>
+                  {COMPANY_OPTIONS.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.id} - {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="w-full sm:w-auto sm:min-w-[240px]">
             <Select value={branchFilter} onValueChange={setBranchFilter}>
               <SelectTrigger>
@@ -497,9 +514,9 @@ export default function UsersPage() {
               <SelectContent>
                 <SelectItem value="all">ทุกสาขา (แสดงทั้งหมด)</SelectItem>
                 <SelectItem value="__all_branches__">สิทธิ์ทุกสาขา / IT Admin</SelectItem>
-                {branches.map((b) => (
-                  <SelectItem key={b.branch_id} value={b.branch_id}>
-                    {b.branch_id} - {b.branch_name}
+                {branchDropdownOptions.map((b) => (
+                  <SelectItem key={`${b.company_id || ''}-${b.branch_id}`} value={b.branch_id}>
+                    {isIT && b.company_id ? `[${b.company_id}] ` : ''}{b.branch_id} - {b.branch_name}
                   </SelectItem>
                 ))}
               </SelectContent>

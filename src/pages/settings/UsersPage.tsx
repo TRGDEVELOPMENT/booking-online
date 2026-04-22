@@ -447,14 +447,20 @@ export default function UsersPage() {
 
   const [branchFilter, setBranchFilter] = useState<string>('all');
 
+  // Branches dropdown options — when IT filters by a specific company, only show that company's branches
+  const branchDropdownOptions = isIT && companyFilter !== 'all'
+    ? branches.filter(b => b.company_id === companyFilter)
+    : branches;
+
   const filteredUsers = users.filter(u => {
     const matchesSearch = u.full_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCompany = !isIT || companyFilter === 'all' || u.company_id === companyFilter;
     const matchesBranch =
       branchFilter === 'all' ||
       (branchFilter === '__all_branches__'
         ? (u.roles.includes('it') || u.branch_id === 'all' || !u.branch_id)
         : u.branch_id === branchFilter);
-    return matchesSearch && matchesBranch;
+    return matchesSearch && matchesCompany && matchesBranch;
   });
 
   return (

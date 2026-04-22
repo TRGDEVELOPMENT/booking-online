@@ -8,7 +8,7 @@ const corsHeaders = {
 interface BranchSpec {
   company_id: string
   branch_id: string
-  branch_label: string
+  branch_label: string // short label for naming, e.g. BPK, ICK
 }
 
 const BRANCHES: BranchSpec[] = [
@@ -20,14 +20,16 @@ const BRANCHES: BranchSpec[] = [
   { company_id: 'VPA', branch_id: 'VPA', branch_label: 'vpa' },
 ]
 
-const BRANCH_ROLES = [
+// Roles to create at every branch
+const BRANCH_ROLES: Array<{ role: string; key: string; thaiName: string }> = [
   { role: 'sale', key: 'sale', thaiName: 'ที่ปรึกษาการขาย' },
   { role: 'cashier', key: 'cashier', thaiName: 'แคชเชียร์' },
   { role: 'sale_supervisor', key: 'sup', thaiName: 'หัวหน้าทีมขาย' },
   { role: 'sale_manager', key: 'mgr', thaiName: 'ผู้จัดการฝ่ายขาย' },
 ]
 
-const COMPANY_ADMIN_ROLES = [
+// Company-level admins (created once per company, branch_id = first branch of company)
+const COMPANY_ADMIN_ROLES: Array<{ role: string; key: string; thaiName: string }> = [
   { role: 'user_admin', key: 'useradmin', thaiName: 'ผู้ดูแลระบบ' },
   { role: 'it', key: 'itadmin', thaiName: 'IT Admin' },
 ]
@@ -59,10 +61,12 @@ Deno.serve(async (req) => {
 
     const plans: UserPlan[] = []
 
+    // Per-branch role users
     for (const b of BRANCHES) {
       for (const r of BRANCH_ROLES) {
+        const username = `${r.key}_${b.branch_label}`
         plans.push({
-          username: `${r.key}_${b.branch_label}`,
+          username,
           full_name: `${r.thaiName} ${b.branch_id}`,
           company_id: b.company_id,
           branch_id: b.branch_id,
@@ -71,14 +75,16 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Company-level admins (one per company, attached to first branch)
     const companyFirstBranch = new Map<string, string>()
     for (const b of BRANCHES) {
       if (!companyFirstBranch.has(b.company_id)) companyFirstBranch.set(b.company_id, b.branch_id)
     }
     for (const [company, branch] of companyFirstBranch) {
       for (const r of COMPANY_ADMIN_ROLES) {
+        const username = `${r.key}_${company.toLowerCase()}`
         plans.push({
-          username: `${r.key}_${company.toLowerCase()}`,
+          username,
           full_name: `${r.thaiName} ${company}`,
           company_id: company,
           branch_id: branch,
@@ -92,7 +98,9 @@ Deno.serve(async (req) => {
       const existing = existingMap.get(internalEmail)
 
       if (existing) {
+        // Reset password and ensure profile/role correctness
         await supabase.auth.admin.updateUserById(existing.id, { password: PASSWORD })
+
         await supabase
           .from('profiles')
           .update({
@@ -102,9 +110,11 @@ Deno.serve(async (req) => {
             username: u.username,
           })
           .eq('user_id', existing.id)
+
         await supabase.from('user_roles').delete().eq('user_id', existing.id)
         await supabase.from('user_roles').insert({ user_id: existing.id, role: u.role })
-        results.push({ username: u.username, status: 'updated' })
+
+        results.push({ username: u.username, status: 'updated', user_id: existing.id })
         continue
       }
 
@@ -121,8 +131,11 @@ Deno.serve(async (req) => {
         },
       })
 
-      if (error) results.push({ username: u.username, status: 'error', error: error.message })
-      else results.push({ username: u.username, status: 'created', user_id: data.user?.id })
+      if (error) {
+        results.push({ username: u.username, status: 'error', error: error.message })
+      } else {
+        results.push({ username: u.username, status: 'created', user_id: data.user?.id })
+      }
     }
 
     return new Response(

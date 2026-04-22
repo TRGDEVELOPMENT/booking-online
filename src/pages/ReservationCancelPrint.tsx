@@ -38,6 +38,7 @@ export default function ReservationCancelPrint() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [reservation, setReservation] = useState<DatabaseReservation | null>(null);
+  const [managerName, setManagerName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -68,6 +69,27 @@ export default function ReservationCancelPrint() {
               ? (data.benefits as DatabaseReservation["benefits"])
               : null,
           });
+
+          // Fetch sale manager: prefer approver, then assignment, then any sale_manager in company
+          let mgrUserId: string | null = (data as any).approved_by ?? null;
+          if (!mgrUserId) {
+            const { data: assignment } = await supabase
+              .from('reservation_assignments')
+              .select('assigned_user_id')
+              .eq('reservation_id', id)
+              .eq('stage', 'sale_manager')
+              .maybeSingle();
+            mgrUserId = assignment?.assigned_user_id ?? null;
+          }
+          if (mgrUserId) {
+            const { data: mgrName } = await supabase
+              .rpc('get_profile_name', { _user_id: mgrUserId });
+            if (mgrName) setManagerName(mgrName as string);
+          } else {
+            const { data: fallbackName } = await supabase
+              .rpc('get_company_role_user_name', { _company_id: data.company_id, _role: 'sale_manager' });
+            if (fallbackName) setManagerName(fallbackName as string);
+          }
         }
       } catch (err) {
         console.error("Error:", err);

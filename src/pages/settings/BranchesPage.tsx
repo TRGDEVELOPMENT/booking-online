@@ -35,6 +35,7 @@ export default function BranchesPage() {
   const [formData, setFormData] = useState({
     branch_id: "",
     branch_name: "",
+    manager_name: "",
     status: "active",
   });
 
@@ -66,7 +67,7 @@ export default function BranchesPage() {
 
   const handleAdd = () => {
     setEditingItem(null);
-    setFormData({ branch_id: "", branch_name: "", status: "active" });
+    setFormData({ branch_id: "", branch_name: "", manager_name: "", status: "active" });
     setIsDialogOpen(true);
   };
 
@@ -75,6 +76,7 @@ export default function BranchesPage() {
     setFormData({
       branch_id: item.branch_id,
       branch_name: item.branch_name,
+      manager_name: item.manager_name ?? "",
       status: item.status,
     });
     setIsDialogOpen(true);
@@ -105,6 +107,10 @@ export default function BranchesPage() {
       toast.error("กรุณากรอก Branch Name");
       return;
     }
+    if (!formData.manager_name.trim()) {
+      toast.error("กรุณากรอกชื่อผู้บริหาร");
+      return;
+    }
 
     if (editingItem) {
       const { error } = await supabase
@@ -112,6 +118,7 @@ export default function BranchesPage() {
         .update({
           branch_id: formData.branch_id.toUpperCase().trim(),
           branch_name: formData.branch_name.trim(),
+          manager_name: formData.manager_name.trim(),
           status: formData.status,
         })
         .eq('id', editingItem.id);
@@ -140,6 +147,7 @@ export default function BranchesPage() {
         .insert({
           branch_id: formData.branch_id.toUpperCase().trim(),
           branch_name: formData.branch_name.trim(),
+          manager_name: formData.manager_name.trim(),
           company_id: profile.company_id,
           status: formData.status,
         } as any);
@@ -192,6 +200,7 @@ export default function BranchesPage() {
               <TableHead className="w-[80px]">No.</TableHead>
               <TableHead className="w-[120px]">Branch ID</TableHead>
               <TableHead>Branch Name</TableHead>
+              <TableHead>ผู้บริหาร</TableHead>
               <TableHead className="w-[100px]">Status</TableHead>
               <TableHead className="w-[120px] text-center">จัดการ</TableHead>
             </TableRow>
@@ -199,13 +208,13 @@ export default function BranchesPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   กำลังโหลด...
                 </TableCell>
               </TableRow>
             ) : filteredItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>
@@ -215,6 +224,7 @@ export default function BranchesPage() {
                   <TableCell className="font-medium">{item.no}</TableCell>
                   <TableCell className="font-mono">{item.branch_id}</TableCell>
                   <TableCell>{item.branch_name}</TableCell>
+                  <TableCell>{item.manager_name || <span className="text-muted-foreground">-</span>}</TableCell>
                   <TableCell>
                     <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>
                       {item.status === 'active' ? 'Active' : 'Inactive'}
@@ -268,6 +278,16 @@ export default function BranchesPage() {
                 value={formData.branch_name}
                 onChange={(e) => setFormData({ ...formData, branch_name: e.target.value.slice(0, 100) })}
                 placeholder="กรอกชื่อสาขา"
+                maxLength={100}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="manager_name">ผู้บริหาร</Label>
+              <Input
+                id="manager_name"
+                value={formData.manager_name}
+                onChange={(e) => setFormData({ ...formData, manager_name: e.target.value.slice(0, 100) })}
+                placeholder="กรอกชื่อผู้บริหารประจำสาขา"
                 maxLength={100}
               />
             </div>

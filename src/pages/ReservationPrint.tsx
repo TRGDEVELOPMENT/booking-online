@@ -463,7 +463,7 @@ export default function ReservationPrint() {
               <div className="text-center mb-10">
                 <p>(ลงชื่อ){dotLine('180px')}</p>
                 <p>ผู้ประกอบธุรกิจ</p>
-                <p>( {dotLine('180px')} )</p>
+                <p>( {branchManagerName ? filledDotLine(branchManagerName, '180px') : dotLine('180px')} )</p>
               </div>
 
               <div className="text-center mb-10">

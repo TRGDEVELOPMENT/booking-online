@@ -52,6 +52,7 @@ interface UserWithRole {
   username: string | null;
   email: string | null;
   roles: string[];
+  roleNames?: string[];
 }
 
 interface SalesTeamOption {

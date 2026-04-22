@@ -1125,7 +1125,15 @@ export type Database = {
         Args: { p_branch_id: string; p_company_id: string }
         Returns: string
       }
+      get_company_role_user_name: {
+        Args: {
+          _company_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: string
+      }
       get_next_customer_no: { Args: { p_company_id: string }; Returns: number }
+      get_profile_name: { Args: { _user_id: string }; Returns: string }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {

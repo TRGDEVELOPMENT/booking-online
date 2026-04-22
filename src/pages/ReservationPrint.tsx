@@ -25,6 +25,7 @@ export default function ReservationPrint() {
   const [reservation, setReservation] = useState<DatabaseReservation | null>(null);
   const [creatorName, setCreatorName] = useState<string>('');
   const [managerName, setManagerName] = useState<string>('');
+  const [branchManagerName, setBranchManagerName] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -82,7 +83,19 @@ export default function ReservationPrint() {
             const { data: fallbackName } = await supabase
               .rpc('get_company_role_user_name', { _company_id: data.company_id, _role: 'sale_manager' });
             if (fallbackName) setManagerName(prev => prev || (fallbackName as string));
+
+
+          // Fetch branch manager name from branches table
+          if (data.branch_id && data.company_id) {
+            const { data: branchData } = await supabase
+              .from('branches')
+              .select('manager_name')
+              .eq('company_id', data.company_id)
+              .eq('branch_id', data.branch_id)
+              .maybeSingle();
+            if (branchData?.manager_name) setBranchManagerName(branchData.manager_name);
           }
+        }
         }
       } catch (err) {
         console.error('Error:', err);
@@ -256,7 +269,7 @@ export default function ReservationPrint() {
           <div className="mb-4 text-indent">
             <p className="indent-8">ระหว่าง <span className="font-bold underline">{companyName}</span> ผู้จำหน่าย/ตัวแทนจำหน่ายรถยนต์ของผู้ประกอบธุรกิจ ☐ สำนักงานใหญ่ ☒ สำนักงานสาขา ตั้งอยู่ เลขที่ 800/1 อาคาร {dotLine('80px')} ชั้น {dotLine('40px')} ห้อง {dotLine('40px')} หมู่ที่ {dotLine('40px')} ตรอก/ซอย {dotLine('80px')} ถนนบรมราชชนนี ตำบล/แขวงบางบำหรุ อำเภอ/เขตบางพลัด จังหวัดกรุงเทพมหานคร</p>
             <p className="indent-8">หมายเลขโทรศัพท์ 02-8864466 อีเมล bizpk_01@nissan-dealer.in.th</p>
-            <p className="indent-8">โดย {dotLine('40px')} กรรมการผู้มีอำนาจ หรือ {dotLine('150px')} ผู้มีอำนาจกระทำการแทนผู้ประกอบธุรกิจ ตามหนังสือมอบอำนาจ ลงวันที่ {dotLine('40px')} เดือน {dotLine('80px')} พ.ศ. {dotLine('50px')} (ให้แสดงหนังสือมอบอำนาจต่อผู้บริโภค)</p>
+            <p className="indent-8">โดย {branchManagerName ? filledDotLine(branchManagerName, '200px') : dotLine('200px')} กรรมการผู้มีอำนาจ หรือ {dotLine('150px')} ผู้มีอำนาจกระทำการแทนผู้ประกอบธุรกิจ ตามหนังสือมอบอำนาจ ลงวันที่ {dotLine('40px')} เดือน {dotLine('80px')} พ.ศ. {dotLine('50px')} (ให้แสดงหนังสือมอบอำนาจต่อผู้บริโภค)</p>
             <p className="indent-8">ซึ่งต่อไปในสัญญานี้เรียกว่า <span className="font-bold">"ผู้ประกอบธุรกิจ"</span> ฝ่ายหนึ่ง</p>
           </div>
 

@@ -1,1264 +1,228 @@
 import { Header } from '@/components/layout/Header';
-import { Button } from '@/components/ui/button';
-import { FileSpreadsheet } from 'lucide-react';
-import * as XLSX from 'xlsx';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-} from 'recharts';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  ShieldAlert,
-  ShieldCheck,
-  Shield,
-  AlertTriangle,
-  CheckCircle2,
+  Building2,
   FileText,
-  CreditCard,
-  UserCheck,
-  ClipboardCheck,
-  Stamp,
-  Printer,
-  Ban,
-  Gavel,
-  FolderArchive,
+  GitBranch,
+  ShieldCheck,
+  Users,
   Database,
   BarChart3,
-  FileOutput,
-  Code2,
-  Clock,
-  Zap,
-  Gauge,
+  CheckCircle2,
 } from 'lucide-react';
 
-type RiskLevel = 'critical' | 'high' | 'medium' | 'low';
-type DevDifficulty = 'very_hard' | 'hard' | 'medium' | 'easy';
-type WeightLevel = 'complete' | 'minor' | 'major' | 'critical';
-type PerfLevel = 'critical' | 'high' | 'medium' | 'low' | 'minimal';
-
-interface PerfSpec {
-  responseTime: string;     // e.g. "<1s", "<2s"
-  concurrentUsers: string;  // e.g. "10-20"
-  availability: string;     // e.g. "99.9%"
-  dataVolume: string;       // e.g. "สูง", "ปานกลาง"
-  score: number;            // 1-5
-  level: PerfLevel;
-  notes: string;
+interface Section {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  subtitle: string;
+  items: string[];
+  accent: string;
 }
 
-interface FunctionItem {
-  no: number;
-  name: string;
-  category: string;
-  responsible: string;
-  description: string;
-  riskLevel: RiskLevel;
-  riskScore: number;
-  riskReason: string;
-  icon: React.ElementType;
-  devDifficulty: DevDifficulty;
-  devScore: number;
-  devManDays: number;
-  devNotes: string;
-  weightLevel: WeightLevel;
-  weightScore: number;
-  perf: PerfSpec;
-}
-
-const perfLevelConfig: Record<PerfLevel, { label: string; color: string; bgColor: string; borderColor: string; emoji: string }> = {
-  critical: { label: 'วิกฤต', color: 'text-red-700', bgColor: 'bg-red-100', borderColor: 'border-red-300', emoji: '🔴' },
-  high: { label: 'สูง', color: 'text-orange-700', bgColor: 'bg-orange-100', borderColor: 'border-orange-300', emoji: '🟠' },
-  medium: { label: 'ปานกลาง', color: 'text-yellow-700', bgColor: 'bg-yellow-100', borderColor: 'border-yellow-300', emoji: '🟡' },
-  low: { label: 'ต่ำ', color: 'text-cyan-700', bgColor: 'bg-cyan-100', borderColor: 'border-cyan-300', emoji: '🔵' },
-  minimal: { label: 'น้อยมาก', color: 'text-emerald-700', bgColor: 'bg-emerald-100', borderColor: 'border-emerald-300', emoji: '🟢' },
-};
-
-const weightConfig: Record<WeightLevel, { label: string; score: number; color: string; bgColor: string; borderColor: string; emoji: string; description: string }> = {
-  complete: { label: 'Complete', score: 10, color: 'text-emerald-700', bgColor: 'bg-emerald-100', borderColor: 'border-emerald-300', emoji: '✅', description: 'ไม่มีข้อผิดพลาด — ขาดไปแทบไม่กระทบการใช้งาน' },
-  minor: { label: 'Minor', score: 7, color: 'text-blue-700', bgColor: 'bg-blue-100', borderColor: 'border-blue-300', emoji: '🔵', description: 'กระทบจำกัด มี Workaround — Dev ปานกลาง-ง่าย' },
-  major: { label: 'Major', score: 4, color: 'text-orange-700', bgColor: 'bg-orange-100', borderColor: 'border-orange-300', emoji: '🟠', description: 'กระทบ Workflow หลัก / ทำงานไม่ครบ — Dev ยาก-ปานกลาง' },
-  critical: { label: 'Critical', score: 1, color: 'text-red-700', bgColor: 'bg-red-100', borderColor: 'border-red-300', emoji: '🔴', description: 'ระบบใช้งานไม่ได้ / เงินสูญหาย / กฎหมาย — Dev ยากมาก' },
-};
-
-const riskConfig: Record<RiskLevel, { label: string; color: string; bgColor: string; borderColor: string }> = {
-  critical: { label: 'สูงมาก', color: 'text-red-700', bgColor: 'bg-red-100', borderColor: 'border-red-300' },
-  high: { label: 'สูง', color: 'text-orange-700', bgColor: 'bg-orange-100', borderColor: 'border-orange-300' },
-  medium: { label: 'ปานกลาง', color: 'text-yellow-700', bgColor: 'bg-yellow-100', borderColor: 'border-yellow-300' },
-  low: { label: 'ต่ำ', color: 'text-green-700', bgColor: 'bg-green-100', borderColor: 'border-green-300' },
-};
-
-const devConfig: Record<DevDifficulty, { label: string; color: string; bgColor: string; borderColor: string; emoji: string }> = {
-  very_hard: { label: 'ยากมาก', color: 'text-purple-700', bgColor: 'bg-purple-100', borderColor: 'border-purple-300', emoji: '🔴' },
-  hard: { label: 'ยาก', color: 'text-blue-700', bgColor: 'bg-blue-100', borderColor: 'border-blue-300', emoji: '🟠' },
-  medium: { label: 'ปานกลาง', color: 'text-cyan-700', bgColor: 'bg-cyan-100', borderColor: 'border-cyan-300', emoji: '🟡' },
-  easy: { label: 'ง่าย', color: 'text-emerald-700', bgColor: 'bg-emerald-100', borderColor: 'border-emerald-300', emoji: '🟢' },
-};
-
-const functions: FunctionItem[] = [
-  // Workflow หลัก
-  { no: 1, name: 'สร้างสัญญาจอง', category: 'Workflow หลัก', responsible: 'ที่ปรึกษาการขาย', description: 'เลือกสาขา/BU, กรอกข้อมูลลูกค้า, เลือกรถ/สี/ของแถม, สถานะ Draft', riskLevel: 'medium', riskScore: 3, riskReason: 'ข้อมูลผิดพลาดแก้ไขได้ก่อนยืนยัน', icon: FileText,
-    devDifficulty: 'hard', devScore: 4, devManDays: 3.0, devNotes: 'ฟอร์มซับซ้อน มี Cascade Dropdown, คำนวณราคา, ค้นหาลูกค้า', weightLevel: 'critical', weightScore: 1,
-    perf: { responseTime: '<2s', concurrentUsers: '10-20', availability: '99.5%', dataVolume: 'สูง', score: 4, level: 'high', notes: 'ฟอร์มหลักที่ใช้งานบ่อย ต้อง Load Cascade Data เร็ว' } },
-  { no: 2, name: 'ยืนยันสัญญาจอง (OTP/Link)', category: 'Workflow หลัก', responsible: 'ลูกค้า / ที่ปรึกษาการขาย', description: 'ส่ง OTP หรือ Link ให้ลูกค้ายืนยัน, ระบบ Stamp เวลา', riskLevel: 'high', riskScore: 4, riskReason: 'ผูกมัดทางกฎหมาย', icon: UserCheck,
-    devDifficulty: 'very_hard', devScore: 5, devManDays: 2.0, devNotes: 'OTP Generation, SMS/Email Integration, Token Management, Expiry Logic', weightLevel: 'critical', weightScore: 1,
-    perf: { responseTime: '<1s', concurrentUsers: '10-20', availability: '99.9%', dataVolume: 'ปานกลาง', score: 5, level: 'critical', notes: 'OTP ต้องส่งทันที ห้าม Delay — Real-time critical' } },
-  { no: 3, name: 'ตรวจสอบการชำระเงิน', category: 'Workflow หลัก', responsible: 'แคชเชียร์', description: 'แนบ Slip, บันทึกช่องทางชำระ, ยืนยันรับเงินจอง', riskLevel: 'critical', riskScore: 5, riskReason: 'เกี่ยวข้องกับเงินโดยตรง', icon: CreditCard,
-    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'File Upload (Slip), Role-based Access, Stamp Logic', weightLevel: 'critical', weightScore: 1,
-    perf: { responseTime: '<2s', concurrentUsers: '5-10', availability: '99.9%', dataVolume: 'ปานกลาง', score: 4, level: 'high', notes: 'File Upload ต้องไม่ช้า — ต้อง Reliable สูง เพราะเกี่ยวกับเงิน' } },
-  { no: 4, name: 'ตรวจสอบรายละเอียดใบจอง', category: 'Workflow หลัก', responsible: 'หัวหน้าทีมขาย', description: 'ตรวจสอบความถูกต้องรายละเอียดทั้งหมด', riskLevel: 'medium', riskScore: 3, riskReason: 'จุดตรวจสอบก่อนอนุมัติ', icon: ClipboardCheck,
-    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Read-only view + Review action, Comment field, Status transition', weightLevel: 'major', weightScore: 4,
-    perf: { responseTime: '<2s', concurrentUsers: '5-10', availability: '99%', dataVolume: 'ต่ำ', score: 3, level: 'medium', notes: 'Load ข้อมูลใบจอง 1 รายการ ไม่ซับซ้อน' } },
-  { no: 5, name: 'พิจารณาอนุมัติ', category: 'Workflow หลัก', responsible: 'ผู้จัดการฝ่ายขาย', description: 'อนุมัติใบจอง หรือ ปฏิเสธ + Comment', riskLevel: 'high', riskScore: 4, riskReason: 'ผูกมัดบริษัท ส่งผลต่อรายได้', icon: Stamp,
-    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Approve/Reject action, Comment, Timestamp', weightLevel: 'major', weightScore: 4,
-    perf: { responseTime: '<2s', concurrentUsers: '3-5', availability: '99%', dataVolume: 'ต่ำ', score: 3, level: 'medium', notes: 'ใช้งาน 1-2 คนพร้อมกัน แต่ต้อง Reliable' } },
-  { no: 6, name: 'พิมพ์/ลงนาม/ส่งลูกค้า', category: 'Workflow หลัก', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF, ลงนามบนกระดาษ/e-Sign', riskLevel: 'low', riskScore: 2, riskReason: 'ข้อมูลผ่านการยืนยันแล้ว', icon: Printer,
-    devDifficulty: 'hard', devScore: 4, devManDays: 2.0, devNotes: 'PDF Generation ตามแบบฟอร์ม, Layout ซับซ้อน, Pixel-perfect', weightLevel: 'major', weightScore: 4,
-    perf: { responseTime: '<5s', concurrentUsers: '5-10', availability: '95%', dataVolume: 'ต่ำ', score: 2, level: 'low', notes: 'PDF Generation ใช้เวลา — ยอมรับ Delay ได้' } },
-
-  // Workflow ยกเลิก
-  { no: 7, name: 'บันทึกขอยกเลิก/บอกเลิก', category: 'Workflow ยกเลิก', responsible: 'ที่ปรึกษาการขาย', description: 'ทำคำร้องขอยกเลิก แนบหนังสือ/ไฟล์', riskLevel: 'high', riskScore: 4, riskReason: 'เกี่ยวข้องกับการคืนเงินและกฎหมาย', icon: Ban,
-    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'Multi-step workflow, File upload, ค้นหาใบจอง', weightLevel: 'major', weightScore: 4,
-    perf: { responseTime: '<2s', concurrentUsers: '3-5', availability: '99%', dataVolume: 'ต่ำ', score: 2, level: 'low', notes: 'เกิดไม่บ่อย ใช้งานน้อย' } },
-  { no: 8, name: 'อนุมัติยกเลิกใบจอง', category: 'Workflow ยกเลิก', responsible: 'ผู้จัดการฝ่ายขาย', description: 'พิจารณาอนุมัติยกเลิก', riskLevel: 'critical', riskScore: 5, riskReason: 'สูญเสียรายได้ทันที', icon: Gavel,
-    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Review + Approve/Reject, Status transition', weightLevel: 'critical', weightScore: 1,
-    perf: { responseTime: '<2s', concurrentUsers: '1-3', availability: '99%', dataVolume: 'ต่ำ', score: 2, level: 'low', notes: 'ใช้งานน้อย แต่ต้อง Reliable เมื่อใช้' } },
-  { no: 9, name: 'ชุดเอกสารการยกเลิกจอง', category: 'Workflow ยกเลิก', responsible: 'แคชเชียร์', description: 'ออกชุดเอกสารยกเลิก + Attach Files', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารต้องถูกต้องตามกฎหมาย', icon: FolderArchive,
-    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'PDF Generation (Cancel Form), Layout เฉพาะ', weightLevel: 'major', weightScore: 4,
-    perf: { responseTime: '<5s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'ต่ำ', score: 1, level: 'minimal', notes: 'PDF Generation ใช้เวลา + ใช้งานน้อยมาก' } },
-
-  // Master Data
-  { no: 10, name: 'จัดการ Master ยี่ห้อ', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ยี่ห้อรถ', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'complete', weightScore: 10,
-    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ใช้งานนานๆ ครั้ง ข้อมูลน้อย' } },
-  { no: 11, name: 'จัดการ Master รุ่น (Model)', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD รุ่นรถ', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อการเลือกรถ', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'minor', weightScore: 7,
-    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master ไม่กี่สิบรายการ' } },
-  { no: 12, name: 'จัดการ Master รุ่นย่อย', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD รุ่นย่อย + ผูก Model', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อราคา', icon: Database,
-    devDifficulty: 'medium', devScore: 2, devManDays: 0.5, devNotes: 'CRUD + Dropdown เลือก Model', weightLevel: 'minor', weightScore: 7,
-    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master ผูก FK' } },
-  { no: 13, name: 'จัดการ Master สี', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD สี + ผูก Model/Sub Model', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
-    devDifficulty: 'medium', devScore: 2, devManDays: 0.5, devNotes: 'CRUD + Color Picker + ผูก Model/SubModel', weightLevel: 'complete', weightScore: 10,
-    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
-  { no: 14, name: 'จัดการ Master ขนาดเครื่องยนต์', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ขนาดเครื่อง', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'complete', weightScore: 10,
-    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
-  { no: 15, name: 'จัดการ Master ประเภทเชื้อเพลิง', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ประเภทเชื้อเพลิง', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'complete', weightScore: 10,
-    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
-  { no: 16, name: 'จัดการ Master ราคาตั้ง', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ราคามาตรฐาน ผูก Model+Sub Model', riskLevel: 'high', riskScore: 4, riskReason: 'ส่งผลต่อราคาขาย', icon: Database,
-    devDifficulty: 'medium', devScore: 3, devManDays: 0.5, devNotes: 'CRUD + Cascade Dropdown, Validation ราคา', weightLevel: 'major', weightScore: 4,
-    perf: { responseTime: '<1s', concurrentUsers: '1-5', availability: '99%', dataVolume: 'ปานกลาง', score: 2, level: 'low', notes: 'ราคา Lookup ใช้ใน Reservation Form ต้องเร็ว' } },
-  { no: 17, name: 'จัดการ Master ของแถม', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD ของแถม + มูลค่า', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อต้นทุนทางอ้อม', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน + มูลค่า', weightLevel: 'minor', weightScore: 7,
-    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
-  { no: 18, name: 'จัดการ Master อุปกรณ์เสริม', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD อุปกรณ์เสริม + มูลค่า', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อต้นทุนทางอ้อม', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน + มูลค่า', weightLevel: 'minor', weightScore: 7,
-    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
-  { no: 19, name: 'จัดการ Master สิทธิประโยชน์', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD สิทธิประโยชน์ + มูลค่า', riskLevel: 'medium', riskScore: 2, riskReason: 'ส่งผลต่อต้นทุนทางอ้อม', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน + มูลค่า', weightLevel: 'minor', weightScore: 7,
-    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
-  { no: 20, name: 'จัดการ Master คำนำหน้า', category: 'Master Data', responsible: 'IT / Admin', description: 'CRUD คำนำหน้าชื่อ', riskLevel: 'low', riskScore: 1, riskReason: 'ข้อมูลพื้นฐาน', icon: Database,
-    devDifficulty: 'easy', devScore: 1, devManDays: 0.25, devNotes: 'CRUD มาตรฐาน', weightLevel: 'complete', weightScore: 10,
-    perf: { responseTime: '<1s', concurrentUsers: '1-3', availability: '95%', dataVolume: 'น้อย', score: 1, level: 'minimal', notes: 'ข้อมูล Master' } },
-
-  // Reports
-  { no: 21, name: 'รายงานใบจองประจำเดือน', category: 'Reports', responsible: 'ทุกตำแหน่ง', description: 'สรุปใบจองตาม period, สถานะ, ยอดเงิน', riskLevel: 'medium', riskScore: 3, riskReason: 'ใช้ตัดสินใจทางธุรกิจ', icon: BarChart3,
-    devDifficulty: 'medium', devScore: 3, devManDays: 1.0, devNotes: 'Query Aggregation, Date Filter, Chart, Export Excel', weightLevel: 'minor', weightScore: 7,
-    perf: { responseTime: '<3s', concurrentUsers: '10-20', availability: '99%', dataVolume: 'สูง', score: 3, level: 'medium', notes: 'Query Aggregation หลายพันรายการ ใช้เวลา' } },
-  { no: 22, name: 'รายงานใบจองที่ยังไม่อนุมัติ', category: 'Reports', responsible: 'ผู้จัดการฝ่ายขาย', description: 'แสดงรายการค้างอนุมัติ', riskLevel: 'medium', riskScore: 3, riskReason: 'ถ้าไม่ follow up อาจสูญเสียการขาย', icon: BarChart3,
-    devDifficulty: 'easy', devScore: 2, devManDays: 0.5, devNotes: 'Filter ตามสถานะ, ตาราง + Sorting', weightLevel: 'minor', weightScore: 7,
-    perf: { responseTime: '<2s', concurrentUsers: '5-10', availability: '99%', dataVolume: 'ปานกลาง', score: 2, level: 'low', notes: 'Filter ง่าย ข้อมูลไม่มาก' } },
-  { no: 23, name: 'รายงานยกเลิกใบจอง', category: 'Reports', responsible: 'ผู้จัดการฝ่ายขาย', description: 'สรุปรายการที่ถูกยกเลิก + เหตุผล', riskLevel: 'medium', riskScore: 3, riskReason: 'ใช้วิเคราะห์สาเหตุ', icon: BarChart3,
-    devDifficulty: 'easy', devScore: 2, devManDays: 0.5, devNotes: 'Filter + ตาราง, คล้าย F22', weightLevel: 'minor', weightScore: 7,
-    perf: { responseTime: '<2s', concurrentUsers: '5-10', availability: '99%', dataVolume: 'ปานกลาง', score: 2, level: 'low', notes: 'คล้าย F22' } },
-
-  // Forms
-  { no: 24, name: 'พิมพ์สัญญาจอง', category: 'เอกสาร/ฟอร์ม', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF สัญญาจองตามแบบฟอร์ม', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารที่มีผลทางกฎหมาย', icon: FileOutput,
-    devDifficulty: 'hard', devScore: 4, devManDays: 2.0, devNotes: 'PDF Layout ตามแบบฟอร์มจริง, Pixel-perfect', weightLevel: 'major', weightScore: 4,
-    perf: { responseTime: '<5s', concurrentUsers: '5-10', availability: '95%', dataVolume: 'ต่ำ', score: 2, level: 'low', notes: 'PDF Generation ใช้เวลา — ยอมรับ Delay ได้' } },
-  { no: 25, name: 'พิมพ์ยกเลิกสัญญาจอง', category: 'เอกสาร/ฟอร์ม', responsible: 'ที่ปรึกษาการขาย', description: 'Generate PDF หนังสือบอกเลิก/ยกเลิก', riskLevel: 'medium', riskScore: 3, riskReason: 'เอกสารที่มีผลทางกฎหมาย', icon: FileOutput,
-    devDifficulty: 'hard', devScore: 4, devManDays: 1.5, devNotes: 'PDF Layout เฉพาะ Cancel Form', weightLevel: 'major', weightScore: 4,
-    perf: { responseTime: '<5s', concurrentUsers: '3-5', availability: '95%', dataVolume: 'ต่ำ', score: 2, level: 'low', notes: 'PDF Generation — ใช้งานน้อย' } },
+const sections: Section[] = [
+  {
+    icon: Building2,
+    title: 'ระบบหลักและสถาปัตยกรรม',
+    subtitle: 'Core Architecture',
+    accent: 'text-slate-700',
+    items: [
+      'Multi-tenancy แยกข้อมูลตาม Company (BPK, LAC, ICCK, VPA)',
+      'เลขที่ใบจองรันแยกตามสาขา รูปแบบ {PREFIX}-{YYMM}{5-digit}',
+      'Row-Level Security (RLS) เข้มงวดทุกตาราง + IT Admin bypass',
+      'Username = รหัสพนักงาน (Employee ID) ใช้ Login แทน Email',
+      'Company Session Sync: บริษัทที่เลือกซิงค์เข้า profile เพื่อบังคับ RLS',
+    ],
+  },
+  {
+    icon: FileText,
+    title: 'การจัดการใบจองรถยนต์',
+    subtitle: 'Reservation Management',
+    accent: 'text-[#2349bb]',
+    items: [
+      'สร้าง / แก้ไข / พิมพ์ใบจอง (A4, ฟอนต์ TH Sarabun New)',
+      'เลือกรถแบบไดนามิก: Model → Sub Model → Color → Standard Price',
+      'ค้นหาลูกค้าด้วย Tax ID เพื่อป้องกันข้อมูลซ้ำ (Search & Verify)',
+      'แนบไฟล์เอกสาร (รูป/PDF) ใน bucket แยกตาม company_id',
+      'Activity Log / Audit Trail แบบ JSONB (append-only)',
+      'ลายน้ำ "ยกเลิก" สีแดง -35° บนใบจองที่ถูกยกเลิก',
+    ],
+  },
+  {
+    icon: GitBranch,
+    title: 'Workflow & Approval',
+    subtitle: '6 ขั้นตอนหลัก',
+    accent: 'text-[#02681f]',
+    items: [
+      'ขั้นตอน: Draft → Confirmed → Payment → Review → Approval → Final',
+      'Customer Confirmation: ยืนยันด้วย OTP หรือ Link (จำลองในระบบ)',
+      'Approval Chain: Global Templates เทียบกับ Per-Reservation Override',
+      'Cancellation Workflow: Sale → Supervisor → Manager',
+      'Cashier ตรวจสอบการชำระเงิน, Supervisor ตรวจสอบ, Manager อนุมัติ',
+    ],
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Role-Based Access (RBAC)',
+    subtitle: '6 บทบาทหลักในระบบ',
+    accent: 'text-[#b51f19]',
+    items: [
+      'Sale: สร้าง/แก้ไขใบจอง, ซ่อนส่วน Finance/Review/Approval',
+      'Sale Supervisor: ตรวจสอบ Section 11, อนุมัติ → Pending, ปฏิเสธ → Draft',
+      'Sale Manager: อนุมัติ Section 12 เท่านั้น',
+      'Cashier: แก้ไขเฉพาะ Section 10 (รายละเอียดการชำระเงิน)',
+      'User Admin: จัดการผู้ใช้ภายใน Company/Branch ที่กำหนด',
+      'IT Admin: ข้าม RLS, เข้าได้ทุกบริษัท, ลบ/แก้ไม่ได้',
+    ],
+  },
+  {
+    icon: Users,
+    title: 'การจัดการผู้ใช้งาน',
+    subtitle: 'User Management',
+    accent: 'text-slate-700',
+    items: [
+      'ผู้ใช้งาน: เรียงตามสาขา → ชื่อ-สกุล, Position ดึงจากกลุ่มผู้ใช้งาน',
+      'กลุ่มผู้ใช้งาน (User Groups): แสดงเป็น Table List',
+      'กำหนดสิทธิ์ผู้ใช้งาน (Permission Matrix) แบบแก้ไขได้',
+      'ทีมขาย (Sales Teams) + หัวหน้าทีม (Supervisor)',
+      'สายอนุมัติใบจอง / สายอนุมัติการยกเลิก (รวมศูนย์)',
+      'รหัสพนักงาน unique ต่อ Company และห้ามแก้ไขในโหมด Edit',
+    ],
+  },
+  {
+    icon: Database,
+    title: 'ข้อมูลพื้นฐานและตั้งค่าระบบ',
+    subtitle: 'Master Data & Settings',
+    accent: 'text-slate-700',
+    items: [
+      'รถยนต์: Vehicle Types, Models, Sub Models, Colors (CSV Import/Export)',
+      'เครื่องยนต์ / น้ำมันเชื้อเพลิง / ราคามาตรฐาน',
+      'ของแถม (Freebies), อุปกรณ์ตกแต่ง (Accessories), สิทธิประโยชน์ (Benefits)',
+      'นามสกุล (Surnames) เป็น Global ใช้ร่วมทุกบริษัท',
+      'ลูกค้า (Customers), สาขา (Branches), งวดผ่อนชำระ',
+      'สถานะใช้ Radio Group (Active/Inactive) แทน Dropdown',
+    ],
+  },
+  {
+    icon: BarChart3,
+    title: 'รายงานและแดชบอร์ด',
+    subtitle: 'Reports & Dashboard',
+    accent: 'text-[#2349bb]',
+    items: [
+      'Dashboard สไตล์ Blue-Grey แสดง KPI Cards เป็นภาษาอังกฤษ',
+      'รายงานการจองประจำเดือน (Monthly Reservations) — ค่าเริ่มต้น',
+      'รายงานรอการอนุมัติ (Pending Approval)',
+      'รายงานใบจองที่ถูกยกเลิก (Cancelled Reservations)',
+      'มุมมอง "ใบจองรอยืนยันรับเงิน" สำหรับ Cashier',
+    ],
+  },
 ];
 
-// Acceptance Scoring Data: finished status + defect counts per function
-const acceptanceData: Record<number, { finished: boolean; defects: { critical: number; major: number; minor: number } }> = {
-  1: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // สร้างสัญญาจอง
-  2: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // ยืนยันสัญญาจอง (OTP/Link)
-  3: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // ตรวจสอบการชำระเงิน
-  4: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // ตรวจสอบรายละเอียดใบจอง
-  5: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // พิจารณาอนุมัติ
-  6: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // พิมพ์/ลงนาม/ส่งลูกค้า
-  7: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // บันทึกขอยกเลิก/บอกเลิก
-  8: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // อนุมัติยกเลิกใบจอง
-  9: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },   // ชุดเอกสารการยกเลิกจอง
-  10: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master ยี่ห้อ
-  11: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master รุ่น (Model)
-  12: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master รุ่นย่อย
-  13: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master สี
-  14: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master ขนาดเครื่องยนต์
-  15: { finished: false, defects: { critical: 0, major: 0, minor: 0 } }, // จัดการ Master ประเภทเชื้อเพลิง
-  16: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master ราคาตั้ง
-  17: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master ของแถม
-  18: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master อุปกรณ์เสริม
-  19: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // จัดการ Master สิทธิประโยชน์
-  20: { finished: false, defects: { critical: 0, major: 0, minor: 0 } }, // จัดการ Master คำนำหน้า
-  21: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // รายงานใบจองประจำเดือน
-  22: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // รายงานใบจองที่ยังไม่อนุมัติ
-  23: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // รายงานยกเลิกใบจอง
-  24: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // พิมพ์สัญญาจอง
-  25: { finished: true, defects: { critical: 0, major: 0, minor: 0 } },  // พิมพ์ยกเลิกสัญญาจอง
-};
-
-const MAX_SCORE = 10;
-const DEFECT_WEIGHTS = { critical: 10, major: 5, minor: 2 };
-
-const calcAcceptanceTotal = (fnNo: number): number => {
-  const data = acceptanceData[fnNo];
-  if (!data || !data.finished) return 0;
-  const deduction = data.defects.critical * DEFECT_WEIGHTS.critical
-    + data.defects.major * DEFECT_WEIGHTS.major
-    + data.defects.minor * DEFECT_WEIGHTS.minor;
-  return Math.max(0, MAX_SCORE - deduction);
-};
-
-const acceptanceSorted = [...functions].sort((a, b) => {
-  const totalA = calcAcceptanceTotal(a.no);
-  const totalB = calcAcceptanceTotal(b.no);
-  return totalB - totalA || a.category.localeCompare(b.category);
-});
-
-const acceptanceGrandTotal = functions.reduce((sum, f) => sum + calcAcceptanceTotal(f.no), 0);
-const acceptanceMaxTotal = functions.length * MAX_SCORE;
-const acceptanceFinishedCount = functions.filter(f => acceptanceData[f.no]?.finished).length;
-
-const getRiskBadge = (level: RiskLevel) => {
-  const config = riskConfig[level];
-  return (
-    <Badge className={`${config.bgColor} ${config.color} ${config.borderColor} border`}>
-      {config.label}
-    </Badge>
-  );
-};
-
-const getDevBadge = (level: DevDifficulty) => {
-  const config = devConfig[level];
-  return (
-    <Badge className={`${config.bgColor} ${config.color} ${config.borderColor} border`}>
-      {config.emoji} {config.label}
-    </Badge>
-  );
-};
-
-const getWeightBadge = (level: WeightLevel) => {
-  const config = weightConfig[level];
-  return (
-    <Badge className={`${config.bgColor} ${config.color} ${config.borderColor} border font-bold`}>
-      {config.emoji} {config.label} ({config.score})
-    </Badge>
-  );
-};
-
-const getWeightBar = (score: number) => {
-  const color = score >= 10 ? 'bg-emerald-500' : score >= 7 ? 'bg-blue-500' : score >= 4 ? 'bg-orange-500' : 'bg-red-500';
-  return (
-    <div className="flex items-center gap-2 min-w-[100px]">
-      <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${(score / 10) * 100}%` }} />
-      </div>
-      <span className="text-xs font-bold text-muted-foreground w-8 text-right">{score}/10</span>
-    </div>
-  );
-};
-
-const getPerfBadge = (level: PerfLevel) => {
-  const config = perfLevelConfig[level];
-  return (
-    <Badge className={`${config.bgColor} ${config.color} ${config.borderColor} border`}>
-      {config.emoji} {config.label}
-    </Badge>
-  );
-};
-
-const getPerfBar = (score: number) => {
-  const colors: Record<number, string> = {
-    1: 'bg-emerald-500',
-    2: 'bg-cyan-500',
-    3: 'bg-yellow-500',
-    4: 'bg-orange-500',
-    5: 'bg-red-500',
-  };
-  return (
-    <div className="flex items-center gap-2 min-w-[80px]">
-      <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all ${colors[score] || 'bg-muted-foreground'}`}
-          style={{ width: `${(score / 5) * 100}%` }}
-        />
-      </div>
-      <span className="text-xs font-bold text-muted-foreground w-6 text-right">{score}/5</span>
-    </div>
-  );
-};
-
-const getDevBar = (score: number) => {
-  const colors: Record<number, string> = {
-    1: 'bg-emerald-500',
-    2: 'bg-cyan-500',
-    3: 'bg-blue-500',
-    4: 'bg-violet-500',
-    5: 'bg-purple-600',
-  };
-  return (
-    <div className="flex items-center gap-2 min-w-[100px]">
-      <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all ${colors[score] || 'bg-muted-foreground'}`}
-          style={{ width: `${(score / 5) * 100}%` }}
-        />
-      </div>
-      <span className="text-xs font-bold text-muted-foreground w-6 text-right">{score}/5</span>
-    </div>
-  );
-};
+const workflowColors = [
+  { label: 'Draft', color: '#000000' },
+  { label: 'Confirmed', color: '#2349bb' },
+  { label: 'Review', color: '#2b93d4' },
+  { label: 'Approved', color: '#02681f' },
+  { label: 'Cancelled', color: '#b51f19' },
+];
 
 export default function FunctionOverviewPage() {
-  const categories = ['Workflow หลัก', 'Workflow ยกเลิก', 'Master Data', 'Reports', 'เอกสาร/ฟอร์ม'];
-
-  const criticalCount = functions.filter(f => f.riskLevel === 'critical').length;
-  const highCount = functions.filter(f => f.riskLevel === 'high').length;
-  const mediumCount = functions.filter(f => f.riskLevel === 'medium').length;
-  const lowCount = functions.filter(f => f.riskLevel === 'low').length;
-  const avgRisk = (functions.reduce((sum, f) => sum + f.riskScore, 0) / functions.length).toFixed(1);
-
-  const veryHardCount = functions.filter(f => f.devDifficulty === 'very_hard').length;
-  const hardCount = functions.filter(f => f.devDifficulty === 'hard').length;
-  const devMediumCount = functions.filter(f => f.devDifficulty === 'medium').length;
-  const easyCount = functions.filter(f => f.devDifficulty === 'easy').length;
-  const avgDev = (functions.reduce((sum, f) => sum + f.devScore, 0) / functions.length).toFixed(1);
-  const totalManDays = functions.reduce((sum, f) => sum + f.devManDays, 0);
-
-  // Weight Score stats
-  const wCriticalCount = functions.filter(f => f.weightLevel === 'critical').length;
-  const wMajorCount = functions.filter(f => f.weightLevel === 'major').length;
-  const wMinorCount = functions.filter(f => f.weightLevel === 'minor').length;
-  const wCompleteCount = functions.filter(f => f.weightLevel === 'complete').length;
-  const avgWeight = (functions.reduce((sum, f) => sum + f.weightScore, 0) / functions.length).toFixed(1);
-  const totalWeight = functions.reduce((sum, f) => sum + f.weightScore, 0);
-  const maxTotalWeight = functions.length * 10;
-
-  const categoryStats = categories.map(cat => {
-    const fns = functions.filter(f => f.category === cat);
-    return {
-      name: cat,
-      avgRisk: +(fns.reduce((s, f) => s + f.riskScore, 0) / fns.length).toFixed(1),
-      avgDev: +(fns.reduce((s, f) => s + f.devScore, 0) / fns.length).toFixed(1),
-      avgWeight: +(fns.reduce((s, f) => s + f.weightScore, 0) / fns.length).toFixed(1),
-      totalWeight: fns.reduce((s, f) => s + f.weightScore, 0),
-      avgPerf: +(fns.reduce((s, f) => s + f.perf.score, 0) / fns.length).toFixed(1),
-      totalDays: +fns.reduce((s, f) => s + f.devManDays, 0).toFixed(1),
-      count: fns.length,
-    };
-  });
-
-  const avgPerf = (functions.reduce((sum, f) => sum + f.perf.score, 0) / functions.length).toFixed(1);
-
-  // Score Map data: sorted by weight score ascending (critical first)
-  const scoreMapData = functions
-    .map(f => ({
-      ...f,
-      totalScore: f.riskScore + f.devScore,
-      priority: f.weightLevel,
-    }))
-    .sort((a, b) => a.weightScore - b.weightScore || b.devScore - a.devScore);
-
-  const exportToExcel = () => {
-    // Sheet 1: Score Map
-    const scoreMapSheet = scoreMapData.map((f, i) => ({
-      'ลำดับ': i + 1,
-      'F.No': f.no,
-      'Function Name': f.name,
-      'Category': f.category,
-      'Weight Level': weightConfig[f.weightLevel].label,
-      'Weight Score (Max 10)': f.weightScore,
-      'Perf Level': perfLevelConfig[f.perf.level].label,
-      'Perf Score (1-5)': f.perf.score,
-      'Response Time': f.perf.responseTime,
-      'Concurrent Users': f.perf.concurrentUsers,
-      'Availability': f.perf.availability,
-      'Data Volume': f.perf.dataVolume,
-      'Dev Difficulty': devConfig[f.devDifficulty].label,
-      'Dev Score': f.devScore,
-      'Man-Days': f.devManDays,
-      'Perf Notes': f.perf.notes,
-    }));
-    const ws0 = XLSX.utils.json_to_sheet(scoreMapSheet);
-    ws0['!cols'] = [
-      { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 12 }, { wch: 16 },
-      { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 12 },
-      { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 50 },
-    ];
-
-    // Sheet 2: Function Details
-    const detailData = functions.map(f => ({
-      'No.': f.no,
-      'Function Name': f.name,
-      'Category': f.category,
-      'Weight Level': weightConfig[f.weightLevel].label,
-      'Weight Score': f.weightScore,
-      'Perf Level': perfLevelConfig[f.perf.level].label,
-      'Perf Score': f.perf.score,
-      'Response Time': f.perf.responseTime,
-      'Concurrent Users': f.perf.concurrentUsers,
-      'Availability': f.perf.availability,
-      'Data Volume': f.perf.dataVolume,
-      'Responsible': f.responsible,
-      'Description': f.description,
-      'Dev Difficulty': devConfig[f.devDifficulty].label,
-      'Dev Score (1-5)': f.devScore,
-      'Man-Days': f.devManDays,
-      'Dev Notes': f.devNotes,
-      'Perf Notes': f.perf.notes,
-    }));
-    const ws1 = XLSX.utils.json_to_sheet(detailData);
-    ws1['!cols'] = [
-      { wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 12 }, { wch: 12 },
-      { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 12 },
-      { wch: 22 }, { wch: 50 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 }, { wch: 50 },
-    ];
-
-    // Sheet 3: Summary by Category
-    const summaryData = categoryStats.map(c => ({
-      'Category': c.name,
-      'จำนวน Function': c.count,
-      'Avg Weight Score': c.avgWeight,
-      'Total Weight Score': c.totalWeight,
-      'Avg Perf Score': c.avgPerf,
-      'Avg Dev Score': c.avgDev,
-      'Total Man-Days': c.totalDays,
-    }));
-    summaryData.push({
-      'Category': 'รวมทั้งหมด',
-      'จำนวน Function': functions.length,
-      'Avg Weight Score': +avgWeight,
-      'Total Weight Score': totalWeight,
-      'Avg Perf Score': +avgPerf,
-      'Avg Dev Score': +avgDev,
-      'Total Man-Days': totalManDays,
-    });
-    const ws2 = XLSX.utils.json_to_sheet(summaryData);
-    ws2['!cols'] = [{ wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 16 }];
-
-    // Sheet 4: Distribution
-    const distData = [
-      { 'ประเภท': 'Weight - Critical (1)', 'จำนวน': wCriticalCount },
-      { 'ประเภท': 'Weight - Major (4)', 'จำนวน': wMajorCount },
-      { 'ประเภท': 'Weight - Minor (7)', 'จำนวน': wMinorCount },
-      { 'ประเภท': 'Weight - Complete (10)', 'จำนวน': wCompleteCount },
-      { 'ประเภท': '', 'จำนวน': '' as any },
-      { 'ประเภท': 'Dev - ยากมาก', 'จำนวน': veryHardCount },
-      { 'ประเภท': 'Dev - ยาก', 'จำนวน': hardCount },
-      { 'ประเภท': 'Dev - ปานกลาง', 'จำนวน': devMediumCount },
-      { 'ประเภท': 'Dev - ง่าย', 'จำนวน': easyCount },
-    ];
-    const ws3 = XLSX.utils.json_to_sheet(distData);
-    ws3['!cols'] = [{ wch: 24 }, { wch: 10 }];
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws0, 'Score Map');
-    XLSX.utils.book_append_sheet(wb, ws1, 'Function Details');
-    XLSX.utils.book_append_sheet(wb, ws2, 'Summary by Category');
-    XLSX.utils.book_append_sheet(wb, ws3, 'Distribution');
-
-    // Sheet 5-9: แยกตามกลุ่ม Function
-    const categorySheetNames: Record<string, string> = {
-      'Workflow หลัก': 'WF หลัก',
-      'Workflow ยกเลิก': 'WF ยกเลิก',
-      'Master Data': 'Master Data',
-      'Reports': 'Reports',
-      'เอกสาร/ฟอร์ม': 'เอกสาร-ฟอร์ม',
-    };
-
-    categories.forEach(cat => {
-      const catFns = functions.filter(f => f.category === cat);
-      const catTotalDays = catFns.reduce((s, f) => s + f.devManDays, 0);
-      const catAvgDev = +(catFns.reduce((s, f) => s + f.devScore, 0) / catFns.length).toFixed(1);
-
-      const rows = catFns.map((f, i) => ({
-        'ลำดับ': i + 1,
-        'F.No': f.no,
-        'Function Name': f.name,
-        'Weight Level': weightConfig[f.weightLevel].label,
-        'Weight Score': f.weightScore,
-        'Perf Level': perfLevelConfig[f.perf.level].label,
-        'Perf Score': f.perf.score,
-        'Response Time': f.perf.responseTime,
-        'Concurrent Users': f.perf.concurrentUsers,
-        'Availability': f.perf.availability,
-        'Responsible': f.responsible,
-        'Dev Difficulty': devConfig[f.devDifficulty].label,
-        'Dev Score (1-5)': f.devScore,
-        'Man-Days': f.devManDays,
-        'Perf Notes': f.perf.notes,
-      }));
-
-      // Add summary row
-      const catAvgWeight = +(catFns.reduce((s, f) => s + f.weightScore, 0) / catFns.length).toFixed(1);
-      const catTotalWeight = catFns.reduce((s, f) => s + f.weightScore, 0);
-      const catAvgPerf = +(catFns.reduce((s, f) => s + f.perf.score, 0) / catFns.length).toFixed(1);
-      rows.push({
-        'ลำดับ': '' as any,
-        'F.No': '' as any,
-        'Function Name': '--- สรุป ---',
-        'Weight Level': '',
-        'Weight Score': catAvgWeight as any,
-        'Perf Level': '',
-        'Perf Score': catAvgPerf as any,
-        'Response Time': '',
-        'Concurrent Users': '',
-        'Availability': '',
-        'Responsible': '',
-        'Dev Difficulty': '',
-        'Dev Score (1-5)': catAvgDev as any,
-        'Man-Days': catTotalDays,
-        'Perf Notes': `Weight: ${catAvgWeight} avg (${catTotalWeight} total) | Perf: ${catAvgPerf} avg | Dev: ${catAvgDev} avg | ${catTotalDays} Man-Days`,
-      });
-
-      const wsCat = XLSX.utils.json_to_sheet(rows);
-      wsCat['!cols'] = [
-        { wch: 6 }, { wch: 5 }, { wch: 30 }, { wch: 12 }, { wch: 12 },
-        { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 12 },
-        { wch: 22 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 50 },
-      ];
-      XLSX.utils.book_append_sheet(wb, wsCat, categorySheetNames[cat] || cat);
-    });
-
-    // Sheet: Acceptance Scoring (AOA format with merged headers matching UI)
-    const accAoa: any[][] = [];
-    // Title row
-    accAoa.push(['Acceptance Scoring — ตารางให้คะแนนตอบรับ', '', '', '', '', '', '', '', '']);
-    accAoa.push([]);
-    // Scoring guide
-    accAoa.push(['📐 หลักการให้คะแนน Acceptance Scoring']);
-    accAoa.push(['Finish?', 'Yes = 1 (ฟังก์ชันพัฒนาเสร็จแล้ว) / No = 0 (ยังไม่เสร็จ → คะแนน = 0)']);
-    accAoa.push(['Defect', 'Critical = หัก 10 คะแนน (ระบบล่ม/เงินสูญหาย)']);
-    accAoa.push(['', 'Major = หัก 5 คะแนน (ฟีเจอร์ใช้ไม่ได้)']);
-    accAoa.push(['', 'Minor = หัก 2 คะแนน (บกพร่องเล็กน้อย)']);
-    accAoa.push(['สูตร', `Total = Max Score × Finish − (Critical×10 + Major×5 + Minor×2)  |  Max Score = ${MAX_SCORE}  |  Max Total = ${acceptanceMaxTotal}`]);
-    accAoa.push([]);
-    // Header row 1 (with merged Defect header)
-    accAoa.push(['ลำดับ', 'Category', 'Functional List', 'Max Score', 'Finish?\n(No=0 / Yes=1)', 'Defect', '', '', `Total\n(Max ${acceptanceMaxTotal})`]);
-    // Header row 2 (sub-headers for Defect)
-    accAoa.push(['', '', '', '', '', 'Critical (-10)', 'Major (-5)', 'Minor (-2)', '']);
-    // Data rows
-    acceptanceSorted.forEach((f, i) => {
-      const acc = acceptanceData[f.no] || { finished: false, defects: { critical: 0, major: 0, minor: 0 } };
-      accAoa.push([
-        i + 1,
-        f.category,
-        f.name,
-        MAX_SCORE,
-        acc.finished ? 1 : 0,
-        acc.defects.critical || '',
-        acc.defects.major || '',
-        acc.defects.minor || '',
-        calcAcceptanceTotal(f.no),
-      ]);
-    });
-    // Summary row
-    const totalDefectCritical = functions.reduce((s, f) => s + (acceptanceData[f.no]?.defects.critical || 0), 0);
-    const totalDefectMajor = functions.reduce((s, f) => s + (acceptanceData[f.no]?.defects.major || 0), 0);
-    const totalDefectMinor = functions.reduce((s, f) => s + (acceptanceData[f.no]?.defects.minor || 0), 0);
-    accAoa.push([
-      '',
-      '',
-      `รวมทั้งหมด (${acceptanceFinishedCount}/${functions.length} เสร็จ)`,
-      acceptanceMaxTotal,
-      acceptanceFinishedCount,
-      totalDefectCritical || '',
-      totalDefectMajor || '',
-      totalDefectMinor || '',
-      acceptanceGrandTotal,
-    ]);
-
-    const wsAcceptance = XLSX.utils.aoa_to_sheet(accAoa);
-    // Merge cells for title, Defect header, and header alignment
-    wsAcceptance['!merges'] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },  // Title row merge
-      { s: { r: 2, c: 0 }, e: { r: 2, c: 8 } },  // Guide title merge
-      { s: { r: 9, c: 5 }, e: { r: 9, c: 7 } },  // "Defect" header merge across 3 cols
-      // Merge header row 1 & 2 for non-Defect columns
-      { s: { r: 9, c: 0 }, e: { r: 10, c: 0 } },  // ลำดับ
-      { s: { r: 9, c: 1 }, e: { r: 10, c: 1 } },  // Category
-      { s: { r: 9, c: 2 }, e: { r: 10, c: 2 } },  // Functional List
-      { s: { r: 9, c: 3 }, e: { r: 10, c: 3 } },  // Max Score
-      { s: { r: 9, c: 4 }, e: { r: 10, c: 4 } },  // Finish?
-      { s: { r: 9, c: 8 }, e: { r: 10, c: 8 } },  // Total
-    ];
-    wsAcceptance['!cols'] = [
-      { wch: 8 }, { wch: 20 }, { wch: 35 }, { wch: 12 }, { wch: 16 },
-      { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 12 },
-    ];
-    XLSX.utils.book_append_sheet(wb, wsAcceptance, 'Acceptance Score');
-
-    XLSX.writeFile(wb, 'FunctionOverview_ScoreMap.xlsx');
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Header
-          title="Function Overview"
-          subtitle="ภาพรวม Function ทั้งหมด — ความเสี่ยงทาง Business + ความยากในการพัฒนา"
-        />
-        <Button onClick={exportToExcel} className="gap-2">
-          <FileSpreadsheet className="h-4 w-4" />
-          Export Excel
-        </Button>
-      </div>
-
-      <div className="p-6 space-y-6 max-w-7xl mx-auto">
-        {/* Summary Cards Row 1 - Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <Card className="border-l-4 border-l-foreground">
-            <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-foreground">{functions.length}</p>
-              <p className="text-xs text-muted-foreground mt-1">Function ทั้งหมด</p>
-            </CardContent>
-          </Card>
-          <Card className="border-l-4 border-l-amber-500">
-            <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-amber-600">{avgWeight}</p>
-              <p className="text-xs text-muted-foreground mt-1">Avg Weight Score /10</p>
-            </CardContent>
-          </Card>
-          <Card className="border-l-4 border-l-amber-700">
-            <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-amber-700">{totalWeight}<span className="text-lg">/{maxTotalWeight}</span></p>
-              <p className="text-xs text-muted-foreground mt-1">Total Weight Score</p>
-            </CardContent>
-          </Card>
-          <Card className="border-l-4 border-l-violet-500">
-            <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-violet-600">{avgDev}</p>
-              <p className="text-xs text-muted-foreground mt-1">ค่าเฉลี่ยความยาก Dev</p>
-            </CardContent>
-          </Card>
-          <Card className="border-l-4 border-l-blue-500">
-            <CardContent className="p-4 text-center">
-              <p className="text-3xl font-bold text-blue-600">{totalManDays}</p>
-              <p className="text-xs text-muted-foreground mt-1">รวม Man-Days</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Summary Cards Row 2 - Weight + Dev Difficulty breakdown */}
-        <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
-          {/* Weight */}
-          <Card className="border-t-2 border-t-red-500">
-            <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-red-600">{wCriticalCount}</p>
-              <p className="text-[10px] text-muted-foreground">🔴 Critical (1)</p>
-            </CardContent>
-          </Card>
-          <Card className="border-t-2 border-t-orange-500">
-            <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-orange-600">{wMajorCount}</p>
-              <p className="text-[10px] text-muted-foreground">🟠 Major (4)</p>
-            </CardContent>
-          </Card>
-          <Card className="border-t-2 border-t-blue-500">
-            <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-blue-600">{wMinorCount}</p>
-              <p className="text-[10px] text-muted-foreground">🔵 Minor (7)</p>
-            </CardContent>
-          </Card>
-          <Card className="border-t-2 border-t-emerald-500">
-            <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-emerald-600">{wCompleteCount}</p>
-              <p className="text-[10px] text-muted-foreground">✅ Complete (10)</p>
-            </CardContent>
-          </Card>
-          {/* Dev */}
-          <Card className="border-t-2 border-t-purple-600">
-            <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-purple-600">{veryHardCount}</p>
-              <p className="text-[10px] text-muted-foreground">Dev ยากมาก</p>
-            </CardContent>
-          </Card>
-          <Card className="border-t-2 border-t-violet-500">
-            <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-violet-600">{hardCount}</p>
-              <p className="text-[10px] text-muted-foreground">Dev ยาก</p>
-            </CardContent>
-          </Card>
-          <Card className="border-t-2 border-t-cyan-500">
-            <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-cyan-600">{devMediumCount}</p>
-              <p className="text-[10px] text-muted-foreground">Dev ปานกลาง</p>
-            </CardContent>
-          </Card>
-          <Card className="border-t-2 border-t-emerald-500">
-            <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-emerald-600">{easyCount}</p>
-              <p className="text-[10px] text-muted-foreground">Dev ง่าย</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Pie Chart - Weight Distribution */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-amber-500" />
-                การกระจาย Weight Score
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={240}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Critical (1)', value: wCriticalCount },
-                      { name: 'Major (4)', value: wMajorCount },
-                      { name: 'Minor (7)', value: wMinorCount },
-                      { name: 'Complete (10)', value: wCompleteCount },
-                    ]}
-                    cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={4} dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {['#dc2626', '#ea580c', '#3b82f6', '#10b981'].map((color, i) => (
-                      <Cell key={i} fill={color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Pie Chart - Dev Difficulty Distribution */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-violet-500" />
-                การกระจายความยาก Dev
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={240}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'ยากมาก', value: veryHardCount },
-                      { name: 'ยาก', value: hardCount },
-                      { name: 'ปานกลาง', value: devMediumCount },
-                      { name: 'ง่าย', value: easyCount },
-                    ]}
-                    cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={4} dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {['#9333ea', '#7c3aed', '#06b6d4', '#10b981'].map((color, i) => (
-                      <Cell key={i} fill={color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Radar Chart - Category comparison */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Gauge className="w-4 h-4 text-blue-500" />
-                เปรียบเทียบตามหมวด
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={240}>
-                <RadarChart data={categoryStats}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="name" tick={{ fontSize: 10 }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 10]} tick={{ fontSize: 9 }} />
-                  <Radar name="Avg Weight" dataKey="avgWeight" stroke="#d97706" fill="#d97706" fillOpacity={0.3} />
-                  <Radar name="ความยาก Dev" dataKey="avgDev" stroke="#7c3aed" fill="#7c3aed" fillOpacity={0.3} />
-                  <Tooltip />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Bar Chart - Man-Days by Category */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Clock className="w-4 h-4 text-blue-500" />
-              Man-Days ตามหมวด (รวม {totalManDays} วัน)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={categoryStats} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(value: number, name: string) => {
-                  const labels: Record<string, string> = { totalDays: 'Man-Days', avgWeight: 'Avg Weight', avgDev: 'ความยาก Dev', count: 'จำนวน' };
-                  return [value, labels[name] || name];
-                }} />
-                <Legend formatter={(value) => {
-                  const labels: Record<string, string> = { totalDays: 'Man-Days', avgWeight: 'Avg Weight Score', avgDev: 'ความยาก Dev เฉลี่ย', count: 'จำนวน Function' };
-                  return labels[value] || value;
-                }} />
-                <Bar dataKey="totalDays" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="avgWeight" fill="#d97706" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="avgDev" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Dev Difficulty Legend */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Code2 className="w-4 h-4 text-violet-500" />
-              เกณฑ์ความยากในการพัฒนา
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-purple-50 border border-purple-200">
-                <Zap className="w-7 h-7 text-purple-600" />
-                <div>
-                  <p className="text-sm font-semibold text-purple-700">🔴 ยากมาก (5/5)</p>
-                  <p className="text-xs text-purple-600">ต้อง Integrate ระบบภายนอก, Logic ซับซ้อน, Security สูง</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
-                <Code2 className="w-7 h-7 text-blue-600" />
-                <div>
-                  <p className="text-sm font-semibold text-blue-700">🟠 ยาก (4/5)</p>
-                  <p className="text-xs text-blue-600">ฟอร์มซับซ้อน, PDF Generation, Multi-step workflow</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-cyan-50 border border-cyan-200">
-                <Gauge className="w-7 h-7 text-cyan-600" />
-                <div>
-                  <p className="text-sm font-semibold text-cyan-700">🟡 ปานกลาง (2-3/5)</p>
-                  <p className="text-xs text-cyan-600">Workflow มาตรฐาน, Dropdown ผูก FK, Query + Filter</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 border border-emerald-200">
-                <CheckCircle2 className="w-7 h-7 text-emerald-600" />
-                <div>
-                  <p className="text-sm font-semibold text-emerald-700">🟢 ง่าย (1/5)</p>
-                  <p className="text-xs text-emerald-600">CRUD มาตรฐาน, ตาราง + Dialog, ไม่มี Logic พิเศษ</p>
-                </div>
-              </div>
+    <>
+      <Header title="ภาพรวมฟังก์ชันของระบบ" />
+      <div className="container mx-auto py-8 px-4 max-w-7xl space-y-8">
+        {/* Header */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <CheckCircle2 className="w-7 h-7 text-primary" />
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">ภาพรวมฟังก์ชันของระบบ</h1>
+              <p className="text-sm text-muted-foreground">Function Overview — Vehicle Reservation Management System</p>
+            </div>
+          </div>
 
-        {/* Weight Score Legend */}
-        <Card className="border-2 border-amber-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <ShieldAlert className="w-4 h-4 text-amber-500" />
-              เกณฑ์ Weight Score (Max 10 ต่อ Function)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {(['critical', 'major', 'minor', 'complete'] as WeightLevel[]).map(level => {
-                const cfg = weightConfig[level];
-                return (
-                  <div key={level} className={`flex items-center gap-3 p-3 rounded-lg ${cfg.bgColor} border ${cfg.borderColor}`}>
-                    <span className="text-2xl">{cfg.emoji}</span>
-                    <div>
-                      <p className={`text-sm font-semibold ${cfg.color}`}>{cfg.label} ({cfg.score}/10)</p>
-                      <p className={`text-xs ${cfg.color} opacity-80`}>{cfg.description}</p>
+          <p className="text-muted-foreground leading-relaxed max-w-4xl">
+            ระบบจัดการใบจองรถยนต์แบบ Multi-tenant รองรับหลายบริษัท หลายสาขา
+            ครอบคลุมตั้งแต่การสร้างใบจอง การยืนยันจากลูกค้า การตรวจสอบการชำระเงิน
+            ไปจนถึงการอนุมัติและการยกเลิก พร้อมระบบสิทธิ์ตามบทบาท (RBAC) และการตรวจสอบย้อนหลัง (Audit Trail)
+          </p>
+
+          {/* Tech stack */}
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">React 18</Badge>
+            <Badge variant="secondary">Vite 5</Badge>
+            <Badge variant="secondary">TypeScript 5</Badge>
+            <Badge variant="secondary">Tailwind CSS</Badge>
+            <Badge variant="secondary">shadcn/ui</Badge>
+            <Badge variant="secondary">Lovable Cloud</Badge>
+          </div>
+
+          {/* Workflow color legend */}
+          <Card className="bg-muted/30">
+            <CardContent className="py-4">
+              <div className="flex flex-wrap items-center gap-4">
+                <span className="text-sm font-medium text-muted-foreground">มาตรฐานสีสถานะ Workflow:</span>
+                {workflowColors.map((w) => (
+                  <div key={w.label} className="flex items-center gap-2">
+                    <span
+                      className="inline-block w-3 h-3 rounded-full border border-border"
+                      style={{ backgroundColor: w.color }}
+                    />
+                    <span className="text-sm font-semibold" style={{ color: w.color }}>
+                      {w.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sections grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {sections.map((section) => {
+            const Icon = section.icon;
+            return (
+              <Card key={section.title} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                      <Icon className={`w-5 h-5 ${section.accent}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <CardTitle className="text-base leading-snug">{section.title}</CardTitle>
+                      <p className="text-xs text-muted-foreground mt-0.5">{section.subtitle}</p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-            <div className="mt-3 text-xs text-muted-foreground text-right">
-              Total Weight: <span className="font-bold">{totalWeight}/{maxTotalWeight}</span> ({((totalWeight / maxTotalWeight) * 100).toFixed(0)}%) | Avg: <span className="font-bold">{avgWeight}/10</span>
-            </div>
-          </CardContent>
-        </Card>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {section.items.map((item, idx) => (
+                      <li key={idx} className="flex gap-2 text-sm leading-relaxed">
+                        <span className="block w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                        <span className="text-foreground/90">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
 
-        {/* Performance Spec Legend */}
-        <Card className="border-2 border-teal-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Gauge className="w-4 h-4 text-teal-500" />
-              เกณฑ์ Performance Spec (1-5) — หลักการให้คะแนน
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
-              {([['critical', 5, 'Response <1s | 20+ Users | 99.9% SLA | Volume สูง'], ['high', 4, 'Response <2s | 10-20 Users | 99.5% SLA | Volume ปานกลาง-สูง'], ['medium', 3, 'Response <3s | 5-10 Users | 99% SLA | Volume ปานกลาง'], ['low', 2, 'Response <5s | 3-5 Users | 95% SLA | Volume ต่ำ'], ['minimal', 1, 'Response >5s OK | 1-3 Users | 90% SLA | Volume น้อย']] as [PerfLevel, number, string][]).map(([level, sc, desc]) => {
-                const cfg = perfLevelConfig[level];
-                return (
-                  <div key={level} className={`p-3 rounded-lg ${cfg.bgColor} border ${cfg.borderColor}`}>
-                    <p className={`text-sm font-semibold ${cfg.color}`}>{cfg.emoji} {cfg.label} ({sc}/5)</p>
-                    <p className={`text-[10px] ${cfg.color} opacity-80 mt-1`}>{desc}</p>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="bg-muted/30 rounded-lg p-4">
-              <p className="text-xs font-semibold text-foreground mb-2">📐 หลักการให้คะแนน Performance</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-muted-foreground">
-                <div><p className="font-medium text-foreground mb-1">⏱️ Response Time</p><p>ความเร็วที่ระบบต้องตอบสนอง เช่น OTP ต้อง &lt;1s, PDF ยอมรับ &lt;5s</p></div>
-                <div><p className="font-medium text-foreground mb-1">👥 Concurrent Users</p><p>จำนวนผู้ใช้พร้อมกัน เช่น Master Data 1-3 คน, Reports 10-20 คน</p></div>
-                <div><p className="font-medium text-foreground mb-1">🔒 Availability (SLA)</p><p>ความพร้อมใช้งาน — ชำระเงิน 99.9%, Master Data 95%</p></div>
-                <div><p className="font-medium text-foreground mb-1">📊 Data Volume</p><p>ปริมาณข้อมูล — Reports สูง (หลายพันรายการ), Master Data น้อย</p></div>
-              </div>
-            </div>
-            <div className="mt-3 text-xs text-muted-foreground text-right">
-              Avg Performance Score: <span className="font-bold">{avgPerf}/5</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Acceptance Scoring Table */}
-        <Card className="border-2 border-green-300/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <CheckCircle2 className="w-5 h-5 text-green-600" />
-              Acceptance Scoring — ตารางให้คะแนนตอบรับ (Finish + Defect)
-              <Badge variant="outline" className="ml-2 text-green-700 border-green-400">
-                {acceptanceGrandTotal}/{acceptanceMaxTotal} คะแนน
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {/* Scoring Guide */}
-            <div className="mx-6 mb-4 p-4 rounded-lg bg-muted/30 border">
-              <p className="text-sm font-semibold text-foreground mb-3">📐 หลักการให้คะแนน Acceptance Scoring</p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                  <p className="font-semibold text-blue-700 mb-1">✅ Finish? (เสร็จสิ้น)</p>
-                  <p className="text-blue-600">Yes = 1 (ฟังก์ชันพัฒนาเสร็จแล้ว)</p>
-                  <p className="text-blue-600">No = 0 (ยังไม่เสร็จ → คะแนน = 0)</p>
-                </div>
-                <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-                  <p className="font-semibold text-red-700 mb-1">🐛 Defect (ข้อบกพร่อง)</p>
-                  <div className="space-y-1 text-red-600">
-                    <p><span className="font-bold text-red-700">Critical</span> = หัก 10 คะแนน (ระบบล่ม/เงินสูญหาย)</p>
-                    <p><span className="font-bold text-orange-700">Major</span> = หัก 5 คะแนน (ฟีเจอร์ใช้ไม่ได้)</p>
-                    <p><span className="font-bold text-yellow-700">Minor</span> = หัก 2 คะแนน (บกพร่องเล็กน้อย)</p>
-                  </div>
-                </div>
-                <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
-                  <p className="font-semibold text-emerald-700 mb-1">📊 สูตรคำนวณ Total</p>
-                  <p className="text-emerald-600 font-mono text-[11px]">Total = Max Score × Finish</p>
-                  <p className="text-emerald-600 font-mono text-[11px]">− (Critical×10 + Major×5 + Minor×2)</p>
-                  <p className="text-emerald-600 mt-1">Max Score = {MAX_SCORE} ต่อ Function</p>
-                  <p className="text-emerald-600">Max Total = {acceptanceMaxTotal} ({functions.length} × {MAX_SCORE})</p>
-                </div>
-              </div>
-            </div>
-            {/* Table */}
-            <div className="border rounded-lg overflow-hidden mx-6 mb-6">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-green-50/50">
-                    <TableHead rowSpan={2} className="w-10 border-r align-middle text-center">ลำดับ</TableHead>
-                    <TableHead rowSpan={2} className="border-r align-middle">Category</TableHead>
-                    <TableHead rowSpan={2} className="border-r align-middle">Functional List</TableHead>
-                    <TableHead rowSpan={2} className="w-16 border-r align-middle text-center">Max<br/>Score</TableHead>
-                    <TableHead rowSpan={2} className="w-16 border-r align-middle text-center">Finish?<br/><span className="text-[10px] text-muted-foreground">No=0 / Yes=1</span></TableHead>
-                    <TableHead colSpan={3} className="text-center border-r bg-red-50/60">Defect</TableHead>
-                    <TableHead rowSpan={2} className="w-20 align-middle text-center font-bold">Total<br/><span className="text-[10px] text-muted-foreground">(Max {acceptanceMaxTotal})</span></TableHead>
-                  </TableRow>
-                  <TableRow className="bg-red-50/40">
-                    <TableHead className="text-center w-16 text-red-700 font-bold">Critical<br/><span className="text-[10px]">10</span></TableHead>
-                    <TableHead className="text-center w-16 text-orange-700 font-bold">Major<br/><span className="text-[10px]">5</span></TableHead>
-                    <TableHead className="text-center w-16 border-r text-yellow-700 font-bold">Minor<br/><span className="text-[10px]">2</span></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {acceptanceSorted.map((fn, idx) => {
-                    const acc = acceptanceData[fn.no] || { finished: false, defects: { critical: 0, major: 0, minor: 0 } };
-                    const total = calcAcceptanceTotal(fn.no);
-                    const rowBg = !acc.finished ? 'bg-gray-100/50' : total < 5 ? 'bg-red-50/30' : total < 8 ? 'bg-yellow-50/30' : '';
-                    return (
-                      <TableRow key={fn.no} className={rowBg}>
-                        <TableCell className="text-center font-bold text-muted-foreground border-r">{idx + 1}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground border-r">{fn.category}</TableCell>
-                        <TableCell className="border-r">
-                          <div className="flex items-center gap-2">
-                            <fn.icon className="w-4 h-4 text-muted-foreground shrink-0" />
-                            <span className="font-medium text-sm">{fn.name}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center border-r font-semibold">{MAX_SCORE}</TableCell>
-                        <TableCell className="text-center border-r">
-                          {acc.finished ? (
-                            <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-300">1</Badge>
-                          ) : (
-                            <Badge className="bg-gray-200 text-gray-600 border border-gray-300">0</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {acc.defects.critical > 0 ? (
-                            <span className="font-bold text-red-700">{acc.defects.critical}</span>
-                          ) : <span className="text-muted-foreground">-</span>}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {acc.defects.major > 0 ? (
-                            <span className="font-bold text-orange-700">{acc.defects.major}</span>
-                          ) : <span className="text-muted-foreground">-</span>}
-                        </TableCell>
-                        <TableCell className="text-center border-r">
-                          {acc.defects.minor > 0 ? (
-                            <span className="font-bold text-yellow-700">{acc.defects.minor}</span>
-                          ) : <span className="text-muted-foreground">-</span>}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <span className={`font-bold text-lg ${total >= 8 ? 'text-emerald-700' : total >= 5 ? 'text-yellow-700' : total > 0 ? 'text-red-700' : 'text-gray-400'}`}>
-                            {total}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  {/* Summary Row */}
-                  <TableRow className="bg-muted/50 font-bold border-t-2">
-                    <TableCell colSpan={3} className="text-right border-r">รวมทั้งหมด ({acceptanceFinishedCount}/{functions.length} เสร็จ)</TableCell>
-                    <TableCell className="text-center border-r">{acceptanceMaxTotal}</TableCell>
-                    <TableCell className="text-center border-r">{acceptanceFinishedCount}</TableCell>
-                    <TableCell className="text-center">{functions.reduce((s, f) => s + (acceptanceData[f.no]?.defects.critical || 0), 0) || '-'}</TableCell>
-                    <TableCell className="text-center">{functions.reduce((s, f) => s + (acceptanceData[f.no]?.defects.major || 0), 0) || '-'}</TableCell>
-                    <TableCell className="text-center border-r">{functions.reduce((s, f) => s + (acceptanceData[f.no]?.defects.minor || 0), 0) || '-'}</TableCell>
-                    <TableCell className="text-center">
-                      <span className="text-xl font-bold text-emerald-700">{acceptanceGrandTotal}</span>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Score Map Table - All Functions ranked by Weight Score */}
-        <Card className="border-2 border-amber-300/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Zap className="w-5 h-5 text-amber-500" />
-              Score Map — Function ทั้งหมด จัดเรียงตาม Weight Score (Critical → Complete)
-              <Badge variant="outline" className="ml-2 text-amber-700 border-amber-400">{functions.length} Functions</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="border rounded-lg overflow-hidden mx-6 mb-6">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-amber-50/50">
-                    <TableHead className="w-10">ลำดับ</TableHead>
-                    <TableHead className="w-10">F.No</TableHead>
-                    <TableHead>Function</TableHead>
-                    <TableHead>หมวด</TableHead>
-                    <TableHead className="text-center">Weight</TableHead>
-                    <TableHead className="w-[110px]">Weight Score</TableHead>
-                    <TableHead className="text-center">Perf</TableHead>
-                    <TableHead className="w-[90px]">Perf Score</TableHead>
-                    <TableHead className="text-center">Dev</TableHead>
-                    <TableHead className="text-center">Man-Days</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {scoreMapData.map((fn, idx) => {
-                    const FnIcon = fn.icon;
-                    const rowBg = fn.weightScore <= 1 ? 'bg-red-50/40' : fn.weightScore <= 4 ? 'bg-orange-50/30' : fn.weightScore <= 7 ? 'bg-blue-50/20' : '';
-                    return (
-                      <TableRow key={fn.no} className={rowBg}>
-                        <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
-                        <TableCell className="text-muted-foreground">{fn.no}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <FnIcon className="w-4 h-4 text-muted-foreground shrink-0" />
-                            <span className="font-medium text-sm">{fn.name}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{fn.category}</TableCell>
-                        <TableCell className="text-center">
-                          {getWeightBadge(fn.weightLevel)}
-                        </TableCell>
-                        <TableCell>
-                          {getWeightBar(fn.weightScore)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {getPerfBadge(fn.perf.level)}
-                        </TableCell>
-                        <TableCell>
-                          {getPerfBar(fn.perf.score)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {getDevBadge(fn.devDifficulty)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <span className="font-bold text-sm text-blue-700">{fn.devManDays}</span>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-
-
-        {categories.map((category) => {
-          const categoryFunctions = functions.filter(f => f.category === category);
-          const categoryIcon = category === 'Workflow หลัก' ? FileText
-            : category === 'Workflow ยกเลิก' ? Ban
-            : category === 'Master Data' ? Database
-            : category === 'Reports' ? BarChart3
-            : FileOutput;
-          const CategoryIcon = categoryIcon;
-          const catDays = categoryFunctions.reduce((s, f) => s + f.devManDays, 0);
-
-          return (
-            <Card key={category}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <CategoryIcon className="w-5 h-5 text-primary" />
-                  {category}
-                  <Badge variant="secondary" className="ml-2">{categoryFunctions.length} Functions</Badge>
-                  <Badge variant="outline" className="ml-1 text-blue-600 border-blue-300">{catDays} Man-Days</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="border rounded-lg overflow-hidden mx-6 mb-6">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-muted/30">
-                        <TableHead className="w-10">#</TableHead>
-                        <TableHead>Function</TableHead>
-                        <TableHead className="text-center">Weight</TableHead>
-                        <TableHead className="w-[110px]">Weight Score</TableHead>
-                        <TableHead className="text-center">ความยาก Dev</TableHead>
-                        <TableHead className="text-center w-20">Man-Days</TableHead>
-                        <TableHead className="hidden xl:table-cell">หมายเหตุ Dev</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {categoryFunctions.map((fn) => {
-                        const FnIcon = fn.icon;
-                        return (
-                          <TableRow key={fn.no} className={
-                            fn.weightScore <= 1 ? 'bg-red-50/40' :
-                            fn.weightScore <= 4 ? 'bg-orange-50/30' :
-                            fn.weightScore <= 7 ? 'bg-blue-50/20' : ''
-                          }>
-                            <TableCell className="font-medium text-muted-foreground">{fn.no}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <FnIcon className="w-4 h-4 text-muted-foreground shrink-0" />
-                                <div>
-                                  <p className="font-medium text-sm">{fn.name}</p>
-                                  <p className="text-xs text-muted-foreground md:hidden">{fn.responsible}</p>
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {getWeightBadge(fn.weightLevel)}
-                            </TableCell>
-                            <TableCell>
-                              {getWeightBar(fn.weightScore)}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {getDevBadge(fn.devDifficulty)}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <span className="font-bold text-sm text-blue-700">{fn.devManDays}</span>
-                            </TableCell>
-                            <TableCell className="hidden xl:table-cell">
-                              <p className="text-xs text-muted-foreground line-clamp-2">{fn.devNotes}</p>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-
-        {/* Total Summary */}
-        <Card className="border-2 border-primary/30">
-          <CardHeader>
-            <CardTitle className="text-base">📊 สรุปการประเมินรวม</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/30">
-                     <TableHead>หมวดหมู่</TableHead>
-                    <TableHead className="text-center">จำนวน Function</TableHead>
-                    <TableHead className="text-center">Avg Weight Score</TableHead>
-                    <TableHead className="text-center">Total Weight</TableHead>
-                    <TableHead className="text-center">ความยาก Dev เฉลี่ย</TableHead>
-                    <TableHead className="text-center">Man-Days รวม</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {categoryStats.map(cs => (
-                    <TableRow key={cs.name}>
-                     <TableCell className="font-medium">{cs.name}</TableCell>
-                      <TableCell className="text-center">{cs.count}</TableCell>
-                      <TableCell className="text-center">
-                        <span className="text-amber-600 font-semibold">{cs.avgWeight}/10</span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className="text-amber-700 font-bold">{cs.totalWeight}/{cs.count * 10}</span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className="text-violet-600 font-semibold">{cs.avgDev}/5</span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className="text-blue-700 font-bold">{cs.totalDays} วัน</span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                   <TableRow className="bg-muted/50 font-bold">
-                    <TableCell>รวมทั้งหมด</TableCell>
-                    <TableCell className="text-center">{functions.length}</TableCell>
-                    <TableCell className="text-center text-amber-600">{avgWeight}/10</TableCell>
-                    <TableCell className="text-center text-amber-700">{totalWeight}/{maxTotalWeight}</TableCell>
-                    <TableCell className="text-center text-violet-600">{avgDev}/5</TableCell>
-                    <TableCell className="text-center text-blue-700 text-lg">{totalManDays} วัน</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
+        {/* Footer note */}
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="py-5">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              <span className="font-semibold text-foreground">หมายเหตุ:</span>{' '}
+              หน้านี้เป็นเอกสารสรุปฟังก์ชันการทำงานภายในระบบ สำหรับใช้สื่อสารกับทีมพัฒนาและผู้ใช้งาน
+              ฟีเจอร์ทั้งหมดที่แสดงได้ถูกพัฒนาและใช้งานจริงในระบบ Production แล้ว
+            </p>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </>
   );
 }

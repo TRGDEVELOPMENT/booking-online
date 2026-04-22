@@ -64,17 +64,21 @@ export default function Login() {
       }
 
       if (data.user) {
-        // Update user's profile with selected company
-        const { error: updateError } = await supabase
+        // Verify the user actually belongs to the selected company.
+        // Do NOT overwrite profiles.company_id — each user is permanently bound
+        // to their own company at creation time.
+        const { data: profileData } = await supabase
           .from('profiles')
-          .update({ company_id: company })
-          .eq('user_id', data.user.id);
+          .select('company_id')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
 
-        if (updateError) {
-          console.error('Failed to update company:', updateError);
+        if (profileData && profileData.company_id !== company) {
+          await supabase.auth.signOut();
+          toast.error(`บัญชีนี้ไม่ได้สังกัดบริษัท ${company}`);
+          return;
         }
 
-        // Save selected company to localStorage
         localStorage.setItem('selectedCompany', company);
         toast.success('เข้าสู่ระบบสำเร็จ');
         navigate('/');
@@ -166,59 +170,88 @@ export default function Login() {
 
           <div className="mt-6 pt-6 border-t border-border">
             <p className="text-sm text-muted-foreground text-center mb-3">
-              เข้าสู่ระบบ (บัญชีทดสอบ)
+              เข้าสู่ระบบ (บัญชีทดสอบ) {company && <span className="font-semibold text-foreground">— {company}</span>}
             </p>
             <div className="grid grid-cols-2 gap-2">
-              {[
-              { label: 'ที่ปรึกษาการขาย', username: 'sale', icon: '👤', role: 'sale' },
-                { label: 'แคชเชียร์', username: 'cashier', icon: '💰', role: 'cashier' },
-                { label: 'หัวหน้าทีมขาย', username: 'supervisor', icon: '👨‍💼', role: 'sale_supervisor' },
-                { label: 'ผจก.ฝ่ายขาย', username: 'manager', icon: '📋', role: 'sale_manager' },
-                { label: 'ผู้ดูแลระบบ', username: 'useradmin', icon: '🔧', role: 'user_admin' },
-                { label: 'IT Admin', username: 'itadmin', icon: '💻', role: 'it' },
-              ].map((acc) => (
-                <Button
-                  key={acc.username}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="text-xs justify-start gap-1.5 h-9"
-                  disabled={isLoading}
-                  onClick={async () => {
-                    const targetCompany = company || 'BPK';
-                    if (!company) setCompany('BPK');
-                    setUsername(acc.username);
-                    setPassword('Test1234!');
-                    setIsLoading(true);
-                    try {
-                      const { data, error } = await supabase.auth.signInWithPassword({
-                        email: `${acc.username}@app.internal`,
-                        password: 'Test1234!',
-                      });
-                      if (error) {
-                        toast.error(`เข้าสู่ระบบไม่สำเร็จ: ${error.message}`);
-                        return;
+              {(() => {
+                // Map company → list of test accounts (matches users created per branch)
+                const companyAccounts: Record<string, Array<{ label: string; username: string; icon: string; role: string }>> = {
+                  BPK: [
+                    { label: 'ที่ปรึกษาการขาย', username: 'sale_bpk', icon: '👤', role: 'sale' },
+                    { label: 'แคชเชียร์', username: 'cashier_bpk', icon: '💰', role: 'cashier' },
+                    { label: 'หัวหน้าทีมขาย', username: 'sup_bpk', icon: '👨‍💼', role: 'sale_supervisor' },
+                    { label: 'ผจก.ฝ่ายขาย', username: 'mgr_bpk', icon: '📋', role: 'sale_manager' },
+                    { label: 'ผู้ดูแลระบบ', username: 'useradmin_bpk', icon: '🔧', role: 'user_admin' },
+                    { label: 'IT Admin', username: 'itadmin_bpk', icon: '💻', role: 'it' },
+                  ],
+                  LAC: [
+                    { label: 'ที่ปรึกษาการขาย', username: 'sale_lra', icon: '👤', role: 'sale' },
+                    { label: 'แคชเชียร์', username: 'cashier_lra', icon: '💰', role: 'cashier' },
+                    { label: 'หัวหน้าทีมขาย', username: 'sup_lra', icon: '👨‍💼', role: 'sale_supervisor' },
+                    { label: 'ผจก.ฝ่ายขาย', username: 'mgr_lra', icon: '📋', role: 'sale_manager' },
+                    { label: 'ผู้ดูแลระบบ', username: 'useradmin_lac', icon: '🔧', role: 'user_admin' },
+                    { label: 'IT Admin', username: 'itadmin_lac', icon: '💻', role: 'it' },
+                  ],
+                  ICCK: [
+                    { label: 'ที่ปรึกษาการขาย', username: 'sale_ick', icon: '👤', role: 'sale' },
+                    { label: 'แคชเชียร์', username: 'cashier_ick', icon: '💰', role: 'cashier' },
+                    { label: 'หัวหน้าทีมขาย', username: 'sup_ick', icon: '👨‍💼', role: 'sale_supervisor' },
+                    { label: 'ผจก.ฝ่ายขาย', username: 'mgr_ick', icon: '📋', role: 'sale_manager' },
+                    { label: 'ผู้ดูแลระบบ', username: 'useradmin_icck', icon: '🔧', role: 'user_admin' },
+                    { label: 'IT Admin', username: 'itadmin_icck', icon: '💻', role: 'it' },
+                  ],
+                  VPA: [
+                    { label: 'ที่ปรึกษาการขาย', username: 'sale_vpa', icon: '👤', role: 'sale' },
+                    { label: 'แคชเชียร์', username: 'cashier_vpa', icon: '💰', role: 'cashier' },
+                    { label: 'หัวหน้าทีมขาย', username: 'sup_vpa', icon: '👨‍💼', role: 'sale_supervisor' },
+                    { label: 'ผจก.ฝ่ายขาย', username: 'mgr_vpa', icon: '📋', role: 'sale_manager' },
+                    { label: 'ผู้ดูแลระบบ', username: 'useradmin_vpa', icon: '🔧', role: 'user_admin' },
+                    { label: 'IT Admin', username: 'itadmin_vpa', icon: '💻', role: 'it' },
+                  ],
+                };
+                const targetCompany = company || 'BPK';
+                const accounts = companyAccounts[targetCompany] || companyAccounts.BPK;
+                return accounts.map((acc) => (
+                  <Button
+                    key={acc.username}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs justify-start gap-1.5 h-9"
+                    disabled={isLoading}
+                    onClick={async () => {
+                      if (!company) setCompany(targetCompany);
+                      setUsername(acc.username);
+                      setPassword('Test1234!');
+                      setIsLoading(true);
+                      try {
+                        const { data, error } = await supabase.auth.signInWithPassword({
+                          email: `${acc.username}@app.internal`,
+                          password: 'Test1234!',
+                        });
+                        if (error) {
+                          toast.error(`เข้าสู่ระบบไม่สำเร็จ: ${error.message}`);
+                          return;
+                        }
+                        if (data.user) {
+                          // Do NOT override company_id — each test account is pre-bound
+                          // to its correct company. Just sync localStorage.
+                          localStorage.setItem('selectedCompany', targetCompany);
+                          toast.success(`เข้าสู่ระบบเป็น ${acc.label} (${targetCompany}) สำเร็จ`);
+                          navigate('/');
+                        }
+                      } catch {
+                        toast.error('เกิดข้อผิดพลาด');
+                      } finally {
+                        setIsLoading(false);
                       }
-                      if (data.user) {
-                        await supabase.from('profiles').update({ company_id: targetCompany }).eq('user_id', data.user.id);
-                        // Reset role to the intended role for this test account
-                        // (in case it was changed via the role switcher)
-                        await supabase.functions.invoke('switch-role', { body: { role: acc.role } });
-                        localStorage.setItem('selectedCompany', targetCompany);
-                        toast.success(`เข้าสู่ระบบเป็น ${acc.label} สำเร็จ`);
-                        navigate('/');
-                      }
-                    } catch {
-                      toast.error('เกิดข้อผิดพลาด');
-                    } finally {
-                      setIsLoading(false);
-                    }
-                  }}
-                >
-                  <span>{acc.icon}</span>
-                  {acc.label}
-                </Button>
-              ))}
+                    }}
+                  >
+                    <span>{acc.icon}</span>
+                    {acc.label}
+                  </Button>
+                ));
+              })()}
             </div>
           </div>
         </CardContent>

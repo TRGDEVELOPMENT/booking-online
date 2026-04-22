@@ -31,16 +31,10 @@ export function MainLayout() {
 
   useEffect(() => {
     localStorage.setItem('selectedCompany', selectedCompany);
-    const syncProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from('profiles')
-          .update({ company_id: selectedCompany })
-          .eq('user_id', user.id);
-      }
-    };
-    syncProfile();
+    // NOTE: Do NOT sync selectedCompany back to profiles.company_id.
+    // Each user is bound to their own company at creation time. Overwriting
+    // it here previously caused cross-company contamination (e.g. LAC users
+    // appearing under BPK after switching the company selector).
   }, [selectedCompany]);
 
   return (

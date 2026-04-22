@@ -790,6 +790,13 @@ export default function ReservationEdit() {
 
   // Calculate net price
   const finalPrice = basePrice - discountAmount;
+  // Auto-calculate finance amount = ราคาสุทธิ - เงินดาวน์
+  const computedFinanceAmount = Math.max(0, finalPrice - downPayment);
+  useEffect(() => {
+    if (purchaseType === 'finance') {
+      setFinanceAmount(computedFinanceAmount);
+    }
+  }, [computedFinanceAmount, purchaseType]);
 
   // Detect which stage returned the reservation for revision (drives section locking + banner)
   // Detect which stage returned the reservation for revision (drives section locking + banner)
@@ -1659,14 +1666,10 @@ export default function ReservationEdit() {
                       <Label>ยอดจัดไฟแนนซ์</Label>
                       <Input
                         type="text"
-                        inputMode="numeric"
-                        value={financeAmount > 0 ? financeAmount.toLocaleString() : ''}
-                        onChange={(e) => {
-                          const v = e.target.value.replace(/\D/g, '');
-                          setFinanceAmount(v ? Number(v) : 0);
-                        }}
-                        placeholder="0"
-                        className="input-focus"
+                        value={computedFinanceAmount > 0 ? computedFinanceAmount.toLocaleString() : '-'}
+                        readOnly
+                        disabled
+                        className="bg-primary/10 font-semibold text-primary cursor-not-allowed"
                       />
                     </div>
                     <div className="space-y-2">

@@ -528,6 +528,7 @@ export default function UsersPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[60px]">ลำดับ</TableHead>
+              {isIT && <TableHead className="w-[80px]">บริษัท</TableHead>}
               <TableHead>รหัสพนักงาน</TableHead>
               <TableHead>ชื่อ-สกุล</TableHead>
               <TableHead>สาขา</TableHead>
@@ -540,13 +541,13 @@ export default function UsersPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={(isAdmin ? 8 : 7) + (isIT ? 1 : 0)} className="text-center text-muted-foreground py-8">
                   กำลังโหลด...
                 </TableCell>
               </TableRow>
             ) : filteredUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={(isAdmin ? 8 : 7) + (isIT ? 1 : 0)} className="text-center text-muted-foreground py-8">
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>
@@ -554,12 +555,17 @@ export default function UsersPage() {
               filteredUsers.map((user, index) => (
                 <TableRow key={user.user_id} className={user.status === 'inactive' ? 'opacity-50' : ''}>
                   <TableCell>{index + 1}</TableCell>
+                  {isIT && (
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs font-mono">{user.company_id}</Badge>
+                    </TableCell>
+                  )}
                   <TableCell className="font-mono text-xs">{user.username || '-'}</TableCell>
                   <TableCell className="font-medium">{user.full_name}</TableCell>
                   <TableCell>
                     {user.roles.includes('it') || user.branch_id === 'all'
                       ? <span className="text-sm text-muted-foreground">ทุกสาขา</span>
-                      : branches.find(b => b.branch_id === user.branch_id)?.branch_name || user.branch_id || '-'}
+                      : branches.find(b => b.branch_id === user.branch_id && (!isIT || b.company_id === user.company_id))?.branch_name || user.branch_id || '-'}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">

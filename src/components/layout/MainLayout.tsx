@@ -32,11 +32,23 @@ export function MainLayout() {
 
   useEffect(() => {
     localStorage.setItem('selectedCompany', selectedCompany);
-    // NOTE: Do NOT sync selectedCompany back to profiles.company_id.
-    // Each user is bound to their own company at creation time. Overwriting
-    // it here previously caused cross-company contamination (e.g. LAC users
-    // appearing under BPK after switching the company selector).
-  }, [selectedCompany]);
+    // For IT Admin only: sync the selected company to profiles.company_id so it
+    // becomes the active tenant context (drives RLS-like filtering for queries
+    // that read get_user_company_id). Non-IT users are permanently bound to
+    // their assigned company and must NOT have it overwritten.
+    if (isIT && user?.id && profile && profile.company_id !== selectedCompany) {
+      supabase
+        .from('profiles')
+        .update({ company_id: selectedCompany })
+        .eq('user_id', user.id)
+        .then(({ error }) => {
+          if (!error) {
+            // Soft-reload data on the active page by refreshing the route
+            window.location.reload();
+          }
+        });
+    }
+  }, [selectedCompany, isIT, user?.id, profile?.company_id]);
 
   return (
     <div className="min-h-screen bg-background flex items-start">

@@ -25,6 +25,7 @@ export default function ReservationPrint() {
   const [reservation, setReservation] = useState<DatabaseReservation | null>(null);
   const [creatorName, setCreatorName] = useState<string>('');
   const [managerName, setManagerName] = useState<string>('');
+  const [branchManagerName, setBranchManagerName] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

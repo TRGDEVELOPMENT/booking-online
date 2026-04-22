@@ -104,7 +104,9 @@ Deno.serve(async (req) => {
     }
 
     // Generate internal email for Supabase Auth (company-independent)
-    const internalEmail = `${username}@app.internal`
+    // Lowercase + sanitize to ensure valid email format (Supabase auth validation)
+    const sanitizedUsername = username.toLowerCase().replace(/[^a-z0-9._-]/g, '')
+    const internalEmail = `${sanitizedUsername}@app.internal`
 
     // Create user via admin API using internal email
     const { data, error } = await supabase.auth.admin.createUser({

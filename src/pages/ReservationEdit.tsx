@@ -1119,8 +1119,8 @@ export default function ReservationEdit() {
 
           {/* Returned-for-revision banner hidden by request */}
 
-           {/* Admin Assignment Panel - visible only to user_admin/it */}
-           {isAdmin && id && (
+           {/* Admin Assignment Panel - visible only to user_admin/it, hidden after final approval or cancellation */}
+           {isAdmin && id && approvalStatus !== 'approved' && reservationStatus !== 'cancelled' && (
              <AdminAssignmentPanel
                reservationId={id}
                companyId={selectedCompany}

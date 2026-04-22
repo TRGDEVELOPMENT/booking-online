@@ -245,7 +245,7 @@ export default function ReservationCancelPrint() {
           <div className="mt-16">
             <p>........................................................</p>
             <p className="mt-2">
-              (.......................................................)
+              ( {managerName || ".......................................................".slice(0, 55)} )
             </p>
             <p className="mt-1 font-semibold">ผู้จัดการฝ่ายขาย</p>
           </div>

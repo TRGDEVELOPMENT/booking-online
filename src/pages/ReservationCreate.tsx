@@ -102,6 +102,8 @@ export default function ReservationCreate() {
   const [basePrice, setBasePrice] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [depositAmount, setDepositAmount] = useState(0);
+  const [downPayment, setDownPayment] = useState<number>(0);
+  const [installmentPeriodId, setInstallmentPeriodId] = useState<string>('');
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
 
   // DB-driven models, sub_models, colors
@@ -318,6 +320,8 @@ export default function ReservationCreate() {
 
   // Calculate net price
   const finalPrice = basePrice - discountAmount;
+  // Finance amount = ราคาสุทธิ - เงินดาวน์
+  const financeAmount = Math.max(0, finalPrice - downPayment);
 
   // Generate document number via database function
   const generateDocumentNumber = async (): Promise<string> => {
@@ -881,15 +885,31 @@ export default function ReservationCreate() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label>เงินดาวน์</Label>
-                      <Input type="number" placeholder="0" className="input-focus" />
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        value={downPayment > 0 ? downPayment.toLocaleString() : ''}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/\D/g, '');
+                          setDownPayment(v ? Number(v) : 0);
+                        }}
+                        placeholder="0"
+                        className="input-focus"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>ยอดจัดไฟแนนซ์</Label>
-                      <Input type="number" placeholder="0" className="input-focus" />
+                      <Input
+                        type="text"
+                        value={financeAmount > 0 ? financeAmount.toLocaleString() : '-'}
+                        readOnly
+                        disabled
+                        className="bg-primary/10 font-semibold text-primary cursor-not-allowed"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>ระยะเวลาผ่อน (งวด)</Label>
-                      <Select>
+                      <Select value={installmentPeriodId} onValueChange={setInstallmentPeriodId}>
                         <SelectTrigger className="input-focus">
                           <SelectValue placeholder="เลือก" />
                         </SelectTrigger>

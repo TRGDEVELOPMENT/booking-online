@@ -270,21 +270,28 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                         );
                       }
 
-                      // user_admin (non-IT) viewers → view-only
+                      // user_admin (non-IT) viewers → view + print
                       if (isAdminViewer && !isItAdmin) {
                         return (
-                          <Link to={`/reservations/${reservation.id}`}>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" title="ดูรายละเอียด">
-                              <Eye className="w-3.5 h-3.5" />
-                            </Button>
-                          </Link>
+                          <>
+                            <Link to={`/reservations/${reservation.id}`}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" title="ดูรายละเอียด">
+                                <Eye className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
+                            <Link to={`/reservations/${reservation.id}/print`}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" title="พิมพ์เอกสาร">
+                                <Printer className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
+                          </>
                         );
                       }
 
                       const actionable = isActionableForRole(stageRole, currentRole);
                       const isCancelled = idx === -2 || idx === -3;
 
-                      // Case 2: Other stages + user is NOT actionable role → View only (+ Print if cancelled)
+                      // Case 2: Other stages + user is NOT actionable role → View + Print
                       if (!actionable) {
                         return (
                           <>
@@ -293,13 +300,11 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                                 <Eye className="w-3.5 h-3.5" />
                               </Button>
                             </Link>
-                            {isCancelled && (
-                              <Link to={`/reservations/${reservation.id}/print`}>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" title="พิมพ์เอกสาร (ยกเลิก)">
-                                  <Printer className="w-3.5 h-3.5" />
-                                </Button>
-                              </Link>
-                            )}
+                            <Link to={`/reservations/${reservation.id}/print`}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" title={isCancelled ? 'พิมพ์เอกสาร (ยกเลิก)' : 'พิมพ์เอกสาร'}>
+                                <Printer className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
                           </>
                         );
                       }
@@ -333,26 +338,33 @@ export function ReservationTable({ reservations, selectedIds, onSelectChange, pa
                       const ActionIcon = meta.Icon;
                       const targetPath = `/reservations/${reservation.id}/edit`;
                       return (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Link to={targetPath}>
-                                <Button
-                                  size="icon"
-                                  className={cn(
-                                    'h-8 w-8 relative shadow-sm ring-2 ring-offset-1',
-                                    meta.bg,
-                                    meta.ring,
-                                  )}
-                                >
-                                  <ActionIcon className="w-4 h-4" />
-                                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-background animate-pulse" />
-                                </Button>
-                              </Link>
-                            </TooltipTrigger>
-                            <TooltipContent>⚡ {meta.label}</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        <>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Link to={targetPath}>
+                                  <Button
+                                    size="icon"
+                                    className={cn(
+                                      'h-8 w-8 relative shadow-sm ring-2 ring-offset-1',
+                                      meta.bg,
+                                      meta.ring,
+                                    )}
+                                  >
+                                    <ActionIcon className="w-4 h-4" />
+                                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-background animate-pulse" />
+                                  </Button>
+                                </Link>
+                              </TooltipTrigger>
+                              <TooltipContent>⚡ {meta.label}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <Link to={`/reservations/${reservation.id}/print`}>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" title="พิมพ์เอกสาร">
+                              <Printer className="w-3.5 h-3.5" />
+                            </Button>
+                          </Link>
+                        </>
                       );
                     })()}
                   </div>

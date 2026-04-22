@@ -7,16 +7,24 @@ import { companies, branches } from '@/data/mockData';
 import type { DatabaseReservation } from '@/types/database-reservation';
 import bizrLogo from '@/assets/bizpk-logo.png';
 import lacLogo from '@/assets/LAC.png';
+import nissanLogo from '@/assets/nissan-logo.png';
 
 const companyLogos: Record<string, string> = {
   BPK: bizrLogo,
   LAC: lacLogo,
 };
 
+// Top-right corner brand logo (per company)
+const companyTopRightLogos: Record<string, string> = {
+  BPK: nissanLogo,
+};
+
 export default function ReservationPrint() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [reservation, setReservation] = useState<DatabaseReservation | null>(null);
+  const [creatorName, setCreatorName] = useState<string>('');
+  const [managerName, setManagerName] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -42,6 +50,56 @@ export default function ReservationPrint() {
             accessories: Array.isArray(data.accessories) ? data.accessories as DatabaseReservation['accessories'] : null,
             benefits: Array.isArray(data.benefits) ? data.benefits as DatabaseReservation['benefits'] : null,
           });
+
+          // Fetch creator (sale advisor) name
+          if (data.created_by) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('user_id', data.created_by)
+              .maybeSingle();
+            if (profile?.full_name) setCreatorName(profile.full_name);
+          }
+
+          // Fetch sale manager name: prefer approver, otherwise look up assigned manager via assignments,
+          // otherwise any sale_manager in same company.
+          let mgrUserId: string | null = (data as any).approved_by ?? null;
+
+          if (!mgrUserId) {
+            const { data: assignment } = await supabase
+              .from('reservation_assignments')
+              .select('assigned_user_id')
+              .eq('reservation_id', id)
+              .eq('stage', 'sale_manager')
+              .maybeSingle();
+            mgrUserId = assignment?.assigned_user_id ?? null;
+          }
+
+          if (mgrUserId) {
+            const { data: mgrProfile } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('user_id', mgrUserId)
+              .maybeSingle();
+            if (mgrProfile?.full_name) setManagerName(mgrProfile.full_name);
+          } else {
+            // Fallback: find any sale_manager in same company
+            const { data: roles } = await supabase
+              .from('user_roles')
+              .select('user_id')
+              .eq('role', 'sale_manager');
+            const userIds = (roles || []).map(r => r.user_id);
+            if (userIds.length > 0) {
+              const { data: mgrProfile } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .in('user_id', userIds)
+                .eq('company_id', data.company_id)
+                .limit(1)
+                .maybeSingle();
+              if (mgrProfile?.full_name) setManagerName(mgrProfile.full_name);
+            }
+          }
         }
       } catch (err) {
         console.error('Error:', err);
@@ -85,7 +143,8 @@ export default function ReservationPrint() {
   const thaiYear = createdDate.getFullYear() + 543;
   const companyName = company?.name || 'บริษัท บิซ พีเค จำกัด';
   const branchName = branch?.name || 'ปิ่นเกล้า';
-  const isCancelled = reservation.status === 'cancelled';
+  const isCancelled = reservation.status === 'cancelled' || (reservation as any).cancel_approval_status === 'approved';
+  const topRightLogo = companyTopRightLogos[reservation.company_id];
 
   const dotLine = (width = '200px') => (
     <span style={{ 
@@ -128,40 +187,50 @@ export default function ReservationPrint() {
         </div>
       </div>
 
+      {/* Fixed watermark - repeats on every printed page */}
+      {isCancelled && (
+        <div
+          aria-hidden
+          className="cancel-watermark print:flex"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            zIndex: 9999,
+          }}
+        >
+          <span
+            style={{
+              fontSize: '12rem',
+              fontWeight: 900,
+              color: 'rgba(244, 63, 94, 0.22)',
+              transform: 'rotate(-35deg)',
+              letterSpacing: '0.2em',
+              whiteSpace: 'nowrap',
+              fontFamily: 'TH Sarabun New, Sarabun, serif',
+            }}
+          >
+            ยกเลิก
+          </span>
+        </div>
+      )}
+
       {/* Print Content */}
-      <div className="print:mt-0 mt-20 p-8 max-w-4xl mx-auto bg-white min-h-screen relative" style={{ fontFamily: 'TH Sarabun New, Sarabun, serif', fontSize: '16px', lineHeight: '1.8', color: '#000' }}>
-        
-        {/* Watermark for cancelled reservations */}
-        {isCancelled && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50 print:flex">
-            <span
-              className="text-red-500/25 font-bold select-none"
-              style={{
-                fontSize: '10rem',
-                transform: 'rotate(-35deg)',
-                letterSpacing: '0.2em',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              ยกเลิก
-            </span>
-          </div>
-        )}
-
+      <div
+        className="print:mt-0 mt-20 p-8 mx-auto bg-white min-h-screen relative print-page"
+        style={{
+          fontFamily: 'TH Sarabun New, Sarabun, serif',
+          fontSize: '16px',
+          lineHeight: '1.8',
+          color: '#000',
+          width: '210mm',
+          maxWidth: '100%',
+        }}
+      >
         <div className="relative">
-          {/* Cancellation Banner */}
-          {isCancelled && (
-            <div className="mb-6 p-4 border-2 border-red-500 bg-red-50 rounded-lg print:border-red-500 print:bg-red-50">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-red-600 font-bold text-lg">✕ ใบจองนี้ถูกยกเลิกแล้ว</span>
-              </div>
-              <p className="text-red-700 text-sm">
-                <span className="font-semibold">เหตุผลในการยกเลิก:</span>{' '}
-                {(reservation as any).cancel_reason || 'ไม่ระบุเหตุผล'}
-              </p>
-            </div>
-          )}
-
           {/* ===== PAGE 1: Header & Company Info ===== */}
           <div className="mb-2">
             {/* Logo & Title */}
@@ -172,6 +241,14 @@ export default function ReservationPrint() {
               <div className="flex-1">
                 <div className="text-right text-sm text-gray-500 mb-1">{companyName}</div>
               </div>
+              {topRightLogo && (
+                <img
+                  src={topRightLogo}
+                  alt="Brand Logo"
+                  className="h-16 object-contain"
+                  style={{ marginLeft: 'auto' }}
+                />
+              )}
             </div>
 
             <h1 className="text-center text-xl font-bold mb-1">แบบสัญญามาตรฐาน สัญญาจองรถยนต์ (รถใหม่)</h1>
@@ -185,8 +262,8 @@ export default function ReservationPrint() {
           {/* Company Info Section */}
           <div className="mb-4">
             <p>ชื่อผู้ประกอบธุรกิจ <span className="font-bold underline">{companyName}</span> สาขา {filledDotLine(branchName, '120px')}</p>
-            <p>ผู้จัดการฝ่ายขาย ชื่อ - สกุล {dotLine('250px')} หมายเลขโทรศัพท์มือถือ {dotLine('120px')}</p>
-            <p>พนักงานขาย/พนักงานผู้รับจอง ชื่อ - สกุล {dotLine('200px')} หมายเลขโทรศัพท์มือถือ {dotLine('120px')}</p>
+            <p>ผู้จัดการฝ่ายขาย ชื่อ - สกุล {managerName ? filledDotLine(managerName, '250px') : dotLine('250px')} หมายเลขโทรศัพท์มือถือ {dotLine('120px')}</p>
+            <p>พนักงานขาย/พนักงานผู้รับจอง ชื่อ - สกุล {creatorName ? filledDotLine(creatorName, '200px') : dotLine('200px')} หมายเลขโทรศัพท์มือถือ {dotLine('120px')}</p>
           </div>
 
           {/* Contract Date */}
@@ -325,11 +402,11 @@ export default function ReservationPrint() {
               {/* Row 2: Sales Manager & Salesperson */}
               <div className="text-center mb-10">
                 <p>(ลงชื่อ){dotLine('180px')}ผู้จัดการฝ่ายขาย</p>
-                <p>( {dotLine('180px')} )</p>
+                <p>( {managerName ? filledDotLine(managerName, '180px') : dotLine('180px')} )</p>
               </div>
               <div className="text-center mb-10">
                 <p>(ลงชื่อ){dotLine('180px')}พนักงานขาย/พนักงานผู้รับจอง</p>
-                <p>( {dotLine('180px')} )</p>
+                <p>( {creatorName ? filledDotLine(creatorName, '180px') : dotLine('180px')} )</p>
               </div>
 
               {/* Row 3: Witnesses */}
@@ -397,11 +474,11 @@ export default function ReservationPrint() {
 
               <div className="text-center mb-10">
                 <p>(ลงชื่อ){dotLine('180px')}ผู้จัดการฝ่ายขาย</p>
-                <p>( {dotLine('180px')} )</p>
+                <p>( {managerName ? filledDotLine(managerName, '180px') : dotLine('180px')} )</p>
               </div>
               <div className="text-center mb-10">
                 <p>(ลงชื่อ){dotLine('180px')}พนักงานขาย/พนักงานผู้รับจอง</p>
-                <p>( {dotLine('180px')} )</p>
+                <p>( {creatorName ? filledDotLine(creatorName, '180px') : dotLine('180px')} )</p>
               </div>
 
               <div className="text-center mb-6">
@@ -428,11 +505,22 @@ export default function ReservationPrint() {
             size: A4;
             margin: 15mm;
           }
+          .print-page {
+            width: 100% !important;
+            max-width: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
           .break-before-page {
             page-break-before: always;
             border-top: none !important;
             padding-top: 0 !important;
             margin-top: 0 !important;
+          }
+          /* Ensure watermark repeats on every page */
+          .cancel-watermark {
+            position: fixed !important;
+            top: 0; left: 0; right: 0; bottom: 0;
           }
         }
         .indent-8 {

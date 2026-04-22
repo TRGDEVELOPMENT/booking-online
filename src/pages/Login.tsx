@@ -64,17 +64,21 @@ export default function Login() {
       }
 
       if (data.user) {
-        // Update user's profile with selected company
-        const { error: updateError } = await supabase
+        // Verify the user actually belongs to the selected company.
+        // Do NOT overwrite profiles.company_id — each user is permanently bound
+        // to their own company at creation time.
+        const { data: profileData } = await supabase
           .from('profiles')
-          .update({ company_id: company })
-          .eq('user_id', data.user.id);
+          .select('company_id')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
 
-        if (updateError) {
-          console.error('Failed to update company:', updateError);
+        if (profileData && profileData.company_id !== company) {
+          await supabase.auth.signOut();
+          toast.error(`บัญชีนี้ไม่ได้สังกัดบริษัท ${company}`);
+          return;
         }
 
-        // Save selected company to localStorage
         localStorage.setItem('selectedCompany', company);
         toast.success('เข้าสู่ระบบสำเร็จ');
         navigate('/');

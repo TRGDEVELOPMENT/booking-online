@@ -5,171 +5,134 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface TestUser {
-  username: string;
-  password: string;
-  full_name: string;
-  company_id: string;
-  role: string;
+interface BranchSpec {
+  company_id: string
+  branch_id: string
+  branch_label: string
 }
 
-const testUsers: TestUser[] = [
-  {
-    username: 'sale',
-    password: 'Test1234!',
-    full_name: 'สมชาย ใจดี',
-    company_id: 'BPK',
-    role: 'sale',
-  },
-  {
-    username: 'cashier',
-    password: 'Test1234!',
-    full_name: 'สมหญิง รักเงิน',
-    company_id: 'BPK',
-    role: 'cashier',
-  },
-  {
-    username: 'supervisor',
-    password: 'Test1234!',
-    full_name: 'สมศักดิ์ นำทีม',
-    company_id: 'BPK',
-    role: 'sale_supervisor',
-  },
-  {
-    username: 'manager',
-    password: 'Test1234!',
-    full_name: 'สมปอง บริหาร',
-    company_id: 'BPK',
-    role: 'sale_manager',
-  },
-  {
-    username: 'itadmin',
-    password: 'Test1234!',
-    full_name: 'สมเกียรติ ไอที',
-    company_id: 'BPK',
-    role: 'it',
-  },
-  {
-    username: 'useradmin',
-    password: 'Test1234!',
-    full_name: 'สมพร ดูแลระบบ',
-    company_id: 'BPK',
-    role: 'user_admin',
-  },
+const BRANCHES: BranchSpec[] = [
+  { company_id: 'BPK', branch_id: 'BPK', branch_label: 'bpk' },
+  { company_id: 'ICCK', branch_id: 'ICK', branch_label: 'ick' },
+  { company_id: 'ICCK', branch_id: 'IKK', branch_label: 'ikk' },
+  { company_id: 'LAC', branch_id: 'LRA', branch_label: 'lra' },
+  { company_id: 'LAC', branch_id: 'LSV', branch_label: 'lsv' },
+  { company_id: 'VPA', branch_id: 'VPA', branch_label: 'vpa' },
 ]
 
+const BRANCH_ROLES = [
+  { role: 'sale', key: 'sale', thaiName: 'ที่ปรึกษาการขาย' },
+  { role: 'cashier', key: 'cashier', thaiName: 'แคชเชียร์' },
+  { role: 'sale_supervisor', key: 'sup', thaiName: 'หัวหน้าทีมขาย' },
+  { role: 'sale_manager', key: 'mgr', thaiName: 'ผู้จัดการฝ่ายขาย' },
+]
+
+const COMPANY_ADMIN_ROLES = [
+  { role: 'user_admin', key: 'useradmin', thaiName: 'ผู้ดูแลระบบ' },
+  { role: 'it', key: 'itadmin', thaiName: 'IT Admin' },
+]
+
+const PASSWORD = 'Test1234!'
+
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
+      auth: { autoRefreshToken: false, persistSession: false },
     })
 
-    const results = []
+    const { data: existingUsers } = await supabase.auth.admin.listUsers({ perPage: 1000 })
+    const existingMap = new Map(existingUsers?.users?.map(u => [u.email, u]) ?? [])
 
-    for (const user of testUsers) {
-      const internalEmail = `${user.username}@app.internal`
+    const results: Array<Record<string, unknown>> = []
 
-      // Check if user already exists
-      const { data: existingUsers } = await supabase.auth.admin.listUsers()
-      const existingUser = existingUsers?.users?.find(u => u.email === internalEmail)
-      
-      if (existingUser) {
-        // Update password for existing user
-        const { error: updateError } = await supabase.auth.admin.updateUserById(
-          existingUser.id,
-          { password: user.password }
-        )
+    type UserPlan = {
+      username: string
+      full_name: string
+      company_id: string
+      branch_id: string | null
+      role: string
+    }
 
-        // Update username in profile if missing
-        await supabase
-          .from('profiles')
-          .update({ username: user.username })
-          .eq('user_id', existingUser.id)
-          .is('username', null)
-        
-        if (updateError) {
-          results.push({ username: user.username, status: 'update error', error: updateError.message })
-        } else {
-          results.push({ username: user.username, status: 'password updated', userId: existingUser.id })
-        }
-        continue
-      }
+    const plans: UserPlan[] = []
 
-      // Also check by old email format (migration from email-based)
-      const oldEmail = (() => {
-        const oldMap: Record<string, string> = {
-          sale: 'sale@test.com',
-          cashier: 'cashier@test.com',
-          supervisor: 'supervisor@test.com',
-          manager: 'manager@test.com',
-          itadmin: 'it@test.com',
-          useradmin: 'useradmin@test.com',
-        }
-        return oldMap[user.username]
-      })()
-
-      if (oldEmail) {
-        const oldUser = existingUsers?.users?.find(u => u.email === oldEmail)
-        if (oldUser) {
-          // Update existing user to new internal email
-          const { error: updateError } = await supabase.auth.admin.updateUserById(
-            oldUser.id,
-            { email: internalEmail, password: user.password }
-          )
-
-          // Update profile with username
-          await supabase
-            .from('profiles')
-            .update({ username: user.username })
-            .eq('user_id', oldUser.id)
-
-          if (updateError) {
-            results.push({ username: user.username, status: 'migration error', error: updateError.message })
-          } else {
-            results.push({ username: user.username, status: 'migrated from email', userId: oldUser.id })
-          }
-          continue
-        }
-      }
-
-      // Create user with internal email
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: internalEmail,
-        password: user.password,
-        email_confirm: true,
-        user_metadata: {
-          full_name: user.full_name,
-          company_id: user.company_id,
-          role: user.role,
-          username: user.username,
-        },
-      })
-
-      if (error) {
-        results.push({ username: user.username, status: 'error', error: error.message })
-      } else {
-        results.push({ username: user.username, status: 'created', userId: data.user?.id })
+    for (const b of BRANCHES) {
+      for (const r of BRANCH_ROLES) {
+        plans.push({
+          username: `${r.key}_${b.branch_label}`,
+          full_name: `${r.thaiName} ${b.branch_id}`,
+          company_id: b.company_id,
+          branch_id: b.branch_id,
+          role: r.role,
+        })
       }
     }
 
+    const companyFirstBranch = new Map<string, string>()
+    for (const b of BRANCHES) {
+      if (!companyFirstBranch.has(b.company_id)) companyFirstBranch.set(b.company_id, b.branch_id)
+    }
+    for (const [company, branch] of companyFirstBranch) {
+      for (const r of COMPANY_ADMIN_ROLES) {
+        plans.push({
+          username: `${r.key}_${company.toLowerCase()}`,
+          full_name: `${r.thaiName} ${company}`,
+          company_id: company,
+          branch_id: branch,
+          role: r.role,
+        })
+      }
+    }
+
+    for (const u of plans) {
+      const internalEmail = `${u.username}@app.internal`
+      const existing = existingMap.get(internalEmail)
+
+      if (existing) {
+        await supabase.auth.admin.updateUserById(existing.id, { password: PASSWORD })
+        await supabase
+          .from('profiles')
+          .update({
+            full_name: u.full_name,
+            company_id: u.company_id,
+            branch_id: u.branch_id,
+            username: u.username,
+          })
+          .eq('user_id', existing.id)
+        await supabase.from('user_roles').delete().eq('user_id', existing.id)
+        await supabase.from('user_roles').insert({ user_id: existing.id, role: u.role })
+        results.push({ username: u.username, status: 'updated' })
+        continue
+      }
+
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: internalEmail,
+        password: PASSWORD,
+        email_confirm: true,
+        user_metadata: {
+          full_name: u.full_name,
+          company_id: u.company_id,
+          branch_id: u.branch_id,
+          role: u.role,
+          username: u.username,
+        },
+      })
+
+      if (error) results.push({ username: u.username, status: 'error', error: error.message })
+      else results.push({ username: u.username, status: 'created', user_id: data.user?.id })
+    }
+
     return new Response(
-      JSON.stringify({ success: true, results }),
+      JSON.stringify({ success: true, count: results.length, results }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const msg = error instanceof Error ? error.message : 'Unknown error'
     return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
+      JSON.stringify({ success: false, error: msg }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

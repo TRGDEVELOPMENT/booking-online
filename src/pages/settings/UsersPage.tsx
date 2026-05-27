@@ -715,7 +715,7 @@ export default function UsersPage() {
                     <SelectValue placeholder="เลือกสาขา" />
                   </SelectTrigger>
                   <SelectContent>
-                    {formData.role === 'user_admin' && (
+                    {(formData.role === 'user_admin' || formData.role === 'sale_manager' || formData.role === 'cashier') && (
                       <SelectItem value="all">ทุกสาขา</SelectItem>
                     )}
                     {branches.map(b => (

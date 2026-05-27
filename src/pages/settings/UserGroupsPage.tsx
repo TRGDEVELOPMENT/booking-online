@@ -22,6 +22,7 @@ const DEFAULT_GROUPS: Array<{ role_id: string; name: string; description: string
   { role_id: 'cashier', name: 'แคชเชียร์ (Cashier)', description: 'ยืนยันการรับชำระเงิน' },
   { role_id: 'sale_supervisor', name: 'หัวหน้าทีมขาย (Sale Supervisor)', description: 'ตรวจสอบใบจองจากทีมขาย' },
   { role_id: 'sale_manager', name: 'ผู้จัดการฝ่ายขาย (Sale Manager)', description: 'อนุมัติใบจอง' },
+  { role_id: 'gm', name: 'ผู้บริหาร (GM)', description: 'ผู้บริหารระดับสูง ดูภาพรวมและรายงานทั้งหมด' },
   { role_id: 'user_admin', name: 'ผู้ดูแลระบบ (User Admin)', description: 'สร้างและจัดการผู้ใช้งานในระบบ' },
   { role_id: 'it', name: 'IT Admin', description: 'จัดการระบบและตั้งค่าทั้งหมด' },
 ];

@@ -186,11 +186,19 @@ export default function ReservationCreate() {
       const { data } = await supabase
         .from('colors')
         .select('id, description')
-        .eq('model_id', selectedModel)
-        .eq('sub_model_id', selectedSubmodel)
+        .or(`and(model_id.eq.${selectedModel},sub_model_id.eq.${selectedSubmodel}),and(model_id.is.null,sub_model_id.is.null)`)
         .eq('status', 'active')
         .order('description');
-      if (data) setDbColors(data);
+      if (data) {
+        // Dedupe by description (global vs specific can produce duplicates)
+        const seen = new Set<string>();
+        const unique = data.filter(c => {
+          if (seen.has(c.description)) return false;
+          seen.add(c.description);
+          return true;
+        });
+        setDbColors(unique);
+      }
     };
     fetchColors();
   }, [selectedModel, selectedSubmodel]);

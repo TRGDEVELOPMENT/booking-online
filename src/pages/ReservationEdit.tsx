@@ -192,9 +192,10 @@ export default function ReservationEdit() {
   const [approvedByName, setApprovedByName] = useState<string | null>(null);
 
   // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์
-  const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
-  const [accessories, setAccessories] = useState<Array<{ id: number; name: string; value: number }>>([]);
-  const [benefits, setBenefits] = useState<Array<{ id: number; name: string; value: number }>>([]);
+  type LineItem = { id: number; name: string; value: number; remark?: string };
+  const [freebies, setFreebies] = useState<Array<LineItem>>([]);
+  const [accessories, setAccessories] = useState<Array<LineItem>>([]);
+  const [benefits, setBenefits] = useState<Array<LineItem>>([]);
 
   // DB-driven master data (mirror Create page)
   const [dbBranches, setDbBranches] = useState<Array<{ branch_id: string; branch_name: string }>>([]);

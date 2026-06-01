@@ -13,6 +13,7 @@ import {
   Star,
   Plus,
   Trash2,
+  Pencil,
   Loader2,
   Search,
   CheckCircle2,

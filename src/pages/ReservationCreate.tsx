@@ -284,24 +284,40 @@ export default function ReservationCreate() {
   // Master item picker state
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerType, setPickerType] = useState<MasterItemType>('freebies');
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
 
   const openPicker = (type: MasterItemType) => {
     setPickerType(type);
+    setEditingItemId(null);
+    setPickerOpen(true);
+  };
+
+  const openEditPicker = (type: MasterItemType, itemId: number) => {
+    setPickerType(type);
+    setEditingItemId(itemId);
     setPickerOpen(true);
   };
 
   const handlePickerSelect = (item: { name: string; value: number }) => {
     const currentList = pickerType === 'freebies' ? freebies : pickerType === 'accessories' ? accessories : benefits;
     const key = item.name.trim().toLowerCase();
-    const isDuplicate = currentList.some((i) => (i.name || '').trim().toLowerCase() === key);
+    const isDuplicate = currentList.some((i) => i.id !== editingItemId && (i.name || '').trim().toLowerCase() === key);
     if (isDuplicate) {
       toast.error('รายการนี้ถูกเลือกแล้ว ไม่สามารถเพิ่มซ้ำได้');
       return;
     }
-    const newItem = { id: Date.now() + Math.random(), name: item.name, value: item.value };
-    if (pickerType === 'freebies') setFreebies([...freebies, newItem]);
-    else if (pickerType === 'accessories') setAccessories([...accessories, newItem]);
-    else setBenefits([...benefits, newItem]);
+    if (editingItemId !== null) {
+      const replaceFn = (items: LineItem[]) => items.map(it => it.id === editingItemId ? { ...it, name: item.name, value: item.value } : it);
+      if (pickerType === 'freebies') setFreebies(replaceFn(freebies));
+      else if (pickerType === 'accessories') setAccessories(replaceFn(accessories));
+      else setBenefits(replaceFn(benefits));
+      setEditingItemId(null);
+    } else {
+      const newItem: LineItem = { id: Date.now() + Math.random(), name: item.name, value: item.value, remark: '' };
+      if (pickerType === 'freebies') setFreebies([...freebies, newItem]);
+      else if (pickerType === 'accessories') setAccessories([...accessories, newItem]);
+      else setBenefits([...benefits, newItem]);
+    }
   };
 
   const removeItem = (type: 'freebies' | 'accessories' | 'benefits', id: number) => {
@@ -310,10 +326,10 @@ export default function ReservationCreate() {
     else setBenefits(benefits.filter(item => item.id !== id));
   };
 
-  const updateItem = (type: 'freebies' | 'accessories' | 'benefits', id: number, field: 'name' | 'value', value: string | number) => {
-    const updateFn = (items: Array<{ id: number; name: string; value: number }>) =>
+  const updateItem = (type: 'freebies' | 'accessories' | 'benefits', id: number, field: 'name' | 'value' | 'remark', value: string | number) => {
+    const updateFn = (items: LineItem[]) =>
       items.map(item => item.id === id ? { ...item, [field]: value } : item);
-    
+
     if (type === 'freebies') setFreebies(updateFn(freebies));
     else if (type === 'accessories') setAccessories(updateFn(accessories));
     else setBenefits(updateFn(benefits));

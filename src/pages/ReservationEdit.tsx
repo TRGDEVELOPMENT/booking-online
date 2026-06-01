@@ -33,7 +33,8 @@ import {
   AlertCircle,
   FileText,
   ExternalLink,
-  Download
+  Download,
+  Pencil
 } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Badge } from '@/components/ui/badge';
@@ -191,9 +192,10 @@ export default function ReservationEdit() {
   const [approvedByName, setApprovedByName] = useState<string | null>(null);
 
   // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์
-  const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
-  const [accessories, setAccessories] = useState<Array<{ id: number; name: string; value: number }>>([]);
-  const [benefits, setBenefits] = useState<Array<{ id: number; name: string; value: number }>>([]);
+  type LineItem = { id: number; name: string; value: number; remark?: string };
+  const [freebies, setFreebies] = useState<Array<LineItem>>([]);
+  const [accessories, setAccessories] = useState<Array<LineItem>>([]);
+  const [benefits, setBenefits] = useState<Array<LineItem>>([]);
 
   // DB-driven master data (mirror Create page)
   const [dbBranches, setDbBranches] = useState<Array<{ branch_id: string; branch_name: string }>>([]);
@@ -580,24 +582,40 @@ export default function ReservationEdit() {
   // Master item picker state
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerType, setPickerType] = useState<MasterItemType>('freebies');
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
 
   const openPicker = (type: MasterItemType) => {
     setPickerType(type);
+    setEditingItemId(null);
+    setPickerOpen(true);
+  };
+
+  const openEditPicker = (type: MasterItemType, itemId: number) => {
+    setPickerType(type);
+    setEditingItemId(itemId);
     setPickerOpen(true);
   };
 
   const handlePickerSelect = (item: { name: string; value: number }) => {
     const currentList = pickerType === 'freebies' ? freebies : pickerType === 'accessories' ? accessories : benefits;
     const key = item.name.trim().toLowerCase();
-    const isDuplicate = currentList.some((i) => (i.name || '').trim().toLowerCase() === key);
+    const isDuplicate = currentList.some((i) => i.id !== editingItemId && (i.name || '').trim().toLowerCase() === key);
     if (isDuplicate) {
       toast.error('รายการนี้ถูกเลือกแล้ว ไม่สามารถเพิ่มซ้ำได้');
       return;
     }
-    const newItem = { id: Date.now() + Math.random(), name: item.name, value: item.value };
-    if (pickerType === 'freebies') setFreebies([...freebies, newItem]);
-    else if (pickerType === 'accessories') setAccessories([...accessories, newItem]);
-    else setBenefits([...benefits, newItem]);
+    if (editingItemId !== null) {
+      const replaceFn = (items: LineItem[]) => items.map(it => it.id === editingItemId ? { ...it, name: item.name, value: item.value } : it);
+      if (pickerType === 'freebies') setFreebies(replaceFn(freebies));
+      else if (pickerType === 'accessories') setAccessories(replaceFn(accessories));
+      else setBenefits(replaceFn(benefits));
+      setEditingItemId(null);
+    } else {
+      const newItem: LineItem = { id: Date.now() + Math.random(), name: item.name, value: item.value, remark: '' };
+      if (pickerType === 'freebies') setFreebies([...freebies, newItem]);
+      else if (pickerType === 'accessories') setAccessories([...accessories, newItem]);
+      else setBenefits([...benefits, newItem]);
+    }
   };
 
   const removeItem = (type: 'freebies' | 'accessories' | 'benefits', itemId: number) => {
@@ -606,10 +624,10 @@ export default function ReservationEdit() {
     else setBenefits(benefits.filter(item => item.id !== itemId));
   };
 
-  const updateItem = (type: 'freebies' | 'accessories' | 'benefits', itemId: number, field: 'name' | 'value', value: string | number) => {
-    const updateFn = (items: Array<{ id: number; name: string; value: number }>) =>
+  const updateItem = (type: 'freebies' | 'accessories' | 'benefits', itemId: number, field: 'name' | 'value' | 'remark', value: string | number) => {
+    const updateFn = (items: LineItem[]) =>
       items.map(item => item.id === itemId ? { ...item, [field]: value } : item);
-    
+
     if (type === 'freebies') setFreebies(updateFn(freebies));
     else if (type === 'accessories') setAccessories(updateFn(accessories));
     else setBenefits(updateFn(benefits));
@@ -2069,36 +2087,33 @@ export default function ReservationEdit() {
                 {freebies.length > 0 && (
                   <div className="grid grid-cols-12 gap-2 text-sm font-medium text-muted-foreground px-2">
                     <div className="col-span-1">ลำดับที่</div>
-                    <div className="col-span-7">รายการ</div>
-                    <div className="col-span-3">มูลค่า</div>
-                    <div className="col-span-1"></div>
+                    <div className="col-span-5">รายการ</div>
+                    <div className="col-span-4">หมายเหตุ</div>
+                    <div className="col-span-2 text-center">จัดการ</div>
                   </div>
                 )}
                 {freebies.map((item, index) => (
                   <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
                     <div className="col-span-1 text-center text-sm text-muted-foreground">{index + 1}</div>
-                    <div className="col-span-7">
-                      <Input 
-                        value={item.name}
-                        onChange={(e) => updateItem('freebies', item.id, 'name', e.target.value)}
-                        placeholder="ชื่อรายการ"
+                    <div className="col-span-5 text-sm px-2">{item.name}</div>
+                    <div className="col-span-4">
+                      <Input
+                        value={item.remark || ''}
+                        onChange={(e) => updateItem('freebies', item.id, 'remark', e.target.value)}
+                        placeholder="หมายเหตุ"
                         className="input-focus"
                       />
                     </div>
-                    <div className="col-span-3">
-                      <Input 
-                        type="number"
-                        value={item.value || ''}
-                        onChange={(e) => updateItem('freebies', item.id, 'value', Number(e.target.value))}
-                        placeholder="0"
-                        className="input-focus"
-                      />
-                    </div>
-                    <div className="col-span-1">
+                    <div className="col-span-2 flex items-center justify-center gap-1">
                       {!isViewOnly && !isCashierMode && !isSaleManager && !isSaleSupervisor && (
-                        <Button variant="ghost" size="icon" onClick={() => removeItem('freebies', item.id)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <>
+                          <Button variant="ghost" size="icon" onClick={() => openEditPicker('freebies', item.id)}>
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => removeItem('freebies', item.id)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -2122,36 +2137,33 @@ export default function ReservationEdit() {
                 {accessories.length > 0 && (
                   <div className="grid grid-cols-12 gap-2 text-sm font-medium text-muted-foreground px-2">
                     <div className="col-span-1">ลำดับที่</div>
-                    <div className="col-span-7">รายการ</div>
-                    <div className="col-span-3">มูลค่า</div>
-                    <div className="col-span-1"></div>
+                    <div className="col-span-5">รายการ</div>
+                    <div className="col-span-4">หมายเหตุ</div>
+                    <div className="col-span-2 text-center">จัดการ</div>
                   </div>
                 )}
                 {accessories.map((item, index) => (
                   <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
                     <div className="col-span-1 text-center text-sm text-muted-foreground">{index + 1}</div>
-                    <div className="col-span-7">
-                      <Input 
-                        value={item.name}
-                        onChange={(e) => updateItem('accessories', item.id, 'name', e.target.value)}
-                        placeholder="ชื่อรายการ"
+                    <div className="col-span-5 text-sm px-2">{item.name}</div>
+                    <div className="col-span-4">
+                      <Input
+                        value={item.remark || ''}
+                        onChange={(e) => updateItem('accessories', item.id, 'remark', e.target.value)}
+                        placeholder="หมายเหตุ"
                         className="input-focus"
                       />
                     </div>
-                    <div className="col-span-3">
-                      <Input 
-                        type="number"
-                        value={item.value || ''}
-                        onChange={(e) => updateItem('accessories', item.id, 'value', Number(e.target.value))}
-                        placeholder="0"
-                        className="input-focus"
-                      />
-                    </div>
-                    <div className="col-span-1">
+                    <div className="col-span-2 flex items-center justify-center gap-1">
                       {!isViewOnly && !isCashierMode && !isSaleManager && !isSaleSupervisor && (
-                        <Button variant="ghost" size="icon" onClick={() => removeItem('accessories', item.id)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <>
+                          <Button variant="ghost" size="icon" onClick={() => openEditPicker('accessories', item.id)}>
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => removeItem('accessories', item.id)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -2175,36 +2187,33 @@ export default function ReservationEdit() {
                 {benefits.length > 0 && (
                   <div className="grid grid-cols-12 gap-2 text-sm font-medium text-muted-foreground px-2">
                     <div className="col-span-1">ลำดับที่</div>
-                    <div className="col-span-7">รายการ</div>
-                    <div className="col-span-3">มูลค่า</div>
-                    <div className="col-span-1"></div>
+                    <div className="col-span-5">รายการ</div>
+                    <div className="col-span-4">หมายเหตุ</div>
+                    <div className="col-span-2 text-center">จัดการ</div>
                   </div>
                 )}
                 {benefits.map((item, index) => (
                   <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
                     <div className="col-span-1 text-center text-sm text-muted-foreground">{index + 1}</div>
-                    <div className="col-span-7">
-                      <Input 
-                        value={item.name}
-                        onChange={(e) => updateItem('benefits', item.id, 'name', e.target.value)}
-                        placeholder="ชื่อรายการ"
+                    <div className="col-span-5 text-sm px-2">{item.name}</div>
+                    <div className="col-span-4">
+                      <Input
+                        value={item.remark || ''}
+                        onChange={(e) => updateItem('benefits', item.id, 'remark', e.target.value)}
+                        placeholder="หมายเหตุ"
                         className="input-focus"
                       />
                     </div>
-                    <div className="col-span-3">
-                      <Input 
-                        type="number"
-                        value={item.value || ''}
-                        onChange={(e) => updateItem('benefits', item.id, 'value', Number(e.target.value))}
-                        placeholder="0"
-                        className="input-focus"
-                      />
-                    </div>
-                    <div className="col-span-1">
+                    <div className="col-span-2 flex items-center justify-center gap-1">
                       {!isViewOnly && !isCashierMode && !isSaleManager && !isSaleSupervisor && (
-                        <Button variant="ghost" size="icon" onClick={() => removeItem('benefits', item.id)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <>
+                          <Button variant="ghost" size="icon" onClick={() => openEditPicker('benefits', item.id)}>
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => removeItem('benefits', item.id)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -2217,6 +2226,7 @@ export default function ReservationEdit() {
                 )}
               </div>
             </div>
+
 
             {/* Section 9: Attachments - always interactive (preview/download) regardless of parent read-only state.
                 Trash icon is hidden whenever the form is effectively view-only for this user. */}

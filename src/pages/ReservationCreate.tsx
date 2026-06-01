@@ -993,32 +993,27 @@ export default function ReservationCreate() {
                 {freebies.length > 0 && (
                   <div className="grid grid-cols-12 gap-2 text-sm font-medium text-muted-foreground px-2">
                     <div className="col-span-1">ลำดับที่</div>
-                    <div className="col-span-7">รายการ</div>
-                    <div className="col-span-3">มูลค่า</div>
-                    <div className="col-span-1"></div>
+                    <div className="col-span-5">รายการ</div>
+                    <div className="col-span-4">หมายเหตุ</div>
+                    <div className="col-span-2 text-center">จัดการ</div>
                   </div>
                 )}
                 {freebies.map((item, index) => (
                   <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
                     <div className="col-span-1 text-center text-sm text-muted-foreground">{index + 1}</div>
-                    <div className="col-span-7">
-                      <Input 
-                        value={item.name}
-                        onChange={(e) => updateItem('freebies', item.id, 'name', e.target.value)}
-                        placeholder="ชื่อรายการ"
+                    <div className="col-span-5 text-sm px-2">{item.name}</div>
+                    <div className="col-span-4">
+                      <Input
+                        value={item.remark || ''}
+                        onChange={(e) => updateItem('freebies', item.id, 'remark', e.target.value)}
+                        placeholder="หมายเหตุ"
                         className="input-focus"
                       />
                     </div>
-                    <div className="col-span-3">
-                      <Input 
-                        type="number"
-                        value={item.value || ''}
-                        onChange={(e) => updateItem('freebies', item.id, 'value', Number(e.target.value))}
-                        placeholder="0"
-                        className="input-focus"
-                      />
-                    </div>
-                    <div className="col-span-1">
+                    <div className="col-span-2 flex items-center justify-center gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => openEditPicker('freebies', item.id)}>
+                        <Pencil className="w-4 h-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => removeItem('freebies', item.id)} className="text-destructive hover:text-destructive">
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -1042,32 +1037,27 @@ export default function ReservationCreate() {
                 {accessories.length > 0 && (
                   <div className="grid grid-cols-12 gap-2 text-sm font-medium text-muted-foreground px-2">
                     <div className="col-span-1">ลำดับที่</div>
-                    <div className="col-span-7">รายการ</div>
-                    <div className="col-span-3">มูลค่า</div>
-                    <div className="col-span-1"></div>
+                    <div className="col-span-5">รายการ</div>
+                    <div className="col-span-4">หมายเหตุ</div>
+                    <div className="col-span-2 text-center">จัดการ</div>
                   </div>
                 )}
                 {accessories.map((item, index) => (
                   <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
                     <div className="col-span-1 text-center text-sm text-muted-foreground">{index + 1}</div>
-                    <div className="col-span-7">
-                      <Input 
-                        value={item.name}
-                        onChange={(e) => updateItem('accessories', item.id, 'name', e.target.value)}
-                        placeholder="ชื่อรายการ"
+                    <div className="col-span-5 text-sm px-2">{item.name}</div>
+                    <div className="col-span-4">
+                      <Input
+                        value={item.remark || ''}
+                        onChange={(e) => updateItem('accessories', item.id, 'remark', e.target.value)}
+                        placeholder="หมายเหตุ"
                         className="input-focus"
                       />
                     </div>
-                    <div className="col-span-3">
-                      <Input 
-                        type="number"
-                        value={item.value || ''}
-                        onChange={(e) => updateItem('accessories', item.id, 'value', Number(e.target.value))}
-                        placeholder="0"
-                        className="input-focus"
-                      />
-                    </div>
-                    <div className="col-span-1">
+                    <div className="col-span-2 flex items-center justify-center gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => openEditPicker('accessories', item.id)}>
+                        <Pencil className="w-4 h-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => removeItem('accessories', item.id)} className="text-destructive hover:text-destructive">
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -1091,32 +1081,27 @@ export default function ReservationCreate() {
                 {benefits.length > 0 && (
                   <div className="grid grid-cols-12 gap-2 text-sm font-medium text-muted-foreground px-2">
                     <div className="col-span-1">ลำดับที่</div>
-                    <div className="col-span-7">รายการ</div>
-                    <div className="col-span-3">มูลค่า</div>
-                    <div className="col-span-1"></div>
+                    <div className="col-span-5">รายการ</div>
+                    <div className="col-span-4">หมายเหตุ</div>
+                    <div className="col-span-2 text-center">จัดการ</div>
                   </div>
                 )}
                 {benefits.map((item, index) => (
                   <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
                     <div className="col-span-1 text-center text-sm text-muted-foreground">{index + 1}</div>
-                    <div className="col-span-7">
-                      <Input 
-                        value={item.name}
-                        onChange={(e) => updateItem('benefits', item.id, 'name', e.target.value)}
-                        placeholder="ชื่อรายการ"
+                    <div className="col-span-5 text-sm px-2">{item.name}</div>
+                    <div className="col-span-4">
+                      <Input
+                        value={item.remark || ''}
+                        onChange={(e) => updateItem('benefits', item.id, 'remark', e.target.value)}
+                        placeholder="หมายเหตุ"
                         className="input-focus"
                       />
                     </div>
-                    <div className="col-span-3">
-                      <Input 
-                        type="number"
-                        value={item.value || ''}
-                        onChange={(e) => updateItem('benefits', item.id, 'value', Number(e.target.value))}
-                        placeholder="0"
-                        className="input-focus"
-                      />
-                    </div>
-                    <div className="col-span-1">
+                    <div className="col-span-2 flex items-center justify-center gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => openEditPicker('benefits', item.id)}>
+                        <Pencil className="w-4 h-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => removeItem('benefits', item.id)} className="text-destructive hover:text-destructive">
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -1129,6 +1114,8 @@ export default function ReservationCreate() {
                 </Button>
               </div>
             </div>
+
+
 
             {/* Section: รายละเอียดการชำระเงิน (เฉพาะการเงิน) - Only shown at payment verification stage (step3), hidden on create */}
             {isIT && !isSaleRole && (

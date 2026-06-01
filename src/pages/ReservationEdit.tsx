@@ -33,7 +33,8 @@ import {
   AlertCircle,
   FileText,
   ExternalLink,
-  Download
+  Download,
+  Pencil
 } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Badge } from '@/components/ui/badge';

@@ -224,9 +224,10 @@ export default function ReservationCreate() {
   }, [selectedModel, selectedSubmodel]);
 
   // Items - ของแถม, อุปกรณ์ตกแต่ง, สิทธิประโยชน์
-  const [freebies, setFreebies] = useState<Array<{ id: number; name: string; value: number }>>([]);
-  const [accessories, setAccessories] = useState<Array<{ id: number; name: string; value: number }>>([]);
-  const [benefits, setBenefits] = useState<Array<{ id: number; name: string; value: number }>>([]);
+  type LineItem = { id: number; name: string; value: number; remark?: string };
+  const [freebies, setFreebies] = useState<Array<LineItem>>([]);
+  const [accessories, setAccessories] = useState<Array<LineItem>>([]);
+  const [benefits, setBenefits] = useState<Array<LineItem>>([]);
 
   // Payment Details (Finance Section)
   const [paymentType, setPaymentType] = useState<string>('cash');
